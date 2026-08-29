@@ -118,17 +118,17 @@ Dependencies: Task 8. Scope: small.
 
 ### Task 10 — Plan and custom-task editing
 
-- [ ] Build 14-week date-grouped view, role/workstream/status filters, exit checks, and task history.
-- [ ] Support validated custom create/edit/archive; require reason and forbid template archive.
-- [ ] Keep `source_week_number` provenance from controlling grouping or metrics.
+- [x] Build 14-week date-grouped view, role/workstream/status filters, exit checks, and task history.
+- [x] Support validated custom create/edit/archive; require reason and forbid template archive.
+- [x] Keep `source_week_number` provenance from controlling grouping or metrics. (2026-08-29; PlanView date-based grouping - source_week_number provenance only; filters; validated custom create/edit/archive; per-task event history)
 
 Dependencies: Tasks 8–9. Scope: medium.
 
 ### Checkpoint B
 
-- [ ] Complete a full day and observe it in a second session.
-- [ ] Two-session concurrent edit produces no lost update or orphan event.
-- [ ] State-transition and overdue fixtures all pass.
+- [x] Complete a full day and observe it in a second session. (dataLayer integration test: completion in session A visible in session B; 2026-08-29)
+- [x] Two-session concurrent edit produces no lost update or orphan event. (CAS conflict returns latest row; retry with fresh revision succeeds; exactly one event per transition)
+- [x] State-transition and overdue fixtures all pass. (full transition matrix + classification/overdue unit tests)
 
 ## Phase 3: portfolio and interview evidence
 

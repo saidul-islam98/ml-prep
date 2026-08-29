@@ -32,7 +32,7 @@ export interface TaskCardProps {
   ) => Promise<TransitionOutcome>;
 }
 
-type Dialog = "complete" | "skip" | "reschedule" | "evidence" | null;
+type Dialog = "complete" | "skip" | "reschedule" | "evidence" | "edit" | "archive" | null;
 
 interface ConflictState {
   latestTask: TaskRow;
@@ -187,6 +187,21 @@ export function TaskCard({
           onCancel={() => setDialog(null)}
         />
       )}
+      {dialog === "edit" && (
+        <EditTaskDialog
+          task={task}
+          offline={offline}
+          onSubmit={(payload) => void run("edit", payload)}
+          onCancel={() => setDialog(null)}
+        />
+      )}
+      {dialog === "archive" && (
+        <ArchiveDialog
+          offline={offline}
+          onSubmit={(reason) => void run("archive", { reason })}
+          onCancel={() => setDialog(null)}
+        />
+      )}
 
       {dialog === null && (
         <div className="task-actions">
@@ -236,6 +251,20 @@ export function TaskCard({
           <button type="button" disabled={offline} onClick={() => setDialog("evidence")}>
             {task.evidence_url || task.evidence_note ? "Edit evidence" : "Add evidence"}
           </button>
+          {/* Editing and archiving are custom-task capabilities (section 6.3);
+              template tasks must be completed, skipped, or rescheduled. */}
+          {task.template_task_key === null &&
+            (task.state === "not_started" || task.state === "in_progress") && (
+              <button type="button" disabled={offline} onClick={() => setDialog("edit")}>
+                Edit task
+              </button>
+            )}
+          {task.template_task_key === null &&
+            (task.state === "not_started" || task.state === "in_progress") && (
+              <button type="button" disabled={offline} onClick={() => setDialog("archive")}>
+                Archive
+              </button>
+            )}
           <TaskHistory taskId={task.id} />
         </div>
       )}
@@ -318,7 +347,6 @@ function CompleteDialog({
       <input
         id="complete-minutes"
         type="number"
-        min="1"
         step="1"
         value={minutes}
         onChange={(e) => setMinutes(e.target.value)}
@@ -503,6 +531,139 @@ function EvidenceDialog({
       <div className="task-actions">
         <button type="submit" disabled={offline}>
           Save evidence
+        </button>
+        <button type="button" onClick={onCancel}>
+          Cancel
+        </button>
+      </div>
+    </form>
+  );
+}
+
+function EditTaskDialog({
+  task,
+  offline,
+  onSubmit,
+  onCancel,
+}: {
+  task: TaskRow;
+  offline: boolean;
+  onSubmit: (payload: TransitionPayload) => void;
+  onCancel: () => void;
+}) {
+  const [title, setTitle] = useState(task.title);
+  const [minutes, setMinutes] = useState(String(task.estimated_minutes));
+  const [category, setCategory] = useState(task.category);
+  const [description, setDescription] = useState(task.description ?? "");
+  const [validationError, setValidationError] = useState<string | null>(null);
+
+  function submit(event: FormEvent) {
+    event.preventDefault();
+    const trimmed = title.trim();
+    const estimated = Number(minutes);
+    if (!trimmed) {
+      setValidationError("A title is required.");
+      return;
+    }
+    if (!Number.isInteger(estimated) || estimated <= 0) {
+      setValidationError("Estimated minutes must be a positive whole number.");
+      return;
+    }
+    setValidationError(null);
+    onSubmit({
+      title: trimmed,
+      estimated_minutes: estimated,
+      category,
+      description: description.trim() || null,
+    });
+  }
+
+  return (
+    <form className="task-dialog" onSubmit={submit}>
+      <h4>Edit custom task</h4>
+      <label htmlFor="edit-title">Title</label>
+      <input id="edit-title" value={title} onChange={(e) => setTitle(e.target.value)} />
+      <label htmlFor="edit-category">Category</label>
+      <select
+        id="edit-category"
+        value={category}
+        onChange={(e) => setCategory(e.target.value as TaskRow["category"])}
+      >
+        {Object.entries(CATEGORY_LABELS).map(([key, label]) => (
+          <option key={key} value={key}>
+            {label}
+          </option>
+        ))}
+      </select>
+      <label htmlFor="edit-minutes">Estimated minutes</label>
+      <input
+        id="edit-minutes"
+        type="number"
+        value={minutes}
+        onChange={(e) => setMinutes(e.target.value)}
+      />
+      <label htmlFor="edit-description">Description</label>
+      <input
+        id="edit-description"
+        value={description}
+        onChange={(e) => setDescription(e.target.value)}
+      />
+      {validationError && (
+        <p role="alert" className="task-error-text">
+          {validationError}
+        </p>
+      )}
+      <div className="task-actions">
+        <button type="submit" disabled={offline}>
+          Save changes
+        </button>
+        <button type="button" onClick={onCancel}>
+          Cancel
+        </button>
+      </div>
+    </form>
+  );
+}
+
+function ArchiveDialog({
+  offline,
+  onSubmit,
+  onCancel,
+}: {
+  offline: boolean;
+  onSubmit: (reason: string) => void;
+  onCancel: () => void;
+}) {
+  const [reason, setReason] = useState("");
+  const [validationError, setValidationError] = useState<string | null>(null);
+
+  function submit(event: FormEvent) {
+    event.preventDefault();
+    if (!reason.trim()) {
+      setValidationError("An archive reason is required.");
+      return;
+    }
+    setValidationError(null);
+    onSubmit(reason.trim());
+  }
+
+  return (
+    <form className="task-dialog" onSubmit={submit}>
+      <h4>Archive custom task</h4>
+      <p className="overdue-note">
+        Archiving removes the task from active planning. It counts as a non-completion and never
+        re-enters a completed metric.
+      </p>
+      <label htmlFor="archive-reason">Reason (required)</label>
+      <input id="archive-reason" value={reason} onChange={(e) => setReason(e.target.value)} />
+      {validationError && (
+        <p role="alert" className="task-error-text">
+          {validationError}
+        </p>
+      )}
+      <div className="task-actions">
+        <button type="submit" disabled={offline}>
+          Archive task
         </button>
         <button type="button" onClick={onCancel}>
           Cancel

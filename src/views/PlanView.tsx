@@ -78,8 +78,16 @@ export function PlanView() {
     });
   }, [tasks, filters, projects, postTrainingEnabled]);
 
-  function tasksForWeek(weekNumber: number): TaskRow[] {
-    return filtered.filter((t) => t.source_week_number === weekNumber);
+  function tasksForWeek(week: {
+    week_number: number;
+    start_date: string;
+    end_date: string;
+  }): TaskRow[] {
+    // Grouping uses scheduled dates only; source_week_number is provenance
+    // and never controls grouping or metrics (WEBAPP_SPEC.md section 10.3).
+    return filtered.filter(
+      (t) => t.scheduled_date >= week.start_date && t.scheduled_date <= week.end_date,
+    );
   }
 
   async function handleTransition(
@@ -195,7 +203,7 @@ export function PlanView() {
       {isError && <p role="alert">Could not load the plan. Refresh to retry.</p>}
 
       {weeks.map((week) => {
-        const weekTasks = tasksForWeek(week.week_number);
+        const weekTasks = tasksForWeek(week);
         const plannedMinutes = weekTasks.reduce((s, t) => s + t.estimated_minutes, 0);
         const completedMinutes = weekTasks
           .filter((t) => t.state === "completed")
@@ -226,9 +234,7 @@ export function PlanView() {
             </button>
             {isOpen && (
               <>
-                <p className="plan-exit-check">
-                  <strong>Exit check:</strong> {week.exit_check}
-                </p>
+                <p className="plan-exit-check">{`Exit check: ${week.exit_check}`}</p>
                 {weekTasks.length === 0 ? (
                   <p className="overdue-note">No tasks match the current filters.</p>
                 ) : (
@@ -328,7 +334,6 @@ function CreateTaskForm({
       <input
         id="ct-minutes"
         type="number"
-        min="1"
         value={minutes}
         onChange={(e) => setMinutes(e.target.value)}
       />
