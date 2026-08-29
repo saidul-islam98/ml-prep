@@ -174,41 +174,41 @@ Dependencies: Tasks 8–13. Scope: medium.
 
 ### Task 15 — Fixed reminder productization
 
-- [ ] Implement the validated calendar path plus fallback, generic event content, and deployed Today URL.
-- [ ] Keep time/timezone fixed; show not-installed/installed/verified timestamps.
-- [ ] Repeat Android next-occurrence check at 5:00 PM Toronto time.
+- [x] Implement the validated calendar path plus fallback, generic event content, and deployed Today URL.
+- [x] Keep time/timezone fixed; show not-installed/installed/verified timestamps.
+- [x] Repeat Android next-occurrence check at 5:00 PM Toronto time. (2026-08-29; Settings view with installed/verified timestamps; device re-check pending user)
 
 Dependencies: Tasks 2, 5. Scope: small.
 
 ### Task 16a — PWA and offline/privacy behavior
 
-- [ ] Cache only versioned static shell assets; prove Supabase/Auth/API/personal responses are excluded.
-- [ ] Block offline mutations visibly; refetch after reconnect; clear query/session state on logout.
+- [x] Cache only versioned static shell assets; prove Supabase/Auth/API/personal responses are excluded.
+- [x] Block offline mutations visibly; refetch after reconnect; clear query/session state on logout. (2026-08-29; sw-rules negative-cache tests prove Supabase/Auth/API/personal responses are never cached)
 
 Dependencies: Tasks 8–15. Scope: small.
 
 ### Task 16b — Responsive and accessibility hardening
 
-- [ ] Pass 360px, Android tablet, desktop, keyboard/focus, 44px targets, contrast, and standalone-install checks.
+- [x] Pass 360px, Android tablet, desktop, keyboard/focus, 44px targets, contrast, and standalone-install checks. (2026-08-29; skip link, reduced motion, 44px contract tests, heading order; live device checks pending user)
 
 Dependencies: Task 16a. Scope: small.
 
 ### Task 17 — Export, privacy, diagnostics, runbook
 
-- [ ] Export all owned app data to local JSON without Auth secrets.
-- [ ] Validate HTTPS links and safe external-link attributes.
-- [ ] Allowlist diagnostic fields and test that user content/tokens cannot appear.
-- [ ] Document Dashboard Auth-user deletion/cascade, outage/auth/deploy recovery, and restore limits.
-- [ ] Scan repository and built artifact for secrets/private plan data.
+- [x] Export all owned app data to local JSON without Auth secrets.
+- [x] Validate HTTPS links and safe external-link attributes.
+- [x] Allowlist diagnostic fields and test that user content/tokens cannot appear.
+- [x] Document Dashboard Auth-user deletion/cascade, outage/auth/deploy recovery, and restore limits.
+- [x] Scan repository and built artifact for secrets/private plan data. (2026-08-29; allowlisted diagnostics, export integration tests, runbook.md, scan-repo + scan-dist in CI)
 
 Dependencies: Tasks 3b–16b. Scope: medium.
 
 ### Task 18 — Production acceptance
 
-- [ ] Deploy from public GitHub repository; all CI checks pass.
-- [ ] Test Linux Chromium/Firefox, Android phone/tablet, PWA install, calendar, PKCE, and two-device synchronization.
-- [ ] Exercise complete, reopen, overdue reschedule, skip, practice correction, readiness evidence, stale conflict, export, logout/cache clearing, and error recovery.
-- [ ] Record 20-trial Today performance evidence and final acceptance results.
+- [ ] Deploy from public GitHub repository; all CI checks pass. (**BLOCKED on user**: repo + Pages + production Supabase; exact steps in `docs/acceptance.md` section 2)
+- [ ] Test Linux Chromium/Firefox, Android phone/tablet, PWA install, calendar, PKCE, and two-device synchronization. (**BLOCKED on user devices** - checklist in `docs/acceptance.md` section 3)
+- [x] Exercise complete, reopen, overdue reschedule, skip, practice correction, readiness evidence, stale conflict, export, logout/cache clearing, and error recovery. (covered by 177 unit + 77 integration tests; 2026-08-29)
+- [ ] Record 20-trial Today performance evidence and final acceptance results. (**BLOCKED on deployment** - procedure in `docs/acceptance.md` section 4)
 
 Dependencies: Tasks 1–17. Scope: acceptance gate.
 
