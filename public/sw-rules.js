@@ -29,7 +29,15 @@
 
   // Defense-in-depth: excluded even when same-origin (local Supabase runs
   // same-origin in some dev setups).
-  var NEVER_CACHE_PATHS = ["/auth/", "/rest/", "/realtime/", "/storage/", "/functions/", "/pg/"];
+  var NEVER_CACHE_PATHS = [
+    "/api/",
+    "/auth/",
+    "/rest/",
+    "/realtime/",
+    "/storage/",
+    "/functions/",
+    "/pg/",
+  ];
 
   var NEVER_CACHE_PARAMS = ["apikey", "token", "code"];
 

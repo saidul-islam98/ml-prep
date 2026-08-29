@@ -22,13 +22,15 @@ export function AuthenticatedApp({
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    if (!isLoading && profile === null) {
+    if (!isLoading && (profile == null || profile.template_version !== 1) && seed.isIdle) {
       seed.mutate();
     }
     // Seed once per missing profile.
   }, [isLoading, profile, seed]);
 
-  if (isLoading || (profile === null && seed.isPending)) {
+  const needsSeed = profile == null || profile.template_version !== 1;
+
+  if (isLoading || (needsSeed && seed.isPending)) {
     return (
       <div className="app-shell" role="status" aria-live="polite">
         <main className="app-main">
@@ -41,7 +43,7 @@ export function AuthenticatedApp({
     );
   }
 
-  if (profile === null) {
+  if (needsSeed) {
     return (
       <div className="app-shell">
         <main className="app-main">

@@ -117,7 +117,11 @@ create table public.practice_sessions (
   evidence_url text
     constraint practice_sessions_evidence_https check (evidence_url is null or evidence_url like 'https://%'),
   constraint practice_sessions_completed_has_timestamp
-    check (state = 'completed' or completed_at is null),
+    check (
+      (state = 'completed' and completed_at is not null and elapsed_minutes is not null
+        and nullif(btrim(result), '') is not null)
+      or (state <> 'completed' and completed_at is null)
+    ),
   constraint practice_sessions_id_user_unique unique (id, user_id),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
@@ -277,6 +281,14 @@ create table public.readiness_gates (
   evidence_url text
     constraint readiness_gates_evidence_https check (evidence_url is null or evidence_url like 'https://%'),
   assessed_at timestamptz,
+  constraint readiness_gates_assessment_evidence check (
+    (state = 'not_assessed' and assessed_at is null)
+    or (
+      state <> 'not_assessed'
+      and assessed_at is not null
+      and (state <> 'ready' or nullif(btrim(coalesce(evidence_note, evidence_url, '')), '') is not null)
+    )
+  ),
   constraint readiness_gates_role_gate_unique unique (user_id, role_key, gate_key),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
@@ -423,9 +435,13 @@ grant select on public.profiles, public.plan_weeks, public.projects,
   to authenticated;
 
 -- Update access (own rows only, enforced by RLS):
-grant update on public.projects, public.project_milestones,
-  public.readiness_gates, public.practice_sessions, public.mock_scores,
-  public.daily_checkins
+grant update (repository_url, design_url, report_url, demo_url, blocker_note)
+  on public.projects to authenticated;
+grant update (completed_at, evidence_url)
+  on public.project_milestones to authenticated;
+grant update (state, evidence_note, evidence_url, assessed_at)
+  on public.readiness_gates to authenticated;
+grant update on public.practice_sessions, public.mock_scores, public.daily_checkins
   to authenticated;
 
 -- profiles: fixed timezone/reminder in MVP; users may only set reminder status.

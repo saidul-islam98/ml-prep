@@ -327,6 +327,7 @@ function SessionCard({
   correctionError: string | null;
 }) {
   const [showCorrection, setShowCorrection] = useState(false);
+  const [completionError, setCompletionError] = useState<string | null>(null);
   const isMock = session.session_type === "mock";
 
   function completeWithResult(event: FormEvent) {
@@ -336,11 +337,20 @@ function SessionCard({
     const result = (form.elements.namedItem("result") as HTMLInputElement).value.trim();
     const mistake = (form.elements.namedItem("mistake") as HTMLSelectElement).value;
     const correctionDue = (form.elements.namedItem("correction-due") as HTMLInputElement).value;
+    if (!Number.isInteger(elapsed) || elapsed <= 0) {
+      setCompletionError("Elapsed minutes must be a positive whole number.");
+      return;
+    }
+    if (!result) {
+      setCompletionError("A result is required.");
+      return;
+    }
+    setCompletionError(null);
     onUpdate({
       state: "completed",
       completed_at: new Date().toISOString(),
-      elapsed_minutes: Number.isInteger(elapsed) && elapsed > 0 ? elapsed : null,
-      result: result || null,
+      elapsed_minutes: elapsed,
+      result,
       mistake_category: (mistake || null) as PracticeSessionRow["mistake_category"],
       correction_due_date: correctionDue || null,
     });
@@ -375,12 +385,13 @@ function SessionCard({
         <form className="task-dialog" onSubmit={completeWithResult}>
           <h4>Record outcome</h4>
           <label htmlFor={`elapsed-${session.id}`}>Elapsed minutes</label>
-          <input id={`elapsed-${session.id}`} name="elapsed" type="number" min="1" />
+          <input id={`elapsed-${session.id}`} name="elapsed" type="number" min="1" required />
           <label htmlFor={`result-${session.id}`}>Result (required for readiness)</label>
           <input
             id={`result-${session.id}`}
             name="result"
             placeholder="solved / solved with help / unsolved"
+            required
           />
           <label htmlFor={`mistake-${session.id}`}>Mistake category (optional)</label>
           <select id={`mistake-${session.id}`} name="mistake" defaultValue="">
@@ -399,12 +410,17 @@ function SessionCard({
               Abandon
             </button>
           </div>
+          {completionError && (
+            <p role="alert" className="task-error-text">
+              {completionError}
+            </p>
+          )}
         </form>
       )}
 
       {isMock && scores !== null && session.state === "completed" && (
         <div className="mock-scores">
-          <h4>Rubric scores (1-5)</h4>
+          <h4>Rubric scores (1-5) — {Object.keys(scores).length}/8 recorded</h4>
           {MOCK_DIMENSIONS.map((dimension) => (
             <div key={dimension} className="mock-score-row">
               <label htmlFor={`score-${session.id}-${dimension}`}>

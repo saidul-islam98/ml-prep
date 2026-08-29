@@ -1430,7 +1430,7 @@ const RAW_PROJECTS: TemplateProject[] = [
         acceptance:
           "Baseline/ablation matrix run; report includes baselines, ablations, uncertainty, failure taxonomy, limitations; auditable from configs and artifacts",
         targetDate: "2026-11-15",
-        isCompletionGate: true,
+        isCompletionGate: false,
         sortOrder: 6,
       },
     ],
@@ -1477,7 +1477,7 @@ const RAW_PROJECTS: TemplateProject[] = [
         acceptance:
           "Finalized profiling comparison; engineering post titled around a measured bottleneck",
         targetDate: "2026-11-15",
-        isCompletionGate: true,
+        isCompletionGate: false,
         sortOrder: 3,
       },
     ],

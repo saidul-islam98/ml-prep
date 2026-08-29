@@ -218,6 +218,46 @@ begin
     raise exception 'template_artifact_missing' using errcode = '22000';
   end if;
 
+  -- Every task participating in the swap must still match its canonical
+  -- per-task allocation. A matching total alone would permit redistribution
+  -- and could silently break the fixed 196-hour plan.
+  if exists (
+    select 1
+    from jsonb_array_elements(v_artifact.payload -> 'tasks') expected
+    where (expected ->> 'key') = any (
+      select jsonb_array_elements_text(v_artifact.payload -> 'swap' -> 'deactivate_keys')
+    )
+      and not exists (
+        select 1 from public.tasks t
+        where t.user_id = v_user
+          and t.template_task_key = expected ->> 'key'
+          and t.estimated_minutes = (expected ->> 'minutes')::int
+          and t.state in ('not_started', 'in_progress')
+      )
+  ) then
+    raise exception 'swap_unavailable: mapped theory/contingency tasks must match the canonical open allocation'
+      using errcode = '22000';
+  end if;
+
+  if exists (
+    select 1
+    from jsonb_array_elements(v_artifact.payload -> 'tasks') expected
+    where (expected ->> 'key') = any (
+      select jsonb_array_elements_text(v_artifact.payload -> 'swap' -> 'activate_keys')
+    )
+      and not exists (
+        select 1 from public.tasks t
+        where t.user_id = v_user
+          and t.template_task_key = expected ->> 'key'
+          and t.estimated_minutes = (expected ->> 'minutes')::int
+          and t.state = 'not_started'
+          and t.role_tags @> array['post_training']::text[]
+      )
+  ) then
+    raise exception 'activation_invalid: optional tasks must match the canonical locked allocation'
+      using errcode = '22000';
+  end if;
+
   -- Server-validated gates: every completion-gate milestone of the two
   -- required projects must be completed with qualifying evidence.
   if exists (

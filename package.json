@@ -6,7 +6,7 @@
   "description": "Private single-user tracker for the 14-week Cohere MTS preparation plan",
   "scripts": {
     "dev": "vite",
-    "build": "tsc --noEmit && vite build",
+    "build": "tsc --noEmit && vite build && node scripts/inject-sw-precache.mjs",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",

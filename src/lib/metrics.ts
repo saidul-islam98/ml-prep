@@ -17,6 +17,10 @@ export interface MetricTask extends TaskLike {
   completed_at: string | null;
 }
 
+function isOptionalTask(task: Pick<MetricTask, "role_tags">): boolean {
+  return task.role_tags.includes("post_training");
+}
+
 export interface MetricPeriod {
   start: string; // "YYYY-MM-DD" inclusive
   end: string; // "YYYY-MM-DD" inclusive
@@ -33,7 +37,7 @@ export function cohortTasks<T extends MetricTask>(
   includeOptional: boolean,
 ): T[] {
   return tasks.filter(
-    (t) => (includeOptional || !t.optionalTrack) && inPeriod(t.original_scheduled_date, period),
+    (t) => (includeOptional || !isOptionalTask(t)) && inPeriod(t.original_scheduled_date, period),
   );
 }
 
@@ -128,7 +132,7 @@ export function actualEffortByDate(
 ): Map<string, number> {
   const map = new Map<string, number>();
   for (const task of tasks) {
-    if (!includeOptional && task.optionalTrack) continue;
+    if (!includeOptional && isOptionalTask(task)) continue;
     if (task.state !== "completed" || !task.completed_at) continue;
     const date = torontoDate(new Date(task.completed_at));
     map.set(date, (map.get(date) ?? 0) + (task.actual_minutes ?? 0));
@@ -146,7 +150,7 @@ export function currentWorkloadByDate(
 ): Map<string, number> {
   const map = new Map<string, number>();
   for (const task of tasks) {
-    if (!includeOptional && task.optionalTrack) continue;
+    if (!includeOptional && isOptionalTask(task)) continue;
     if (task.state !== "not_started" && task.state !== "in_progress") continue;
     map.set(task.scheduled_date, (map.get(task.scheduled_date) ?? 0) + task.estimated_minutes);
   }

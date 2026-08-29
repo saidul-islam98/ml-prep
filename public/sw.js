@@ -8,7 +8,8 @@
 importScripts("./sw-rules.js");
 
 var CACHE = self.swRules.CACHE_NAME;
-var SHELL_URLS = ["./", "./manifest.webmanifest", "./icon.svg"];
+// The production build replaces the array below with every generated asset.
+var SHELL_URLS = /* __ML_PREP_PRECACHE__ */ ["./", "./manifest.webmanifest", "./icon.svg"];
 
 self.addEventListener("install", function (event) {
   event.waitUntil(

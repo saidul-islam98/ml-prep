@@ -72,6 +72,13 @@ a {
   flex-direction: column;
 }
 
+.app-content {
+  min-inline-size: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
 .app-banner {
   background: var(--color-surface);
   border-bottom: 1px solid var(--color-border);

@@ -229,6 +229,7 @@ describe("practice sessions and correction tasks", () => {
     await apiA.updatePracticeSession(mock.id, {
       state: "completed",
       completed_at: new Date().toISOString(),
+      elapsed_minutes: 55,
       result: "completed",
     });
     await apiA.saveMockScore(mock.id, "problem_framing", 4);

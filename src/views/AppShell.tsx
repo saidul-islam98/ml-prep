@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { VIEWS, type ViewKey } from "./views";
+import { useOnlineStatus } from "../hooks/useOnlineStatus";
 
 interface AppShellProps {
   active: ViewKey;
@@ -15,9 +16,10 @@ interface AppShellProps {
  */
 export function AppShell({ active, children }: AppShellProps) {
   const entries = Object.entries(VIEWS) as [ViewKey, (typeof VIEWS)[ViewKey]][];
+  const online = useOnlineStatus();
 
   return (
-    <div className="app-shell">
+    <div className="app-shell" data-offline={!online}>
       <a href="#main" className="skip-link">
         Skip to main content
       </a>
@@ -40,7 +42,15 @@ export function AppShell({ active, children }: AppShellProps) {
         </ul>
       </nav>
       <main className="app-main" id="main">
-        {children}
+        {!online && (
+          <p role="status" className="task-offline">
+            You are offline. Saved data remains visible, but editing is disabled until you
+            reconnect.
+          </p>
+        )}
+        <fieldset className="app-content" disabled={!online} aria-disabled={!online}>
+          {children}
+        </fieldset>
       </main>
     </div>
   );

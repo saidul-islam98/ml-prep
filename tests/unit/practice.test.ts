@@ -8,6 +8,7 @@
 
 import { describe, expect, it } from "vitest";
 import {
+  codingGateSummary,
   latestTenQualifyingCodingSessions,
   type PracticeSessionLike,
 } from "../../src/lib/practice";
@@ -83,5 +84,17 @@ describe("latestTenQualifyingCodingSessions", () => {
   it("returns an empty list when nothing qualifies", () => {
     expect(latestTenQualifyingCodingSessions([])).toEqual([]);
     expect(latestTenQualifyingCodingSessions([session({ state: "abandoned" })])).toEqual([]);
+  });
+});
+
+describe("codingGateSummary", () => {
+  it("counts only independently solved sessions, not solved-with-help", () => {
+    const latest = [
+      ...Array.from({ length: 7 }, (_, i) => session({ id: `solved-${i}`, result: "solved" })),
+      session({ id: "helped", result: "solved with help" }),
+      session({ id: "unsolved", result: "unsolved" }),
+      session({ id: "case", result: " SOLVED " }),
+    ];
+    expect(codingGateSummary(latest)).toEqual({ solved: 8, total: 10, meetsGate: true });
   });
 });

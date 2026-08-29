@@ -368,7 +368,7 @@ cohort (spec §8.2).
 | p1-m4 | Annotation calibration  | Oct 4       | no              | Pilot instructions, three-annotator study, agreement measured, rubric revised once, pre/post reported                                              |
 | p1-m5 | Release v0.1            | Oct 11      | **yes**         | Tests/CI/typing/lint pass; credential-free smoke; design doc + demo published; 3 reviewer criticisms tracked; fresh clone runs the smoke suite     |
 | p1-m6 | Regression gates        | Nov 8       | no              | Three observed failures converted into regression tasks; thresholds enforced in CI                                                                 |
-| p1-m7 | Technical report        | Nov 15      | **yes**         | Baseline/ablation matrix run; report includes baselines, ablations, uncertainty, failure taxonomy, limitations; auditable from configs + artifacts |
+| p1-m7 | Technical report        | Nov 15      | no              | Baseline/ablation matrix run; report includes baselines, ablations, uncertainty, failure taxonomy, limitations; auditable from configs + artifacts |
 
 ### Project 2 - Distributed training and rollout reliability lab (`rollout_lab`, budget 1,650 min = 27.5 h, roles: agent_env, data_eval)
 
@@ -377,7 +377,7 @@ cohort (spec §8.2).
 | p2-m1 | Runners + DDP design | Oct 4       | no              | Sequential + Ray runners, bounded concurrency, retries with jitter, idempotent task IDs, checkpoint/resume design                                                                        |
 | p2-m2 | Load + profile       | Oct 18      | no              | Rollout load test at >= 3 concurrency levels and 2 batching settings; torch.profiler evidence; throughput/latency explained from measurements                                            |
 | p2-m3 | DDP + recovery       | Oct 25      | **yes**         | Single vs two-process DDP correctness; interrupted run resumes without duplicated samples; container + benchmark report + demo; profiling quantifies a real bottleneck with before/after |
-| p2-m4 | Comparison + post    | Nov 15      | **yes**         | Finalized profiling comparison; engineering post titled around a measured bottleneck                                                                                                     |
+| p2-m4 | Comparison + post    | Nov 15      | no              | Finalized profiling comparison; engineering post titled around a measured bottleneck                                                                                                     |
 
 ### Project 3 - Verifier-guided post-training mini-lab (`post_training_lab`, budget 1,200 min = 20 h, roles: post_training, state: locked)
 

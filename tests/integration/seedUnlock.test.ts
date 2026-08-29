@@ -416,4 +416,18 @@ describe("unlock_post_training", () => {
     const profile = await client.from("profiles").select("post_training_enabled");
     expect(profile.data?.[0].post_training_enabled).toBe(false);
   });
+
+  it("refuses unlock when optional activation task minutes were tampered with", async () => {
+    const client = await clientFor();
+    await seedAndCompleteGates(client);
+    await withDb((db) =>
+      db.query(
+        "update public.tasks set estimated_minutes = 1 where user_id = $1 and template_task_key = 'pt-w9-scope'",
+        [user.id],
+      ),
+    );
+
+    const result = await client.rpc("unlock_post_training", { p_opt_in: true });
+    expect((result.error as Error).message).toMatch(/activation_invalid/);
+  });
 });

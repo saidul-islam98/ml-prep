@@ -37,7 +37,7 @@ export function codingGateSummary(latest: PracticeSessionLike[]): {
   total: number;
   meetsGate: boolean;
 } {
-  const solved = latest.filter((s) => (s.result ?? "").toLowerCase().startsWith("solved")).length;
+  const solved = latest.filter((s) => (s.result ?? "").trim().toLowerCase() === "solved").length;
   return { solved, total: latest.length, meetsGate: latest.length > 0 && solved >= 8 };
 }
 

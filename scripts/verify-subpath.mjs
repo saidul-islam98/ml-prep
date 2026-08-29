@@ -114,6 +114,17 @@ try {
     }
   }
 
+  const worker = await fetchText(`${basePath}sw.js`);
+  for (const ref of assetRefs.filter((ref) => ref.includes("/assets/"))) {
+    const relative = `./${ref.slice(ref.indexOf("assets/"))}`;
+    if (!worker.text.includes(relative)) fail(`service worker does not precache ${relative}`);
+  }
+  if (worker.text.includes('var SHELL_URLS = ["./", "./manifest.webmanifest", "./icon.svg"]')) {
+    fail("service worker still contains the unexpanded development shell list");
+  } else {
+    pass("service worker precaches generated application assets");
+  }
+
   // 3. Deep-link with hash routing needs only the root document; assert the
   // server does not 404 on the root path (the SPA contract for hash routing).
   const deep = await fetchText(`${basePath}?direct=${encodeURIComponent("#/plan")}`);

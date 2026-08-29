@@ -130,11 +130,11 @@ describe("projects and gates", () => {
     expect(budgets).toEqual({ evalops: 1950, rollout_lab: 1650, post_training_lab: 1200 });
   });
 
-  it("marks exactly five completion-gate milestones", () => {
+  it("marks the two pre-optional core gates and the optional project final gate", () => {
     const gates = TEMPLATE_V1.projects.flatMap((p) =>
       p.milestones.filter((m) => m.isCompletionGate).map((m) => m.key),
     );
-    expect(gates).toEqual(["p1-m5", "p1-m7", "p2-m3", "p2-m4", "p3-m4"]);
+    expect(gates).toEqual(["p1-m5", "p2-m3", "p3-m4"]);
   });
 
   it("seeds 13 readiness gate rows across the three roles", () => {

@@ -65,8 +65,8 @@ async function seedFixtureFor(userId: string): Promise<Fixture> {
       [userId, project.rows[0].id],
     );
     const session = await db.query<{ id: string }>(
-      `insert into public.practice_sessions (user_id, session_type, date, state, topic, allotted_minutes)
-       values ($1, 'coding', '2026-08-31', 'completed', 'Two-sum and intervals', 120)
+      `insert into public.practice_sessions (user_id, session_type, date, state, completed_at, topic, allotted_minutes, elapsed_minutes, result)
+       values ($1, 'coding', '2026-08-31', 'completed', now(), 'Two-sum and intervals', 120, 100, 'solved')
        returning id`,
       [userId],
     );
@@ -351,9 +351,57 @@ describe("command boundary: client DML is revoked where RPCs are required", () =
       .eq("user_id", userA.id);
     expect(timezone.error).not.toBeNull();
   });
+
+  it("project and milestone identity fields cannot bypass unlock gates", async () => {
+    const fixture = await seedFixtureFor(userA.id);
+    const clientA = await authenticatedClient(userA);
+
+    const projectIdentity = await clientA
+      .from("projects")
+      .update({ project_key: "post_training_lab", state: "completed" })
+      .eq("id", fixture.projectId);
+    expect(projectIdentity.error).not.toBeNull();
+
+    const milestoneIdentity = await clientA
+      .from("project_milestones")
+      .update({ is_completion_gate: false, project_id: fixture.projectId })
+      .eq("id", fixture.milestoneId);
+    expect(milestoneIdentity.error).not.toBeNull();
+
+    const evidence = await clientA
+      .from("project_milestones")
+      .update({ completed_at: new Date().toISOString(), evidence_url: "https://example.com/proof" })
+      .eq("id", fixture.milestoneId);
+    expect(evidence.error).toBeNull();
+  });
 });
 
 describe("state and field integrity constraints", () => {
+  it("requires completed practice results and evidence for ready assessments", async () => {
+    await withDb(async (db) => {
+      await expect(
+        db.query(
+          `insert into public.practice_sessions
+             (user_id, session_type, date, state, topic, allotted_minutes)
+           values ($1, 'coding', '2026-09-01', 'completed', 'arrays', 60)`,
+          [userA.id],
+        ),
+      ).rejects.toThrow(/practice_sessions_completed_has_timestamp/);
+      await db.query("rollback");
+    });
+
+    await withDb(async (db) => {
+      await expect(
+        db.query(
+          `insert into public.readiness_gates
+             (user_id, role_key, gate_key, title, state, assessed_at)
+           values ($1, 'data_eval', 'proof', 'Proof', 'ready', now())`,
+          [userA.id],
+        ),
+      ).rejects.toThrow(/readiness_gates_assessment_evidence/);
+      await db.query("rollback");
+    });
+  });
   it("rejects completed tasks without completed_at or actual minutes", async () => {
     await withDb(async (db) => {
       // CHECK constraints apply to every role; insert as the table owner

@@ -287,7 +287,7 @@ function currentWorkloadDisplay(
 ): Map<string, number> {
   const map = new Map<string, number>();
   for (const task of tasks) {
-    if (!includeOptional && task.optionalTrack) continue;
+    if (!includeOptional && task.role_tags.includes("post_training")) continue;
     if (task.state !== "not_started" && task.state !== "in_progress") continue;
     map.set(task.scheduled_date, (map.get(task.scheduled_date) ?? 0) + task.estimated_minutes);
   }

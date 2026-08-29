@@ -25,6 +25,12 @@ export default tseslint.config(
     },
   },
   {
+    files: ["public/sw.js", "public/sw-rules.js"],
+    languageOptions: {
+      globals: { ...globals.serviceworker, module: "readonly" },
+    },
+  },
+  {
     files: ["scripts/**/*.mjs", "*.config.js", "*.config.ts"],
     languageOptions: {
       globals: { ...globals.node },

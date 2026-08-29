@@ -214,10 +214,7 @@ export interface PrepApi {
   updateProject(
     projectId: string,
     fields: Partial<
-      Pick<
-        ProjectRow,
-        "repository_url" | "design_url" | "report_url" | "demo_url" | "blocker_note" | "state"
-      >
+      Pick<ProjectRow, "repository_url" | "design_url" | "report_url" | "demo_url" | "blocker_note">
     >,
   ): Promise<void>;
   updateMilestone(
@@ -382,12 +379,15 @@ export function createPrepApi(client: SupabaseClient): PrepApi {
       const { data: userData } = await client.auth.getUser();
       const userId = userData.user?.id;
       if (!userId) throw new CommandError("unauthenticated");
-      const { error } = await client.from("daily_checkins").upsert({
-        user_id: userId,
-        local_date: checkin.local_date,
-        learning: checkin.learning,
-        highest_risk_gap: checkin.highest_risk_gap,
-      });
+      const { error } = await client.from("daily_checkins").upsert(
+        {
+          user_id: userId,
+          local_date: checkin.local_date,
+          learning: checkin.learning,
+          highest_risk_gap: checkin.highest_risk_gap,
+        },
+        { onConflict: "user_id,local_date" },
+      );
       if (error) throw new CommandError(error.message);
     },
 

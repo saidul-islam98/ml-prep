@@ -48,10 +48,19 @@ jobs:
       # Supabase URL and publishable key are public identifiers, not secrets
       # (WEBAPP_SPEC.md §12.3). They are provided as repository variables and
       # injected here once the production Supabase project exists (Task 5+).
+      - name: Verify production configuration
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: node scripts/validate-deploy-env.mjs
+        env:
+          VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ vars.VITE_SUPABASE_PUBLISHABLE_KEY }}
+
       - name: Production build
         run: npm run build
         env:
           VITE_BASE_PATH: /${{ github.event.repository.name }}/
+          VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ vars.VITE_SUPABASE_PUBLISHABLE_KEY }}
 
       - name: Verify Pages subpath build
         run: VITE_BASE_PATH="/${{ github.event.repository.name }}/" npm run verify:subpath

@@ -1,5 +1,5 @@
 {
- "content_digest": "c06a0b3d72bf121e78d38f527124a0d0ce6fb3c4c2added7111715c7790caf1c",
+ "content_digest": "159247129055439f932d1595e4ffd54b6eae5d0f8480a16a050f4f83ed3bbb35",
  "payload": {
   "version": 1,
   "window_start": "2026-08-31",
@@ -2083,7 +2083,7 @@
       "title": "Technical report",
       "acceptance": "Baseline/ablation matrix run; report includes baselines, ablations, uncertainty, failure taxonomy, limitations; auditable from configs and artifacts",
       "target_date": "2026-11-15",
-      "is_completion_gate": true,
+      "is_completion_gate": false,
       "sort_order": 6
      }
     ]
@@ -2133,7 +2133,7 @@
       "title": "Comparison and post",
       "acceptance": "Finalized profiling comparison; engineering post titled around a measured bottleneck",
       "target_date": "2026-11-15",
-      "is_completion_gate": true,
+      "is_completion_gate": false,
       "sort_order": 3
      }
     ]

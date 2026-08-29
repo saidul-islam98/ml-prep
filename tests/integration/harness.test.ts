@@ -35,10 +35,10 @@ describe("local Supabase harness", () => {
     const { userA, userB } = await ensureBothUsers();
     const clientA = await authenticatedClient(userA);
     const clientB = await authenticatedClient(userB);
-    expect(clientA.auth.getUser()).resolves.toMatchObject({
+    await expect(clientA.auth.getUser()).resolves.toMatchObject({
       data: { user: { id: userA.id } },
     });
-    expect(clientB.auth.getUser()).resolves.toMatchObject({
+    await expect(clientB.auth.getUser()).resolves.toMatchObject({
       data: { user: { id: userB.id } },
     });
   });

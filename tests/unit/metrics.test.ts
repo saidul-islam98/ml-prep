@@ -33,7 +33,6 @@ function task(overrides: Partial<MetricTask> = {}): MetricTask {
     template_task_key: "w01-tue",
     role_tags: ["data_eval"],
     category: "deep_work",
-    optionalTrack: false,
     skip_reason: null,
     ...overrides,
   };
@@ -225,7 +224,6 @@ describe("optional-track inclusion and exclusion", () => {
       task({ id: "required", state: "completed", completed_at: ON_TIME, actual_minutes: 60 }),
       task({
         id: "optional",
-        optionalTrack: true,
         template_task_key: "pt-w9-scope",
         role_tags: ["post_training"],
         estimated_minutes: 120,
@@ -241,6 +239,20 @@ describe("optional-track inclusion and exclusion", () => {
     const after = outcomeCounts(tasks, NO_EVENTS, PERIOD, true);
     expect(after.eligible).toBe(2);
     expect(after.plannedMinutesEligible).toBe(180);
+  });
+
+  it("uses persisted role tags instead of the template-only optionalTrack field", () => {
+    const optional = task({
+      id: "persisted-optional",
+      role_tags: ["post_training"],
+      state: "completed",
+      completed_at: ON_TIME,
+      actual_minutes: 60,
+    });
+
+    expect(cohortTasks([optional], PERIOD, false)).toEqual([]);
+    expect(actualEffortByDate([optional], false).size).toBe(0);
+    expect(currentWorkloadByDate([{ ...optional, state: "not_started" }], false).size).toBe(0);
   });
 });
 

@@ -53,6 +53,7 @@ describe("App shell", () => {
 
   afterEach(() => {
     vi.restoreAllMocks();
+    Object.defineProperty(navigator, "onLine", { configurable: true, value: true });
   });
 
   it("renders the Today view by default with primary navigation landmarks", async () => {
@@ -93,5 +94,13 @@ describe("App shell", () => {
     ]) {
       expect(screen.getAllByRole("link", { name: label }).length).toBeGreaterThan(0);
     }
+  });
+
+  it("announces offline mode and disables mutation controls application-wide", async () => {
+    Object.defineProperty(navigator, "onLine", { configurable: true, value: false });
+    renderApp();
+
+    expect(await screen.findByText(/Saved data remains visible/)).toBeInTheDocument();
+    expect(screen.getByRole("group")).toBeDisabled();
   });
 });

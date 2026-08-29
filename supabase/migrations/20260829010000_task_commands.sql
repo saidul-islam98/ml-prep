@@ -121,6 +121,7 @@ declare
   v_actual int;
   v_allowed_fields text[] := array[]::text[];
   v_field text;
+  v_post_training_enabled boolean;
 begin
   v_user := auth.uid();
   if v_user is null then
@@ -144,6 +145,15 @@ begin
   -- Expected-revision compare-and-swap: return the latest row for refresh.
   if p_expected_revision is null or p_expected_revision <> v_task.revision then
     return jsonb_build_object('status', 'revision_conflict', 'task', to_jsonb(v_task));
+  end if;
+
+  if v_task.role_tags @> array['post_training']::text[] then
+    select post_training_enabled into v_post_training_enabled
+    from public.profiles where user_id = v_user;
+    if coalesce(v_post_training_enabled, false) is not true then
+      raise exception 'post_training_locked: complete the project gates and explicitly unlock the track'
+        using errcode = '22000';
+    end if;
   end if;
 
   v_today := (now() at time zone 'America/Toronto')::date;
@@ -283,6 +293,14 @@ begin
             using errcode = '22000';
         end if;
       end loop;
+      if v_task.template_task_key is not null then
+        foreach v_field in array v_allowed_fields loop
+          if v_field not in ('evidence_url', 'evidence_note') then
+            raise exception 'template_task_immutable: seeded content and estimates cannot be edited'
+              using errcode = '22000';
+          end if;
+        end loop;
+      end if;
       if v_task.state not in ('not_started', 'in_progress') then
         foreach v_field in array v_allowed_fields loop
           if v_field not in ('evidence_url', 'evidence_note') then

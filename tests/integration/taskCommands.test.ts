@@ -509,6 +509,41 @@ describe("state transition matrix", () => {
     expect((unknownField.error as Error).message).toMatch(/invalid_payload/);
   });
 
+  it("keeps seeded template identity and budget fields immutable", async () => {
+    const client = await clientFor(userA);
+    await client.rpc("seed_plan_v1");
+    const row = await client
+      .from("tasks")
+      .select("id, revision, title, estimated_minutes")
+      .eq("template_task_key", "w01-mon")
+      .single();
+
+    const result = await client.rpc("transition_task", {
+      p_task_id: row.data?.id,
+      p_expected_revision: row.data?.revision,
+      p_transition: "edit",
+      p_payload: { title: "Tampered", estimated_minutes: 1 },
+    });
+    expect((result.error as Error).message).toMatch(/template_task_immutable/);
+  });
+
+  it("rejects all optional-track transitions until the server unlock succeeds", async () => {
+    const client = await clientFor(userA);
+    await client.rpc("seed_plan_v1");
+    const row = await client
+      .from("tasks")
+      .select("id, revision")
+      .eq("template_task_key", "pt-w9-scope")
+      .single();
+
+    const result = await client.rpc("transition_task", {
+      p_task_id: row.data?.id,
+      p_expected_revision: row.data?.revision,
+      p_transition: "start",
+    });
+    expect((result.error as Error).message).toMatch(/post_training_locked/);
+  });
+
   it("maps every transition to exactly one event and increments revision exactly once", async () => {
     const client = await clientFor(userA);
     const task = await createTask(client);
