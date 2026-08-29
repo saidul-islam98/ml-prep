@@ -59,6 +59,9 @@ jobs:
       - name: Scan built artifact for secrets and private data
         run: node scripts/scan-dist.mjs
 
+      - name: Scan tracked repository files for secrets
+        run: node scripts/scan-repo.mjs
+
       - name: Upload Pages artifact
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         uses: actions/upload-pages-artifact@v3

@@ -244,3 +244,45 @@ describe("practice sessions and correction tasks", () => {
     expect(scores.filter((s) => s.practice_session_id === mock.id)).toHaveLength(2);
   });
 });
+
+describe("data export", () => {
+  it("includes every owned row and never includes credentials", async () => {
+    await apiA.seedPlan();
+    const exportData = await apiA.exportAllData();
+
+    const expectedTables = [
+      "profiles",
+      "plan_weeks",
+      "tasks",
+      "task_events",
+      "projects",
+      "project_milestones",
+      "practice_sessions",
+      "mock_scores",
+      "readiness_gates",
+      "daily_checkins",
+    ];
+    for (const table of expectedTables) {
+      expect(Array.isArray(exportData[table]), table).toBe(true);
+    }
+    expect((exportData.tasks as unknown[]).length).toBe(118);
+    expect((exportData.plan_weeks as unknown[]).length).toBe(14);
+
+    const serialized = JSON.stringify(exportData);
+    // The export path runs with the publishable key only; assert no
+    // privileged secret classes appear.
+    expect(serialized).not.toContain("sb_secret_");
+    expect(serialized).not.toContain("service_role");
+    expect(serialized).not.toContain("SUPABASE_SERVICE_ROLE_KEY");
+  });
+
+  it("does not expose another user's rows through the export", async () => {
+    await apiA.seedPlan();
+    const exportData = (await apiA.exportAllData()) as Record<string, { user_id: string }[]>;
+    for (const table of ["tasks", "profiles", "projects"]) {
+      for (const row of exportData[table]) {
+        expect(row.user_id).toBe(user.id);
+      }
+    }
+  });
+});
