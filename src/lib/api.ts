@@ -225,6 +225,11 @@ export interface PrepApi {
     fields: { completed_at?: string | null; evidence_url?: string | null },
   ): Promise<void>;
   fetchMilestones(): Promise<MilestoneRow[]>;
+  updateProfileReminder(fields: {
+    reminder_installed_at?: string;
+    reminder_verified_at?: string;
+  }): Promise<void>;
+  exportAllData(): Promise<Record<string, unknown>>;
   fetchPracticeSessions(): Promise<PracticeSessionRow[]>;
   createPracticeSession(input: {
     session_type: "coding" | "mock";
@@ -326,10 +331,7 @@ export function createPrepApi(client: SupabaseClient): PrepApi {
     },
 
     async fetchAllTaskEvents() {
-      const { data, error } = await client
-        .from("task_events")
-        .select("*")
-        .order("occurred_at");
+      const { data, error } = await client.from("task_events").select("*").order("occurred_at");
       if (error) throw new CommandError(error.message);
       return (data ?? []) as TaskEventRow[];
     },
@@ -486,11 +488,39 @@ export function createPrepApi(client: SupabaseClient): PrepApi {
     },
 
     async updateReadinessGate(gateId, fields) {
-      const { error } = await client
-        .from("readiness_gates")
-        .update(fields)
-        .eq("id", gateId);
+      const { error } = await client.from("readiness_gates").update(fields).eq("id", gateId);
       if (error) throw new CommandError(error.message);
+    },
+
+    async updateProfileReminder(fields) {
+      const { error } = await client.from("profiles").update(fields);
+      if (error) throw new CommandError(error.message);
+    },
+
+    async exportAllData() {
+      const tables = [
+        "profiles",
+        "plan_weeks",
+        "tasks",
+        "task_events",
+        "projects",
+        "project_milestones",
+        "practice_sessions",
+        "mock_scores",
+        "readiness_gates",
+        "daily_checkins",
+      ];
+      const result: Record<string, unknown> = {
+        exported_at: new Date().toISOString(),
+        app: "ml-prep",
+        template_version: 1,
+      };
+      for (const table of tables) {
+        const { data, error } = await client.from(table).select("*");
+        if (error) throw new CommandError(error.message);
+        result[table] = data ?? [];
+      }
+      return result;
     },
 
     async unlockPostTraining(optIn) {

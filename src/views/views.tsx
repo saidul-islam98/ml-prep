@@ -5,6 +5,7 @@ import { ProjectsView } from "./ProjectsView";
 import { PracticeView } from "./PracticeView";
 import { ReadinessView } from "./ReadinessView";
 import { ProgressView } from "./ProgressView";
+import { SettingsView } from "./SettingsView";
 
 export type ViewKey =
   "today" | "plan" | "projects" | "practice" | "readiness" | "progress" | "settings";
@@ -53,7 +54,7 @@ export const VIEWS: Record<ViewKey, ViewDefinition> = {
     key: "settings",
     path: "/settings",
     label: "Settings",
-    component: SettingsPlaceholder,
+    component: SettingsView,
   },
 };
 
@@ -63,22 +64,4 @@ export function resolveView(path: string): ViewDefinition {
     if (view.path === path) return view;
   }
   return VIEWS.today;
-}
-
-function Placeholder({ title, note }: { title: string; note: string }) {
-  return (
-    <section aria-labelledby="view-title" className="placeholder">
-      <h1 id="view-title">{title}</h1>
-      <p>{note}</p>
-    </section>
-  );
-}
-
-function SettingsPlaceholder() {
-  return (
-    <Placeholder
-      title="Settings"
-      note="Account, reminder, optional-track, and export controls will appear here."
-    />
-  );
 }

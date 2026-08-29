@@ -7,6 +7,7 @@ import {
   TIMEZONE,
   formatLocalStamp,
   formatUtcStamp,
+  isValidAppUrl,
   isValidIsoDate,
 } from "./reminder";
 
@@ -121,8 +122,8 @@ export function generateReminderIcs(input: ReminderIcsInput): string {
   if (!isValidIsoDate(planStartDate)) {
     throw new Error(`Invalid plan start date: "${planStartDate}"`);
   }
-  if (!appUrl.startsWith("https://")) {
-    throw new Error(`App URL must use HTTPS: "${appUrl}"`);
+  if (!isValidAppUrl(appUrl)) {
+    throw new Error(`App URL must use HTTPS (localhost excepted): "${appUrl}"`);
   }
 
   const dtStart = formatLocalStamp(planStartDate, REMINDER_LOCAL_TIME);

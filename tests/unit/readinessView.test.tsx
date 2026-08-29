@@ -49,12 +49,19 @@ function makeApiStub(overrides: Partial<PrepApi> = {}): PrepApi {
     fetchMilestones: vi.fn().mockResolvedValue([]),
     fetchPracticeSessions: vi.fn().mockResolvedValue([]),
     fetchMockScores: vi.fn().mockResolvedValue([]),
-    fetchReadinessGates: vi.fn().mockResolvedValue([
-      gate(),
-      gate({ id: "g2", role_key: "data_eval", gate_key: "evaluation", title: "Evaluation gate" }),
-      gate({ id: "g3", role_key: "agent_env", gate_key: "coding", title: "Coding gate" }),
-      gate({ id: "g4", role_key: "post_training", gate_key: "pt_ownership", title: "Ownership evidence gate" }),
-    ]),
+    fetchReadinessGates: vi
+      .fn()
+      .mockResolvedValue([
+        gate(),
+        gate({ id: "g2", role_key: "data_eval", gate_key: "evaluation", title: "Evaluation gate" }),
+        gate({ id: "g3", role_key: "agent_env", gate_key: "coding", title: "Coding gate" }),
+        gate({
+          id: "g4",
+          role_key: "post_training",
+          gate_key: "pt_ownership",
+          title: "Ownership evidence gate",
+        }),
+      ]),
     ...overrides,
     updateReadinessGate: vi.fn().mockResolvedValue(undefined),
     createPracticeSession: vi.fn(),
@@ -99,9 +106,7 @@ describe("ReadinessView", () => {
     expect(
       await screen.findByRole("heading", { name: /MTS, Agent Environments/ }),
     ).toBeInTheDocument();
-    expect(
-      await screen.findByRole("heading", { name: /MTS, Post-Training/ }),
-    ).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: /MTS, Post-Training/ })).toBeInTheDocument();
     expect(await screen.findByText("Coding gate")).toBeInTheDocument();
     expect(screen.getByText("Ownership evidence gate")).toBeInTheDocument();
   });
@@ -110,8 +115,9 @@ describe("ReadinessView", () => {
     const user = userEvent.setup();
     renderView();
 
-    const form = (await screen.findByText("Resume gate: evidence for 80% of core requirements"))
-      .closest("form") as HTMLFormElement;
+    const form = (
+      await screen.findByText("Resume gate: evidence for 80% of core requirements")
+    ).closest("form") as HTMLFormElement;
     await user.selectOptions(within(form).getByLabelText("Assessment"), "ready");
     await user.click(within(form).getByRole("button", { name: "Save assessment" }));
 
@@ -120,7 +126,10 @@ describe("ReadinessView", () => {
     ).toBeInTheDocument();
     expect(api.updateReadinessGate).not.toHaveBeenCalled();
 
-    await user.type(within(form).getByLabelText("Evidence note"), "Reviewer confirmed 9 of 10 rows");
+    await user.type(
+      within(form).getByLabelText("Evidence note"),
+      "Reviewer confirmed 9 of 10 rows",
+    );
     await user.click(within(form).getByRole("button", { name: "Save assessment" }));
 
     await waitFor(() => {
@@ -139,10 +148,14 @@ describe("ReadinessView", () => {
     const user = userEvent.setup();
     renderView();
 
-    const form = (await screen.findByText("Resume gate: evidence for 80% of core requirements"))
-      .closest("form") as HTMLFormElement;
+    const form = (
+      await screen.findByText("Resume gate: evidence for 80% of core requirements")
+    ).closest("form") as HTMLFormElement;
     await user.selectOptions(within(form).getByLabelText("Assessment"), "ready");
-    await user.type(within(form).getByLabelText("Evidence link (HTTPS)"), "http://insecure.example");
+    await user.type(
+      within(form).getByLabelText("Evidence link (HTTPS)"),
+      "http://insecure.example",
+    );
     await user.click(within(form).getByRole("button", { name: "Save assessment" }));
 
     expect(await screen.findByText(/Evidence links must use HTTPS/)).toBeInTheDocument();

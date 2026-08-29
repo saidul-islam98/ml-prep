@@ -40,7 +40,12 @@ function task(overrides: Partial<MetricTask> = {}): MetricTask {
 }
 
 function reschedule(from: string, to: string, at: string): EventLike {
-  return { event_type: "rescheduled", from_scheduled_date: from, to_scheduled_date: to, occurred_at: at };
+  return {
+    event_type: "rescheduled",
+    from_scheduled_date: from,
+    to_scheduled_date: to,
+    occurred_at: at,
+  };
 }
 
 const PERIOD: MetricPeriod = { start: "2026-09-01", end: "2026-09-07" };
@@ -261,7 +266,12 @@ describe("actual effort and workload groupings", () => {
   it("groups actual minutes by completion date and skips non-completed", () => {
     const tasks = [
       task({ id: "a", state: "completed", completed_at: ON_TIME, actual_minutes: 60 }),
-      task({ id: "b", state: "completed", completed_at: "2026-09-02T20:00:00Z", actual_minutes: 30 }),
+      task({
+        id: "b",
+        state: "completed",
+        completed_at: "2026-09-02T20:00:00Z",
+        actual_minutes: 30,
+      }),
       task({ id: "c", state: "skipped", skip_reason: "x" }),
     ];
     const effort = actualEffortByDate(tasks, false);

@@ -16,7 +16,11 @@ import {
   outcomeCounts,
   type MetricPeriod,
 } from "../lib/metrics";
-import { latestTenQualifyingCodingSessions, MOCK_DIMENSIONS, MOCK_DIMENSION_LABELS } from "../lib/practice";
+import {
+  latestTenQualifyingCodingSessions,
+  MOCK_DIMENSIONS,
+  MOCK_DIMENSION_LABELS,
+} from "../lib/practice";
 import { addDays, formatDisplayDate, torontoToday } from "../lib/toronto";
 import { useApi } from "../hooks/useApi";
 import { useProfile } from "../hooks/useProfile";
@@ -47,8 +51,14 @@ export function ProgressView() {
     queryKey: ["all-task-events"],
     queryFn: () => api.fetchAllTaskEvents(),
   });
-  const { data: projects = [] } = useQuery({ queryKey: ["projects"], queryFn: () => api.fetchProjects() });
-  const { data: milestones = [] } = useQuery({ queryKey: ["milestones"], queryFn: () => api.fetchMilestones() });
+  const { data: projects = [] } = useQuery({
+    queryKey: ["projects"],
+    queryFn: () => api.fetchProjects(),
+  });
+  const { data: milestones = [] } = useQuery({
+    queryKey: ["milestones"],
+    queryFn: () => api.fetchMilestones(),
+  });
   const { data: sessions = [] } = useQuery({
     queryKey: ["practice-sessions"],
     queryFn: () => api.fetchPracticeSessions(),
@@ -57,7 +67,10 @@ export function ProgressView() {
     queryKey: ["mock-scores"],
     queryFn: () => api.fetchMockScores(),
   });
-  const { data: gates = [] } = useQuery({ queryKey: ["readiness-gates"], queryFn: () => api.fetchReadinessGates() });
+  const { data: gates = [] } = useQuery({
+    queryKey: ["readiness-gates"],
+    queryFn: () => api.fetchReadinessGates(),
+  });
 
   const postTrainingEnabled = profile?.post_training_enabled ?? false;
   const includeOptional = postTrainingEnabled;
@@ -100,7 +113,9 @@ export function ProgressView() {
   );
 
   const latestTen = latestTenQualifyingCodingSessions(sessions);
-  const solved = latestTen.filter((s) => (s.result ?? "").toLowerCase().startsWith("solved")).length;
+  const solved = latestTen.filter((s) =>
+    (s.result ?? "").toLowerCase().startsWith("solved"),
+  ).length;
 
   const rubricAverages = useMemo(() => {
     const sums: Record<string, { total: number; count: number }> = {};
@@ -121,8 +136,8 @@ export function ProgressView() {
       <section aria-labelledby="progress-title">
         <h1 id="progress-title">Progress</h1>
         <p className="overdue-note">
-          Cohorts freeze at the original scheduled date. Skipping or rescheduling
-          never inflates completion.
+          Cohorts freeze at the original scheduled date. Skipping or rescheduling never inflates
+          completion.
         </p>
       </section>
 
@@ -147,11 +162,10 @@ export function ProgressView() {
           </div>
         </div>
         <p className="overdue-note">
-          Current period: {current.completedOnOriginalSchedule} on original
-          schedule, {current.completedAfterProactiveReschedule} after proactive
-          reschedule, {current.completedLate} late, {current.skipped} skipped,{" "}
-          {current.archived} archived, {current.unresolvedOverdue} unresolved
-          overdue.
+          Current period: {current.completedOnOriginalSchedule} on original schedule,{" "}
+          {current.completedAfterProactiveReschedule} after proactive reschedule,{" "}
+          {current.completedLate} late, {current.skipped} skipped, {current.archived} archived,{" "}
+          {current.unresolvedOverdue} unresolved overdue.
         </p>
       </section>
 
@@ -161,7 +175,11 @@ export function ProgressView() {
           {weeks.map((week, i) => {
             const rate = trend[i]?.resolutionRate ?? null;
             return (
-              <div key={week.id} className="trend-col" title={`Week ${week.week_number}: ${formatRate(rate)}`}>
+              <div
+                key={week.id}
+                className="trend-col"
+                title={`Week ${week.week_number}: ${formatRate(rate)}`}
+              >
                 <div
                   className="trend-bar"
                   style={{ height: `${rate === null ? 2 : Math.max(4, rate * 64)}px` }}
@@ -184,8 +202,8 @@ export function ProgressView() {
             .join(", ") || "none recorded"}
         </p>
         <p title={TOOLTIP_CONSISTENCY}>
-          Consistency: {consistency} day{consistency === 1 ? "" : "s"} with at
-          least one task completed in the last 7 days.
+          Consistency: {consistency} day{consistency === 1 ? "" : "s"} with at least one task
+          completed in the last 7 days.
         </p>
         <p title={TOOLTIP_WORKLOAD}>
           Current open workload:{" "}
@@ -216,14 +234,16 @@ export function ProgressView() {
         <h2 id="p-practice">Practice</h2>
         <p>
           Latest-ten coding window: {solved}/{latestTen.length} solved
-          {latestTen.length < 10 ? ` (${10 - latestTen.length} more qualifying sessions needed)` : ""}.
+          {latestTen.length < 10
+            ? ` (${10 - latestTen.length} more qualifying sessions needed)`
+            : ""}
+          .
         </p>
         <h3>Mock rubric averages by dimension</h3>
         <ul className="rubric-averages">
           {rubricAverages.map(({ dimension, average, count }) => (
             <li key={dimension}>
-              {MOCK_DIMENSION_LABELS[dimension]}:{" "}
-              {average === null ? "\u2014" : average.toFixed(1)}
+              {MOCK_DIMENSION_LABELS[dimension]}: {average === null ? "\u2014" : average.toFixed(1)}
               <span className="chip">{count} scored</span>
             </li>
           ))}
@@ -243,7 +263,13 @@ export function ProgressView() {
           <tbody>
             {gates.map((gate) => (
               <tr key={gate.id}>
-                <td>{gate.role_key === "data_eval" ? "Data/Eval" : gate.role_key === "agent_env" ? "Agent Env" : "Post-Training"}</td>
+                <td>
+                  {gate.role_key === "data_eval"
+                    ? "Data/Eval"
+                    : gate.role_key === "agent_env"
+                      ? "Agent Env"
+                      : "Post-Training"}
+                </td>
                 <td>{gate.title}</td>
                 <td>{gate.state.replace(/_/g, " ")}</td>
               </tr>

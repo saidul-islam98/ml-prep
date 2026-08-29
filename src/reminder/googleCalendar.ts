@@ -5,6 +5,7 @@ import {
   REMINDER_TITLE,
   TIMEZONE,
   formatLocalStamp,
+  isValidAppUrl,
   isValidIsoDate,
   parseLocalTime,
 } from "./reminder";
@@ -30,8 +31,8 @@ export function buildGoogleCalendarUrl(input: GoogleCalendarUrlInput): string {
   if (!isValidIsoDate(planStartDate)) {
     throw new Error(`Invalid plan start date: "${planStartDate}"`);
   }
-  if (!appUrl.startsWith("https://")) {
-    throw new Error(`App URL must use HTTPS: "${appUrl}"`);
+  if (!isValidAppUrl(appUrl)) {
+    throw new Error(`App URL must use HTTPS (localhost excepted): "${appUrl}"`);
   }
   const startTime = parseLocalTime(REMINDER_LOCAL_TIME);
   if (!startTime) {

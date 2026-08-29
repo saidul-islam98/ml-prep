@@ -30,12 +30,7 @@ const ROLE_CARDS: { key: ReadinessGateRow["role_key"]; label: string; note: stri
   },
 ];
 
-const STATES: ReadinessGateRow["state"][] = [
-  "not_assessed",
-  "in_progress",
-  "ready",
-  "at_risk",
-];
+const STATES: ReadinessGateRow["state"][] = ["not_assessed", "in_progress", "ready", "at_risk"];
 
 const STATE_LABELS: Record<ReadinessGateRow["state"], string> = {
   not_assessed: "Not assessed",
@@ -67,9 +62,8 @@ export function ReadinessView() {
       <section aria-labelledby="readiness-title">
         <h1 id="readiness-title">Readiness</h1>
         <p className="overdue-note">
-          Evidence-based gates, not a confidence score. Marking a gate ready
-          requires a note or an HTTPS evidence link, and is always an explicit
-          decision.
+          Evidence-based gates, not a confidence score. Marking a gate ready requires a note or an
+          HTTPS evidence link, and is always an explicit decision.
         </p>
       </section>
 
@@ -83,11 +77,7 @@ export function ReadinessView() {
           return null;
         }
         return (
-          <section
-            key={role.key}
-            aria-labelledby={`role-${role.key}`}
-            className="readiness-role"
-          >
+          <section key={role.key} aria-labelledby={`role-${role.key}`} className="readiness-role">
             <h2 id={`role-${role.key}`}>
               {role.label}
               {isOptional && <span className="chip">optional</span>}
@@ -161,15 +151,13 @@ function GateRow({ gate }: { gate: ReadinessGateRow }) {
         onChange={(e) => setState(e.target.value as ReadinessGateRow["state"])}
       >
         {STATES.map((s) => (
-          <option key={s} value={s}>{STATE_LABELS[s]}</option>
+          <option key={s} value={s}>
+            {STATE_LABELS[s]}
+          </option>
         ))}
       </select>
       <label htmlFor={`gate-note-${gate.id}`}>Evidence note</label>
-      <input
-        id={`gate-note-${gate.id}`}
-        value={note}
-        onChange={(e) => setNote(e.target.value)}
-      />
+      <input id={`gate-note-${gate.id}`} value={note} onChange={(e) => setNote(e.target.value)} />
       <label htmlFor={`gate-url-${gate.id}`}>Evidence link (HTTPS)</label>
       <input
         id={`gate-url-${gate.id}`}
@@ -178,8 +166,16 @@ function GateRow({ gate }: { gate: ReadinessGateRow }) {
         value={url}
         onChange={(e) => setUrl(e.target.value)}
       />
-      {error && <p role="alert" className="task-error-text">{error}</p>}
-      {saved && <p role="status" className="overdue-note">Saved.</p>}
+      {error && (
+        <p role="alert" className="task-error-text">
+          {error}
+        </p>
+      )}
+      {saved && (
+        <p role="status" className="overdue-note">
+          Saved.
+        </p>
+      )}
       <div className="task-actions">
         <button type="submit" disabled={save.isPending}>
           {save.isPending ? "Saving…" : "Save assessment"}

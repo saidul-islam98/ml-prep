@@ -39,6 +39,24 @@ export function isValidIsoDate(value: string): boolean {
   return probe.getUTCFullYear() === y && probe.getUTCMonth() === m - 1 && probe.getUTCDate() === d;
 }
 
+/**
+ * Validate the app URL carried by reminder artifacts. Deployed URLs must use
+ * HTTPS; explicit localhost origins are permitted for development testing
+ * only (WEBAPP_SPEC.md section 9).
+ */
+export function isValidAppUrl(url: string): boolean {
+  try {
+    const parsed = new URL(url);
+    if (parsed.protocol === "https:") return true;
+    return (
+      parsed.protocol === "http:" &&
+      (parsed.hostname === "localhost" || parsed.hostname === "127.0.0.1")
+    );
+  } catch {
+    return false;
+  }
+}
+
 /** Compose a compact UTC timestamp "YYYYMMDDTHHMMSSZ" from a Date. */
 export function formatUtcStamp(date: Date): string {
   const pad = (n: number, width = 2) => String(n).padStart(width, "0");

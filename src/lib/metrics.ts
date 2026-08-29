@@ -33,9 +33,7 @@ export function cohortTasks<T extends MetricTask>(
   includeOptional: boolean,
 ): T[] {
   return tasks.filter(
-    (t) =>
-      (includeOptional || !t.optionalTrack) &&
-      inPeriod(t.original_scheduled_date, period),
+    (t) => (includeOptional || !t.optionalTrack) && inPeriod(t.original_scheduled_date, period),
   );
 }
 
@@ -107,10 +105,7 @@ export function outcomeCounts(
   }
 
   // Open tasks count as unresolved overdue when their CURRENT date passed.
-  counts.unresolvedOverdue = deriveOverdue(
-    cohort,
-    todayToronto ?? torontoDate(new Date()),
-  ).length;
+  counts.unresolvedOverdue = deriveOverdue(cohort, todayToronto ?? torontoDate(new Date())).length;
 
   if (counts.eligible > 0) {
     counts.onTimeCompletionRate = counts.completedOnOriginalSchedule / counts.eligible;
