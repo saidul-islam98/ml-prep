@@ -22,8 +22,10 @@ Scope: remove the reviewed security, correctness, deployment, and offline/PWA bl
       EXPECT: scan-dist passed
       EVIDENCE: exit=0; shell=/bin/sh; cwd=/home/ivlr/Study/Job Search/cohere/ml-prep; path=4bb464f00a22/23 entries; EXPECT=matched; output-sha256=1db2808e80cf2b1a2220800a9772caf054f587d688d404c130df180b38878542; output-bytes=142
 
-- [ ] G4: production deployment secrets are configured and a GitHub Pages deployment succeeds
-      EVIDENCE: pending — requires repository variables and a GitHub Actions deployment outside this local repair
+- [x] G4: production deployment secrets are configured and a GitHub Pages deployment succeeds
+      CHECK: gh run watch 33273828867 --repo saidul-islam98/ml-prep --exit-status && curl -s -o /dev/null -w "%{http_code}" https://saidul-islam98.github.io/ml-prep/
+      EXPECT: 200
+      EVIDENCE: exit=0; repository variables VITE_SUPABASE_URL + VITE_SUPABASE_PUBLISHABLE_KEY set (public identifiers per spec 12.3); run 33273828867 green (build + deploy jobs; first run exposed a CI-only env gap in the unit-test step, fixed in 73209f9); live site serves 200 for /, sw.js (precache-verified), sw-rules.js, manifest.webmanifest, icon.svg; live-bundle secret audit: exact sb_secret_ value and any sb_secret_MPDF-prefixed value absent from every served file, no JWT-shaped values, no connection strings; only the two public identifiers appear (by design, 12.3)
 
 - [ ] G5: first-load offline behavior and the 17:00 Toronto reminder are verified on Linux and Android devices
       EVIDENCE: pending — requires physical-device testing after deployment
