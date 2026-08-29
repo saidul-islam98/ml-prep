@@ -172,3 +172,75 @@ describe("profile and seeding via the API", () => {
     await expect(anonApi.fetchTasks()).rejects.toBeInstanceOf(CommandError);
   });
 });
+
+describe("practice sessions and correction tasks", () => {
+  it("creates a session, records an outcome, and links a correction task owner-safely", async () => {
+    const created = await apiA.createPracticeSession({
+      session_type: "coding",
+      date: "2026-08-31",
+      topic: "Two-pointer drills",
+      allotted_minutes: 90,
+    });
+    expect(created.state).toBe("planned");
+
+    await apiA.updatePracticeSession(created.id, {
+      state: "completed",
+      completed_at: new Date().toISOString(),
+      elapsed_minutes: 80,
+      result: "solved",
+      mistake_category: "reasoning",
+      correction_due_date: "2026-09-05",
+    });
+
+    const correction = await apiA.createCorrectionTask({
+      title: "Correction: Two-pointer drills",
+      scheduled_date: "2026-09-05",
+      estimated_minutes: 45,
+      source_practice_session_id: created.id,
+    });
+    expect(correction.source_practice_session_id).toBe(created.id);
+    expect(correction.category).toBe("practice");
+
+    const events = await apiA.fetchTaskEvents(correction.id);
+    expect(events[0].metadata.source_practice_session_id).toBe(created.id);
+
+    // A second user cannot attach a correction task to user A's session.
+    const clientB = await authenticatedClient(
+      await ensureUser({ email: "test-user-b@ml-prep.local", password: "integration-b-passw0rd" }),
+    );
+    const apiB = createPrepApi(clientB);
+    await expect(
+      apiB.createCorrectionTask({
+        title: "Smuggled correction",
+        scheduled_date: "2026-09-05",
+        estimated_minutes: 30,
+        source_practice_session_id: created.id,
+      }),
+    ).rejects.toBeInstanceOf(CommandError);
+  });
+
+  it("persists normalized mock scores per dimension", async () => {
+    const mock = await apiA.createPracticeSession({
+      session_type: "mock",
+      date: "2026-08-31",
+      topic: "ML system design",
+      allotted_minutes: 60,
+    });
+    await apiA.updatePracticeSession(mock.id, {
+      state: "completed",
+      completed_at: new Date().toISOString(),
+      result: "completed",
+    });
+    await apiA.saveMockScore(mock.id, "problem_framing", 4);
+    await apiA.saveMockScore(mock.id, "integrity", 5);
+    await apiA.saveMockScore(mock.id, "problem_framing", 3); // upsert overwrites
+
+    const scores = await apiA.fetchMockScores();
+    const framing = scores.filter(
+      (s) => s.practice_session_id === mock.id && s.dimension_key === "problem_framing",
+    );
+    expect(framing).toHaveLength(1);
+    expect(framing[0].score).toBe(3);
+    expect(scores.filter((s) => s.practice_session_id === mock.id)).toHaveLength(2);
+  });
+});

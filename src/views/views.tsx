@@ -2,6 +2,7 @@ import type { ComponentType } from "react";
 import { TodayView } from "./TodayView";
 import { PlanView } from "./PlanView";
 import { ProjectsView } from "./ProjectsView";
+import { PracticeView } from "./PracticeView";
 
 export type ViewKey =
   "today" | "plan" | "projects" | "practice" | "readiness" | "progress" | "settings";
@@ -32,7 +33,7 @@ export const VIEWS: Record<ViewKey, ViewDefinition> = {
     key: "practice",
     path: "/practice",
     label: "Practice",
-    component: PracticePlaceholder,
+    component: PracticeView,
   },
   readiness: {
     key: "readiness",
@@ -71,14 +72,6 @@ function Placeholder({ title, note }: { title: string; note: string }) {
   );
 }
 
-function PracticePlaceholder() {
-  return (
-    <Placeholder
-      title="Practice"
-      note="Coding sessions, mock interviews, and correction tasks will appear here."
-    />
-  );
-}
 function ReadinessPlaceholder() {
   return (
     <Placeholder title="Readiness" note="Evidence-based role readiness gates will appear here." />

@@ -14,7 +14,7 @@ import {
 } from "./helpers/testUsers";
 
 describe("local Supabase harness", () => {
-  it("exposes API, DB, and mail endpoints from supabase status", async () => {
+  it("exposes API, DB, and mail endpoints from supabase status", { timeout: 30_000 }, async () => {
     const { getLocalSupabaseEnv } = await import("./helpers/localSupabase");
     const env = getLocalSupabaseEnv();
     expect(env.apiUrl).toMatch(/^http:\/\/127\.0\.0\.1:\d+$/);

@@ -152,6 +152,31 @@ export interface MilestoneRow {
   is_completion_gate: boolean;
 }
 
+export interface PracticeSessionRow {
+  id: string;
+  session_type: "coding" | "mock";
+  date: string;
+  state: "planned" | "in_progress" | "completed" | "abandoned" | "skipped";
+  completed_at: string | null;
+  topic: string;
+  allotted_minutes: number;
+  elapsed_minutes: number | null;
+  result: string | null;
+  mistake_category:
+    "knowledge" | "reasoning" | "coding" | "communication" | "time_management" | null;
+  correction_due_date: string | null;
+  corrected_at: string | null;
+  notes: string | null;
+  evidence_url: string | null;
+}
+
+export interface MockScoreRow {
+  id: string;
+  practice_session_id: string;
+  dimension_key: string;
+  score: number;
+}
+
 export interface PrepApi {
   fetchProfile(): Promise<ProfileRow | null>;
   seedPlan(): Promise<{ status: string; counts?: Record<string, number> }>;
@@ -188,6 +213,40 @@ export interface PrepApi {
     fields: { completed_at?: string | null; evidence_url?: string | null },
   ): Promise<void>;
   fetchMilestones(): Promise<MilestoneRow[]>;
+  fetchPracticeSessions(): Promise<PracticeSessionRow[]>;
+  createPracticeSession(input: {
+    session_type: "coding" | "mock";
+    date: string;
+    topic: string;
+    allotted_minutes: number;
+    notes?: string | null;
+    evidence_url?: string | null;
+  }): Promise<PracticeSessionRow>;
+  updatePracticeSession(
+    sessionId: string,
+    fields: Partial<
+      Pick<
+        PracticeSessionRow,
+        | "state"
+        | "completed_at"
+        | "elapsed_minutes"
+        | "result"
+        | "mistake_category"
+        | "correction_due_date"
+        | "corrected_at"
+        | "notes"
+        | "evidence_url"
+      >
+    >,
+  ): Promise<void>;
+  fetchMockScores(): Promise<MockScoreRow[]>;
+  saveMockScore(sessionId: string, dimensionKey: string, score: number): Promise<void>;
+  createCorrectionTask(input: {
+    title: string;
+    scheduled_date: string;
+    estimated_minutes: number;
+    source_practice_session_id: string;
+  }): Promise<TaskRow>;
 }
 
 export function createPrepApi(client: SupabaseClient): PrepApi {
@@ -319,6 +378,70 @@ export function createPrepApi(client: SupabaseClient): PrepApi {
         .update(fields)
         .eq("id", milestoneId);
       if (error) throw new CommandError(error.message);
+    },
+
+    async fetchPracticeSessions() {
+      const { data, error } = await client
+        .from("practice_sessions")
+        .select("*")
+        .order("date")
+        .order("created_at");
+      if (error) throw new CommandError(error.message);
+      return (data ?? []) as PracticeSessionRow[];
+    },
+
+    async createPracticeSession(input) {
+      const { data: userData } = await client.auth.getUser();
+      const userId = userData.user?.id;
+      if (!userId) throw new CommandError("unauthenticated");
+      const { data, error } = await client
+        .from("practice_sessions")
+        .insert({ user_id: userId, ...input })
+        .select("*")
+        .single();
+      if (error) throw new CommandError(error.message);
+      return data as PracticeSessionRow;
+    },
+
+    async updatePracticeSession(sessionId, fields) {
+      const { error } = await client.from("practice_sessions").update(fields).eq("id", sessionId);
+      if (error) throw new CommandError(error.message);
+    },
+
+    async fetchMockScores() {
+      const { data, error } = await client.from("mock_scores").select("*").order("created_at");
+      if (error) throw new CommandError(error.message);
+      return (data ?? []) as MockScoreRow[];
+    },
+
+    async saveMockScore(sessionId, dimensionKey, score) {
+      const { data: userData } = await client.auth.getUser();
+      const userId = userData.user?.id;
+      if (!userId) throw new CommandError("unauthenticated");
+      const { error } = await client.from("mock_scores").upsert(
+        {
+          user_id: userId,
+          practice_session_id: sessionId,
+          dimension_key: dimensionKey,
+          score,
+        },
+        { onConflict: "practice_session_id,dimension_key" },
+      );
+      if (error) throw new CommandError(error.message);
+    },
+
+    async createCorrectionTask(input) {
+      const { data, error } = await client.rpc("create_custom_task", {
+        p_payload: {
+          title: input.title,
+          category: "practice",
+          scheduled_date: input.scheduled_date,
+          estimated_minutes: input.estimated_minutes,
+          source_practice_session_id: input.source_practice_session_id,
+        },
+      });
+      if (error) throw new CommandError(error.message);
+      return (data as { status: string; task: TaskRow }).task;
     },
 
     async unlockPostTraining(optIn) {
