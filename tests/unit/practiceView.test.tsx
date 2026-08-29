@@ -110,7 +110,7 @@ describe("PracticeView", () => {
     renderView();
 
     await user.click(await screen.findByRole("button", { name: "Log coding session" }));
-    const form = document.querySelector("form.task-dialog")!;
+    const form = document.querySelector("form.task-dialog") as HTMLFormElement;
     await user.type(within(form).getByLabelText("Topic"), "Intervals");
     await user.clear(within(form).getByLabelText("Allotted minutes"));
     await user.type(within(form).getByLabelText("Allotted minutes"), "120");
@@ -190,9 +190,10 @@ describe("PracticeView", () => {
         correction_due_date: "2026-09-03",
       }),
     ]);
-    vi.mocked(api.createCorrectionTask).mockResolvedValue(
-      session() as unknown as PracticeSessionRow,
-    );
+    vi.mocked(api.createCorrectionTask).mockResolvedValue({
+      ...session(),
+      id: "correction-1",
+    } as unknown as import("../../src/lib/api").TaskRow);
     renderView();
 
     const button = await screen.findByRole("button", { name: /create dated correction task/ });
