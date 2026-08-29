@@ -38,7 +38,18 @@ export function AuthView() {
         },
       });
       if (error) {
-        // Unknown/allowed addresses are indistinguishable to the user.
+        // Registration status stays ambiguous (generic response), but a rate
+        // limit is safe to surface - it depends on attempt volume, not on
+        // whether the address is registered.
+        const rateLimited = error.status === 429 || /rate.?limit/i.test(error.message);
+        if (rateLimited) {
+          setStatus({
+            kind: "error",
+            message:
+              "Too many sign-in emails requested in a short period. Wait a few minutes and send it again.",
+          });
+          return;
+        }
         setStatus({ kind: "sent" });
         return;
       }
