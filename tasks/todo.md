@@ -72,10 +72,10 @@ Dependencies: Tasks 1, 3a. Scope: medium.
 
 ### Task 6 — Source-to-template mapping
 
-- [ ] Create `docs/PLAN_TASK_MAPPING.md` linking every plan section/routine to stable template records.
-- [ ] Assign exact dates from August 31–December 6, 2026; mark required vs optional and fixed deadlines.
-- [ ] State recurrence expansion rules and expected record/minute totals by week and workstream.
-- [ ] Reconcile unexplained differences and total exactly 196 active planned hours; map the equal theory/contingency swap used if the optional 18–22-hour Post-Training track is enabled.
+- [x] Create `docs/PLAN_TASK_MAPPING.md` linking every plan section/routine to stable template records. (109 tasks, 3 projects, 15 milestones, 13 gate rows; coverage checklist for every source section)
+- [x] Assign exact dates from August 31–December 6, 2026; mark required vs optional and fixed deadlines. (verified against 2026 calendar: Aug 31 = Monday)
+- [x] State recurrence expansion rules and expected record/minute totals by week and workstream. (8 rules; per-week/per-workstream table, arithmetic script-verified)
+- [x] Reconcile unexplained differences and total exactly 196 active planned hours; map the equal theory/contingency swap used if the optional 18–22-hour Post-Training track is enabled. (11,760 min exact; 20 h swap = 12 h study + 8 h review with named keys; budget-bucket deltas documented, not silent)
 
 Dependencies: none. Scope: medium.
 
