@@ -14,5 +14,7 @@ export default defineConfig({
     globals: true,
     setupFiles: [],
     include: ["tests/integration/**/*.test.{ts,tsx}"],
+    // Integration tests share one local database; run files sequentially.
+    fileParallelism: false,
   },
 });

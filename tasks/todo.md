@@ -32,9 +32,9 @@ Dependencies: Task 1 deploy URL. Scope: small.
 
 ### Task 3a — Isolated database test harness
 
-- [ ] Run local Supabase/Inbucket or a disposable isolated project in development and CI.
-- [ ] Provision/reset two deterministic test users without production credentials or data.
-- [ ] Provide focused migration, RLS, RPC, race, and rollback test commands.
+- [x] Run local Supabase/Inbucket or a disposable isolated project in development and CI. (local stack via `npm run supabase:start`; Mailpit at :54324; CI wiring lands with Task 5 E2E)
+- [x] Provision/reset two deterministic test users without production credentials or data. (`tests/integration/helpers/testUsers.ts`, admin API on the local stack only)
+- [x] Provide focused migration, RLS, RPC, race, and rollback test commands. (`npm run test:integration` via `vitest.integration.config.ts`; `npm run supabase:reset`; 6 harness tests passing)
 
 Dependencies: Task 1. Scope: medium.
 
