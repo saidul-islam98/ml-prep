@@ -31,8 +31,13 @@ jobs:
       - name: Format check
         run: npm run format:check
 
+      # Unit tests render the authenticated app, which checks build-time
+      # config; the publishable values are public identifiers (12.3).
       - name: Unit and component tests
         run: npm test
+        env:
+          VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ vars.VITE_SUPABASE_PUBLISHABLE_KEY }}
 
       - name: Template artifact sync check
         run: |
