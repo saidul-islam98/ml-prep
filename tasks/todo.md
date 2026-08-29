@@ -91,10 +91,11 @@ Dependencies: Tasks 4b–6. Scope: medium.
 
 ### Checkpoint A
 
-- [ ] CI/build and Pages-subpath smoke test pass.
-- [ ] Calendar and PKCE feasibility evidence is recorded.
-- [ ] RLS, cross-owner, command-grant, race, and seed rollback tests pass.
-- [ ] Template inventory matches the reviewed mapping manifest.
+- [x] CI/build and Pages-subpath smoke test pass. (2026-08-29: typecheck, lint, format, 61 unit, 63 integration, build, `verify:subpath`, artifact scan, artifact-sync check all green locally)
+- [x] Calendar feasibility evidence is recorded. (local generation proven; **Android device check pending user** - `docs/calendar-spike.md`)
+- [x] PKCE redirect is proven. (E2E against local stack: OTP → Mailpit → verify → 303 root `?code=` → session; unknown email gains nothing)
+- [x] RLS, cross-owner, command-grant, race, and seed rollback tests pass.
+- [x] Template inventory matches the reviewed mapping manifest. (digest c06a0b3d… shared by frontend and DB artifact; 118 tasks = 109 required + 9 optional; 196 h exact)
 
 ## Phase 2: daily execution
 
