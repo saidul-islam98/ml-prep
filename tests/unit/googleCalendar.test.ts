@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { buildGoogleCalendarUrl } from "../src/reminder/googleCalendar";
-import { REMINDER_TITLE } from "../src/reminder/ical";
+import { buildGoogleCalendarUrl } from "../../src/reminder/googleCalendar";
+import { REMINDER_TITLE } from "../../src/reminder/ical";
 
 const PLAN_START_DATE = "2026-08-31";
 const APP_URL = "https://example.github.io/ml-prep/#/today";

@@ -5,7 +5,7 @@ import {
   navigate,
   ensureDefaultRoute,
   type Route,
-} from "../src/router/hashRouter";
+} from "../../src/router/hashRouter";
 
 describe("parseHash", () => {
   it("returns today for an empty hash", () => {

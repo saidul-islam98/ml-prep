@@ -4,8 +4,12 @@ import {
   unfoldIcsLines,
   REMINDER_TITLE,
   REMINDER_DESCRIPTION_PROMPT,
-} from "../src/reminder/ical";
-import { REMINDER_LOCAL_TIME, REMINDER_DURATION_MINUTES, TIMEZONE } from "../src/reminder/reminder";
+} from "../../src/reminder/ical";
+import {
+  REMINDER_LOCAL_TIME,
+  REMINDER_DURATION_MINUTES,
+  TIMEZONE,
+} from "../../src/reminder/reminder";
 
 const PLAN_START_DATE = "2026-08-31"; // canonical plan window start, America/Toronto
 const APP_URL = "https://example.github.io/ml-prep/#/today";

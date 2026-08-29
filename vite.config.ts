@@ -15,8 +15,10 @@ export default defineConfig({
   test: {
     environment: "jsdom",
     globals: true,
-    setupFiles: ["./tests/setup.ts"],
-    include: ["tests/**/*.test.{ts,tsx}"],
+    setupFiles: ["./tests/unit/setup.ts"],
+    // Unit/component tests run on `npm test`; integration tests (which need
+    // the local Supabase stack) run via `npm run test:integration`.
+    include: ["tests/unit/**/*.test.{ts,tsx}"],
     css: false,
   },
 });
