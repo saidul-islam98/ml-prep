@@ -2,6 +2,16 @@ import { describe, expect, it, beforeEach, afterEach, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import App from "../../src/App";
+import type { Session } from "@supabase/supabase-js";
+
+// The shell tests isolate navigation behavior from auth: a session is
+// always present, and the Supabase client is never constructed.
+vi.mock("../../src/auth/useSession", () => ({
+  useSession: () => ({
+    status: "authenticated",
+    session: { user: { id: "test-user" } } as unknown as Session,
+  }),
+}));
 
 describe("App shell", () => {
   beforeEach(() => {

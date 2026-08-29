@@ -34,6 +34,17 @@ jobs:
       - name: Unit and component tests
         run: npm test
 
+      - name: Template artifact sync check
+        run: |
+          npx tsx scripts/generate-template-artifacts.mjs
+          git diff --exit-code supabase/templates supabase/migrations/20260829020000_template_artifact.sql
+
+      - name: Start local Supabase stack
+        run: npx supabase start
+
+      - name: Database integration tests (RLS, RPC, seed, PKCE auth)
+        run: npm run test:integration
+
       # Supabase URL and publishable key are public identifiers, not secrets
       # (WEBAPP_SPEC.md §12.3). They are provided as repository variables and
       # injected here once the production Supabase project exists (Task 5+).

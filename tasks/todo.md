@@ -55,18 +55,20 @@ Dependencies: Task 3b. Scope: medium.
 
 ### Task 4b — Seed and optional-unlock commands
 
-- [ ] Bootstrap the absent profile inside `seed_plan_v1`, lock it, consume only the generated database artifact, and write version last.
-- [ ] Implement irreversible `unlock_post_training` with atomic named task swap and 196-hour cap.
-- [ ] Test no-profile simultaneous first login, partial seed repair, rollback, repeated calls, gate rejection, and exact optional-budget swap.
+- [x] Bootstrap the absent profile inside `seed_plan_v1`, lock it, consume only the generated database artifact, and write version last. (`20260829030000_seed_and_unlock.sql`)
+- [x] Implement irreversible `unlock_post_training` with atomic named task swap and 196-hour cap.
+- [x] Test no-profile simultaneous first login, partial seed repair, rollback, repeated calls, gate rejection, and exact optional-budget swap. (9 seed/unlock tests; swap exactly 1,200 min; resolved swap tasks refuse unlock to preserve the cap)
 
 Dependencies: Tasks 3b, 6. Scope: medium.
 
 ### Task 5 — PKCE authentication
 
-- [ ] Run E2E auth against the Task 3a isolated harness.
-- [ ] Pre-create the allowed account, disable signup, and use `shouldCreateUser: false`.
-- [ ] Consume root `?code=` before hash routing; test localhost and exact Pages-root redirects.
-- [ ] Verify unknown email receives generic feedback without gaining an account/session.
+- [x] Run E2E auth against the Task 3a isolated harness. (magic link captured from Mailpit, verify → 303 to client root `?code=`, exchange on the same client yields a session)
+- [x] Pre-create the allowed account, disable signup, and use `shouldCreateUser: false`. (`[auth] enable_signup = false` locally; signUp rejected server-side; unknown email gains no account/session)
+- [x] Consume root `?code=` before hash routing; test localhost and exact Pages-root redirects. (`src/auth/bootstrap.ts` consumed in `main.tsx` before rendering; unit + integration tests; redirect allowlist configured for localhost)
+- [x] Verify unknown email receives generic feedback without gaining an account/session. (`AuthView` shows an identical response; no email sent, no user row, no session)
+
+**Note:** Supabase redirect allowlist for the production Pages root is an external setup step recorded in `docs/runbook.md` (Task 17) and `tasks/plan.md` External prerequisites.
 
 Dependencies: Tasks 1, 3a. Scope: medium.
 
@@ -81,9 +83,9 @@ Dependencies: none. Scope: medium.
 
 ### Task 7 — Template v1 and atomic seed
 
-- [ ] Encode schema-validated weeks, daily tasks, projects/gates, practice targets, and readiness gates.
-- [ ] Generate frontend and database artifacts; test matching stable-key sets/content digest and inventory against the mapping manifest.
-- [ ] Prove repeat seeding is a no-op, simultaneous seeds converge, failure rolls back, incomplete seed repairs, and version writes last.
+- [x] Encode schema-validated weeks, daily tasks, projects/gates, practice targets, and readiness gates. (`src/template/templateV1.ts` with Zod validation; 15 unit tests)
+- [x] Generate frontend and database artifacts; test matching stable-key sets/content digest and inventory against the mapping manifest. (`scripts/generate-template-artifacts.mjs` → `supabase/templates/plan_v1.json` + generated migration `20260829020000`)
+- [x] Prove repeat seeding is a no-op, simultaneous seeds converge, failure rolls back, incomplete seed repairs, and version writes last.
 
 Dependencies: Tasks 4b–6. Scope: medium.
 
