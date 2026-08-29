@@ -210,6 +210,13 @@ describe("ProjectsView", () => {
     expect(await screen.findByText(/Post-Training track enabled/)).toBeInTheDocument();
   });
 
+  it("does not render a project-state editor (state is server-controlled)", async () => {
+    renderView();
+    await screen.findByText("EvalOps for tool-using enterprise agents");
+    expect(screen.getByText("Status: active")).toBeInTheDocument();
+    expect(screen.queryByLabelText("Project status")).not.toBeInTheDocument();
+  });
+
   it("saves project evidence links after HTTPS validation", async () => {
     const user = userEvent.setup();
     renderView();
@@ -236,5 +243,27 @@ describe("ProjectsView", () => {
         expect.objectContaining({ repository_url: "https://github.com/example/repo" }),
       );
     });
+    // The state column is not user-writable any more - never sent.
+    const fields = vi.mocked(api.updateProject).mock.calls[0][1] as Record<string, unknown>;
+    expect(fields).not.toHaveProperty("state");
+  });
+
+  it("surfaces save failures instead of failing silently", async () => {
+    const user = userEvent.setup();
+    vi.mocked(api.updateProject).mockRejectedValue(
+      Object.assign(new Error("42501: permission denied"), { kind: "error" }),
+    );
+    renderView();
+
+    const card = (await screen.findByLabelText(/Repository URL/)).closest(
+      "form",
+    ) as HTMLFormElement;
+    await user.type(
+      within(card).getByLabelText(/Repository URL/),
+      "https://github.com/example/repo",
+    );
+    await user.click(within(card).getByRole("button", { name: "Save project" }));
+
+    expect(await screen.findByText(/Saving failed/)).toBeInTheDocument();
   });
 });

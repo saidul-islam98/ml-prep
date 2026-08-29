@@ -109,6 +109,7 @@ function ProjectCard({
         <h2 id={`project-${project.project_key}`}>
           {project.name}
           {locked && <span className="chip chip-locked">Locked - optional</span>}
+          {!locked && <span className="chip">Status: {project.state}</span>}
         </h2>
         <p className="project-roles">
           {project.target_roles.map((r) => ROLE_LABELS_SHORT[r] ?? r).join(" + ")}
@@ -121,7 +122,11 @@ function ProjectCard({
       <MilestoneList milestones={milestones} locked={locked} />
 
       {!locked && (
-        <ProjectEvidence project={project} onSave={(fields) => saveProject.mutate(fields)} />
+        <ProjectEvidence
+          project={project}
+          saveError={saveProject.error ? commandErrorMessage(saveProject.error) : null}
+          onSave={(fields) => saveProject.mutate(fields)}
+        />
       )}
 
       {locked ? (
@@ -225,15 +230,16 @@ function MilestoneEvidence({
 
 function ProjectEvidence({
   project,
+  saveError,
   onSave,
 }: {
   project: ProjectRow;
+  saveError: string | null;
   onSave: (fields: {
     repository_url?: string | null;
     design_url?: string | null;
     report_url?: string | null;
     demo_url?: string | null;
-    state?: string;
   }) => void;
 }) {
   const [urls, setUrls] = useState({
@@ -242,7 +248,6 @@ function ProjectEvidence({
     report_url: project.report_url ?? "",
     demo_url: project.demo_url ?? "",
   });
-  const [state, setState] = useState(project.state);
   const [error, setError] = useState<string | null>(null);
 
   function submit(event: FormEvent) {
@@ -259,7 +264,6 @@ function ProjectEvidence({
       design_url: urls.design_url || null,
       report_url: urls.report_url || null,
       demo_url: urls.demo_url || null,
-      state,
     });
   }
 
@@ -272,7 +276,7 @@ function ProjectEvidence({
 
   return (
     <form className="project-evidence" onSubmit={submit}>
-      <h3>Project evidence and status</h3>
+      <h3>Project evidence</h3>
       {fields.map(([key, label]) => (
         <div key={key}>
           <label htmlFor={`p-${key}-${project.id}`}>{label}</label>
@@ -285,15 +289,16 @@ function ProjectEvidence({
           />
         </div>
       ))}
-      <label htmlFor={`p-state-${project.id}`}>Project status</label>
-      <select id={`p-state-${project.id}`} value={state} onChange={(e) => setState(e.target.value)}>
-        <option value="active">Active</option>
-        <option value="at_risk">At risk</option>
-        <option value="completed">Completed</option>
-      </select>
+      {/* Project state is server-controlled (the state column grant was
+          removed in the release-blocker repair): displayed, never edited. */}
       {error && (
         <p role="alert" className="task-error-text">
           {error}
+        </p>
+      )}
+      {saveError && (
+        <p role="alert" className="task-error-text">
+          {saveError}
         </p>
       )}
       <div className="task-actions">
