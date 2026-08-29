@@ -177,6 +177,17 @@ export interface MockScoreRow {
   score: number;
 }
 
+export interface ReadinessGateRow {
+  id: string;
+  role_key: "data_eval" | "agent_env" | "post_training";
+  gate_key: string;
+  title: string;
+  state: "not_assessed" | "in_progress" | "ready" | "at_risk";
+  evidence_note: string | null;
+  evidence_url: string | null;
+  assessed_at: string | null;
+}
+
 export interface PrepApi {
   fetchProfile(): Promise<ProfileRow | null>;
   seedPlan(): Promise<{ status: string; counts?: Record<string, number> }>;
@@ -247,6 +258,16 @@ export interface PrepApi {
     estimated_minutes: number;
     source_practice_session_id: string;
   }): Promise<TaskRow>;
+  fetchReadinessGates(): Promise<ReadinessGateRow[]>;
+  updateReadinessGate(
+    gateId: string,
+    fields: {
+      state: ReadinessGateRow["state"];
+      evidence_note?: string | null;
+      evidence_url?: string | null;
+      assessed_at?: string | null;
+    },
+  ): Promise<void>;
 }
 
 export function createPrepApi(client: SupabaseClient): PrepApi {
@@ -442,6 +463,24 @@ export function createPrepApi(client: SupabaseClient): PrepApi {
       });
       if (error) throw new CommandError(error.message);
       return (data as { status: string; task: TaskRow }).task;
+    },
+
+    async fetchReadinessGates() {
+      const { data, error } = await client
+        .from("readiness_gates")
+        .select("*")
+        .order("role_key")
+        .order("gate_key");
+      if (error) throw new CommandError(error.message);
+      return (data ?? []) as ReadinessGateRow[];
+    },
+
+    async updateReadinessGate(gateId, fields) {
+      const { error } = await client
+        .from("readiness_gates")
+        .update(fields)
+        .eq("id", gateId);
+      if (error) throw new CommandError(error.message);
     },
 
     async unlockPostTraining(optIn) {

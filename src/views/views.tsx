@@ -3,6 +3,7 @@ import { TodayView } from "./TodayView";
 import { PlanView } from "./PlanView";
 import { ProjectsView } from "./ProjectsView";
 import { PracticeView } from "./PracticeView";
+import { ReadinessView } from "./ReadinessView";
 
 export type ViewKey =
   "today" | "plan" | "projects" | "practice" | "readiness" | "progress" | "settings";
@@ -39,7 +40,7 @@ export const VIEWS: Record<ViewKey, ViewDefinition> = {
     key: "readiness",
     path: "/readiness",
     label: "Readiness",
-    component: ReadinessPlaceholder,
+    component: ReadinessView,
   },
   progress: {
     key: "progress",
@@ -72,11 +73,6 @@ function Placeholder({ title, note }: { title: string; note: string }) {
   );
 }
 
-function ReadinessPlaceholder() {
-  return (
-    <Placeholder title="Readiness" note="Evidence-based role readiness gates will appear here." />
-  );
-}
 function ProgressPlaceholder() {
   return (
     <Placeholder
