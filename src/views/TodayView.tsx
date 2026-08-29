@@ -14,6 +14,7 @@ import { CATEGORY_LABELS } from "../lib/constants";
 import { useApi } from "../hooks/useApi";
 import { useProfile } from "../hooks/useProfile";
 import { useTaskTransition, useTasks } from "../hooks/useTasks";
+import { useOnlineStatus } from "../hooks/useOnlineStatus";
 import { TaskCard } from "../components/TaskCard";
 import { OverdueQueue } from "../components/OverdueQueue";
 import { VIEWS } from "./views";
@@ -81,7 +82,7 @@ export function TodayView() {
   }
 
   const week = useCurrentWeek(today);
-  const offline = typeof navigator !== "undefined" && navigator.onLine === false;
+  const offline = !useOnlineStatus();
 
   return (
     <div className="today-view">

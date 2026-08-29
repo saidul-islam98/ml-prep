@@ -1,0 +1,18 @@
+{
+  "name": "Cohere Preparation Tracker",
+  "short_name": "Prep Tracker",
+  "description": "Private tracker for a 14-week ML engineer interview preparation plan.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f7f7f8",
+  "theme_color": "#0b57d0",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

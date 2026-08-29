@@ -13,6 +13,19 @@ if (!rootElement) {
 
 // Ordering contract (WEBAPP_SPEC.md section 12.1): consume the Supabase PKCE
 // `?code=` callback at the root BEFORE hash routing starts, then render.
+// PWA: register the static-shell service worker in production builds only.
+// It caches versioned static assets only (see public/sw-rules.js and its
+// negative-cache tests); Supabase/Auth/API responses are never intercepted.
+if (import.meta.env.PROD && "serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker
+      .register(`${import.meta.env.BASE_URL}sw.js`, { scope: import.meta.env.BASE_URL })
+      .catch((error: unknown) => {
+        console.error("sw registration failed", error instanceof Error ? error.name : "unknown");
+      });
+  });
+}
+
 bootstrapApp()
   .then((result) => {
     createRoot(rootElement).render(

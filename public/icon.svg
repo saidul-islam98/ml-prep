@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Cohere Preparation Tracker">
+  <rect width="512" height="512" rx="96" fill="#0b57d0"/>
+  <g fill="none" stroke="#ffffff" stroke-width="36" stroke-linecap="round">
+    <path d="M128 352 L128 208"/>
+    <path d="M256 352 L256 144"/>
+    <path d="M384 352 L384 256"/>
+  </g>
+  <path d="M136 160 L232 112 L360 96" fill="none" stroke="#a8c7fa" stroke-width="20" stroke-linecap="round" stroke-dasharray="4 28"/>
+</svg>

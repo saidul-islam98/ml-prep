@@ -21,6 +21,7 @@ import { CATEGORY_LABELS, STATE_LABELS, commandErrorMessage } from "../lib/const
 import { useApi } from "../hooks/useApi";
 import { useProfile } from "../hooks/useProfile";
 import { useCreateCustomTask, useTaskTransition, useTasks } from "../hooks/useTasks";
+import { useOnlineStatus } from "../hooks/useOnlineStatus";
 import { TaskCard } from "../components/TaskCard";
 
 interface Filters {
@@ -59,6 +60,7 @@ export function PlanView() {
   const [showCreate, setShowCreate] = useState(false);
   const transition = useTaskTransition();
   const create = useCreateCustomTask();
+  const offline = !useOnlineStatus();
 
   const postTrainingEnabled = profile?.post_training_enabled ?? false;
 
@@ -245,7 +247,7 @@ export function PlanView() {
                       projectName={
                         task.project_id ? projectNameById.get(task.project_id) : undefined
                       }
-                      offline={typeof navigator !== "undefined" && navigator.onLine === false}
+                      offline={offline}
                       onTransition={handleTransition}
                     />
                   ))
