@@ -1,11 +1,12 @@
 /**
  * Session hook: exposes the current Supabase session and auth-state
- * transitions to the React tree (WEBAPP_SPEC.md sections 6.1, 13).
+ * transitions to the React tree (WEBAPP_SPEC.md sections 6.1, 13, 14).
  */
 
 import { useEffect, useState } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { getSupabaseClient } from "../lib/supabaseClient";
+import { queryClient } from "../lib/queryClient";
 
 export type SessionState =
   | { status: "loading" }
@@ -41,10 +42,12 @@ export function useSession(): SessionState {
   return state;
 }
 
-/** Sign out and clear session-scoped client state. */
+/**
+ * Sign out and clear every piece of session-scoped client state: the query
+ * cache and session storage tokens. Non-sensitive UI preferences only.
+ */
 export async function signOut(): Promise<void> {
   const supabase = getSupabaseClient();
   await supabase.auth.signOut();
-  // Task 8 will also clear the TanStack Query cache here so no personal data
-  // from the previous session remains in memory (WEBAPP_SPEC.md section 14).
+  queryClient.clear();
 }

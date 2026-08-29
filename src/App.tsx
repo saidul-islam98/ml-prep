@@ -1,16 +1,13 @@
 import { useEffect, useState } from "react";
 import { parseHash, type Route } from "./router/hashRouter";
-import { resolveView } from "./views/views";
-import { AppShell } from "./views/AppShell";
 import { useSession } from "./auth/useSession";
 import { AuthView } from "./auth/AuthView";
 import { isSupabaseConfigured } from "./lib/supabaseClient";
+import { AuthenticatedApp } from "./views/AuthenticatedApp";
 
 /**
- * Root component. Subscribes to hash navigation, gates on the Supabase
- * session, and renders the active view. Views are placeholders until their
- * implementation tasks land; the application is runnable and navigable from
- * the first scaffold increment.
+ * Root component: hash navigation + session gating. The PKCE callback has
+ * already been consumed in main.tsx before this renders.
  */
 export default function App({ initialAuthError }: { initialAuthError?: string }) {
   const [route, setRoute] = useState<Route>(() => parseHash(window.location.hash));
@@ -38,18 +35,7 @@ export default function App({ initialAuthError }: { initialAuthError?: string })
     return <AuthView />;
   }
 
-  const active = resolveView(route.path);
-
-  return (
-    <AppShell active={active.key}>
-      {initialAuthError && (
-        <p role="alert" className="auth-error">
-          {initialAuthError}
-        </p>
-      )}
-      <active.component />
-    </AppShell>
-  );
+  return <AuthenticatedApp route={route} initialAuthError={initialAuthError} />;
 }
 
 function ConfigErrorState() {

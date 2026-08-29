@@ -1,7 +1,9 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
+import { QueryClientProvider } from "@tanstack/react-query";
 import App from "./App";
 import { bootstrapApp } from "./auth/bootstrap";
+import { queryClient } from "./lib/queryClient";
 import "./styles/global.css";
 
 const rootElement = document.getElementById("root");
@@ -15,7 +17,9 @@ bootstrapApp()
   .then((result) => {
     createRoot(rootElement).render(
       <StrictMode>
-        <App initialAuthError={result.callbackError} />
+        <QueryClientProvider client={queryClient}>
+          <App initialAuthError={result.callbackError} />
+        </QueryClientProvider>
       </StrictMode>,
     );
   })

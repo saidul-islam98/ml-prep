@@ -1,4 +1,6 @@
 import type { ComponentType } from "react";
+import { TodayView } from "./TodayView";
+import { PlanView } from "./PlanView";
 
 export type ViewKey =
   "today" | "plan" | "projects" | "practice" | "readiness" | "progress" | "settings";
@@ -17,8 +19,8 @@ export interface ViewDefinition {
  * (todo.md Tasks 8-15) without changing this registry shape.
  */
 export const VIEWS: Record<ViewKey, ViewDefinition> = {
-  today: { key: "today", path: "/today", label: "Today", component: TodayPlaceholder },
-  plan: { key: "plan", path: "/plan", label: "Plan", component: PlanPlaceholder },
+  today: { key: "today", path: "/today", label: "Today", component: TodayView },
+  plan: { key: "plan", path: "/plan", label: "Plan", component: PlanView },
   projects: {
     key: "projects",
     path: "/projects",
@@ -68,22 +70,6 @@ function Placeholder({ title, note }: { title: string; note: string }) {
   );
 }
 
-function TodayPlaceholder() {
-  return (
-    <Placeholder
-      title="Today"
-      note="Today's tasks, overdue resolution, and the end-of-day check-in will appear here."
-    />
-  );
-}
-function PlanPlaceholder() {
-  return (
-    <Placeholder
-      title="Plan"
-      note="The fourteen-week schedule with filters and exit checks will appear here."
-    />
-  );
-}
 function ProjectsPlaceholder() {
   return (
     <Placeholder
