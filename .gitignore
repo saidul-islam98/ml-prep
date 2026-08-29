@@ -1,0 +1,30 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+dist-*/
+
+# Test artifacts
+coverage/
+
+# Local Supabase stack
+supabase/.temp/
+supabase/.branches/
+supabase/.env.local
+
+# Environment files (never commit env contents)
+.env
+.env.*
+!.env.example
+
+# Editor/OS noise
+.DS_Store
+*.local
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# Logs
+npm-debug.log*
+logs/

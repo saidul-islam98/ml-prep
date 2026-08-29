@@ -1,0 +1,72 @@
+name: CI and Pages deploy
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Format check
+        run: npm run format:check
+
+      - name: Unit and component tests
+        run: npm test
+
+      # Supabase URL and publishable key are public identifiers, not secrets
+      # (WEBAPP_SPEC.md §12.3). They are provided as repository variables and
+      # injected here once the production Supabase project exists (Task 5+).
+      - name: Production build
+        run: npm run build
+        env:
+          VITE_BASE_PATH: /${{ github.event.repository.name }}/
+
+      - name: Verify Pages subpath build
+        run: VITE_BASE_PATH="/${{ github.event.repository.name }}/" npm run verify:subpath
+
+      - name: Scan built artifact for secrets and private data
+        run: node scripts/scan-dist.mjs
+
+      - name: Upload Pages artifact
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    # Deployment requires the repository to have Pages enabled with the
+    # "GitHub Actions" source. The maintainers configure this manually; until
+    # then this job is skipped on forks without Pages.
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
