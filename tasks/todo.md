@@ -40,16 +40,16 @@ Dependencies: Task 1. Scope: medium.
 
 ### Task 3b — Schema and ownership boundary
 
-- [ ] Add tables, practice status/completion/link fields, checks, unique constraints, composite owner foreign keys (including task→project), and Auth-user cascades.
-- [ ] Add operation-specific RLS/grants; clients can only select task events.
-- [ ] Prove user B cannot read/write user A rows or attach children to user A parents.
+- [x] Add tables, practice status/completion/link fields, checks, unique constraints, composite owner foreign keys (including task→project), and Auth-user cascades. (`supabase/migrations/20260829000000_initial_schema.sql`)
+- [x] Add operation-specific RLS/grants; clients can only select task events. (tasks and task_events are SELECT-only for clients; profiles updates limited to reminder columns)
+- [x] Prove user B cannot read/write user A rows or attach children to user A parents. (21 integration tests in `tests/integration/ownership.test.ts` + harness)
 
 Dependencies: Task 3a. Scope: medium.
 
 ### Task 4a — Transactional task commands
 
-- [ ] Test then implement atomic `create_custom_task` and start/complete/reopen/reschedule/skip/edit/archive transitions with exact event mapping.
-- [ ] Test stale/simultaneous revisions, forced event failure rollback, forbidden direct event DML, server timestamps, command payloads, and cross-owner IDs.
+- [x] Test then implement atomic `create_custom_task` and start/complete/reopen/reschedule/skip/edit/archive transitions with exact event mapping. (`supabase/migrations/20260829010000_task_commands.sql`; security definer, fixed search_path, authenticated-only grants)
+- [x] Test stale/simultaneous revisions, forced event failure rollback, forbidden direct event DML, server timestamps, command payloads, and cross-owner IDs. (23 command tests; CAS conflict returns latest row; fault-injection trigger proves rollback; simultaneous race has exactly one winner)
 
 Dependencies: Task 3b. Scope: medium.
 
