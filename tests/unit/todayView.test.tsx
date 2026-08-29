@@ -44,7 +44,13 @@ const TODAY = "2026-08-31";
 // Freeze "today" at the canonical window start and share a mutable API stub.
 vi.mock("../../src/lib/toronto", async (importOriginal) => {
   const actual = await importOriginal<typeof import("../../src/lib/toronto")>();
-  return { ...actual, torontoToday: () => TODAY };
+  return {
+    ...actual,
+    torontoToday: () => TODAY,
+    // Freeze the wall clock at midday so the end-of-day check-in starts
+    // collapsed regardless of when CI runs (it auto-opens after 5 PM).
+    torontoParts: (instant: Date) => ({ ...actual.torontoParts(instant), hour: 12 }),
+  };
 });
 
 const apiStub = vi.hoisted(() => ({
