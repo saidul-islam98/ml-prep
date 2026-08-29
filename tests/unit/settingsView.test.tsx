@@ -7,7 +7,7 @@
 import { describe, expect, it, beforeEach, vi } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClientProvider } from "@tanstack/react-query";
 import type { PrepApi } from "../../src/lib/api";
 import { SettingsView, deployedTodayUrl } from "../../src/views/SettingsView";
 import { queryClient } from "../../src/lib/queryClient";
@@ -57,6 +57,7 @@ function makeApiStub(overrides: Partial<PrepApi> = {}): PrepApi {
     fetchMockScores: vi.fn().mockResolvedValue([]),
     fetchReadinessGates: vi.fn().mockResolvedValue([]),
     updateReadinessGate: vi.fn(),
+    ...overrides,
     createPracticeSession: vi.fn(),
     updatePracticeSession: vi.fn(),
     saveMockScore: vi.fn(),

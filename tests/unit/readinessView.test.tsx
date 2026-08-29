@@ -49,19 +49,17 @@ function makeApiStub(overrides: Partial<PrepApi> = {}): PrepApi {
     fetchMilestones: vi.fn().mockResolvedValue([]),
     fetchPracticeSessions: vi.fn().mockResolvedValue([]),
     fetchMockScores: vi.fn().mockResolvedValue([]),
-    fetchReadinessGates: vi
-      .fn()
-      .mockResolvedValue([
-        gate(),
-        gate({ id: "g2", role_key: "data_eval", gate_key: "evaluation", title: "Evaluation gate" }),
-        gate({ id: "g3", role_key: "agent_env", gate_key: "coding", title: "Coding gate" }),
-        gate({
-          id: "g4",
-          role_key: "post_training",
-          gate_key: "pt_ownership",
-          title: "Ownership evidence gate",
-        }),
-      ]),
+    fetchReadinessGates: vi.fn().mockResolvedValue([
+      gate(),
+      gate({ id: "g2", role_key: "data_eval", gate_key: "evaluation", title: "Evaluation gate" }),
+      gate({ id: "g3", role_key: "agent_env", gate_key: "coding", title: "Coding gate" }),
+      gate({
+        id: "g4",
+        role_key: "post_training",
+        gate_key: "pt_ownership",
+        title: "Ownership evidence gate",
+      }),
+    ]),
     ...overrides,
     updateReadinessGate: vi.fn().mockResolvedValue(undefined),
     createPracticeSession: vi.fn(),
