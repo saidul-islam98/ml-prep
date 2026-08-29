@@ -55,6 +55,10 @@ export interface ProjectRow {
   target_roles: string[];
   budget_minutes: number;
   state: string;
+  repository_url: string | null;
+  design_url: string | null;
+  report_url: string | null;
+  demo_url: string | null;
   blocker_note: string | null;
 }
 
@@ -136,6 +140,18 @@ export interface DailyCheckin {
   highest_risk_gap: string | null;
 }
 
+export interface MilestoneRow {
+  id: string;
+  project_id: string;
+  title: string;
+  acceptance_criteria: string;
+  target_date: string | null;
+  completed_at: string | null;
+  evidence_url: string | null;
+  sort_order: number;
+  is_completion_gate: boolean;
+}
+
 export interface PrepApi {
   fetchProfile(): Promise<ProfileRow | null>;
   seedPlan(): Promise<{ status: string; counts?: Record<string, number> }>;
@@ -158,6 +174,20 @@ export interface PrepApi {
   }>;
   fetchCheckin(date: string): Promise<DailyCheckin | null>;
   saveCheckin(checkin: DailyCheckin): Promise<void>;
+  updateProject(
+    projectId: string,
+    fields: Partial<
+      Pick<
+        ProjectRow,
+        "repository_url" | "design_url" | "report_url" | "demo_url" | "blocker_note" | "state"
+      >
+    >,
+  ): Promise<void>;
+  updateMilestone(
+    milestoneId: string,
+    fields: { completed_at?: string | null; evidence_url?: string | null },
+  ): Promise<void>;
+  fetchMilestones(): Promise<MilestoneRow[]>;
 }
 
 export function createPrepApi(client: SupabaseClient): PrepApi {
@@ -266,6 +296,28 @@ export function createPrepApi(client: SupabaseClient): PrepApi {
         learning: checkin.learning,
         highest_risk_gap: checkin.highest_risk_gap,
       });
+      if (error) throw new CommandError(error.message);
+    },
+
+    async updateProject(projectId, fields) {
+      const { error } = await client.from("projects").update(fields).eq("id", projectId);
+      if (error) throw new CommandError(error.message);
+    },
+
+    async fetchMilestones() {
+      const { data, error } = await client
+        .from("project_milestones")
+        .select("*")
+        .order("sort_order");
+      if (error) throw new CommandError(error.message);
+      return (data ?? []) as MilestoneRow[];
+    },
+
+    async updateMilestone(milestoneId, fields) {
+      const { error } = await client
+        .from("project_milestones")
+        .update(fields)
+        .eq("id", milestoneId);
       if (error) throw new CommandError(error.message);
     },
 

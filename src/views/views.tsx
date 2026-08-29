@@ -1,6 +1,7 @@
 import type { ComponentType } from "react";
 import { TodayView } from "./TodayView";
 import { PlanView } from "./PlanView";
+import { ProjectsView } from "./ProjectsView";
 
 export type ViewKey =
   "today" | "plan" | "projects" | "practice" | "readiness" | "progress" | "settings";
@@ -25,7 +26,7 @@ export const VIEWS: Record<ViewKey, ViewDefinition> = {
     key: "projects",
     path: "/projects",
     label: "Projects",
-    component: ProjectsPlaceholder,
+    component: ProjectsView,
   },
   practice: {
     key: "practice",
@@ -70,14 +71,6 @@ function Placeholder({ title, note }: { title: string; note: string }) {
   );
 }
 
-function ProjectsPlaceholder() {
-  return (
-    <Placeholder
-      title="Projects"
-      note="Project budgets, milestones, evidence, and completion gates will appear here."
-    />
-  );
-}
 function PracticePlaceholder() {
   return (
     <Placeholder
