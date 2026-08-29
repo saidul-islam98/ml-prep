@@ -101,18 +101,18 @@ Dependencies: Tasks 4b–6. Scope: medium.
 
 ### Task 8 — Today and task completion
 
-- [ ] Build Toronto-aware Today groups, minutes, state controls, actual-time capture, HTTPS evidence, and history.
-- [ ] Route every transition through the RPC with last-seen revision.
-- [ ] Show rollback/error and explicit stale-conflict refresh/retry; warn when device/server clocks differ by over five minutes.
-- [ ] Verify cross-session sync; final performance measurement remains in Task 18.
+- [x] Build Toronto-aware Today groups, minutes, state controls, actual-time capture, HTTPS evidence, and history.
+- [x] Route every transition through the RPC with last-seen revision.
+- [x] Show rollback/error and explicit stale-conflict refresh/retry; warn when device/server clocks differ by over five minutes.
+- [x] Verify cross-session sync; final performance measurement remains in Task 18. (2026-08-29; TodayView/TaskCard, DST-tested utils, optimistic CAS + conflict UI, clock-skew warning, cross-session sync test)
 
 Dependencies: Task 7. Scope: medium.
 
 ### Task 9 — Overdue resolution
 
-- [ ] Derive overdue only for open tasks with current scheduled date before Toronto today.
-- [ ] Require today-or-future reschedule or reasoned skip; never move work silently.
-- [ ] Test Toronto midnight/DST, multiple reschedules, proactive vs late classification, dismiss/retry, and event history.
+- [x] Derive overdue only for open tasks with current scheduled date before Toronto today.
+- [x] Require today-or-future reschedule or reasoned skip; never move work silently.
+- [x] Test Toronto midnight/DST, multiple reschedules, proactive vs late classification, dismiss/retry, and event history. (2026-08-29; deriveOverdue + classification tests, blocking queue with session dismissal keeping tasks visible)
 
 Dependencies: Task 8. Scope: small.
 
