@@ -24,9 +24,9 @@ Dependencies: none. Scope: medium.
 
 ### Task 2 — Calendar feasibility spike
 
-- [ ] Generate a Google Calendar URL and ICS containing `VTIMEZONE`, Toronto `DTSTART`, daily RRULE, VALARM, safe description, and stable UID.
-- [ ] Import/test both on Android Google Calendar; record time, DST preview, URL opening, and duplicate behavior.
-- [ ] Select the primary route and document delete-before-reimport behavior.
+- [x] Generate a Google Calendar URL and ICS containing `VTIMEZONE`, Toronto `DTSTART`, daily RRULE, VALARM, safe description, and stable UID. (`src/reminder/`, 23 unit tests)
+- [ ] Import/test both on Android Google Calendar; record time, DST preview, URL opening, and duplicate behavior. (**BLOCKED on user device** - manual steps in `docs/calendar-spike.md`)
+- [ ] Select the primary route and document delete-before-reimport behavior. (drafted in `docs/calendar-spike.md`; final selection after device check; UI warning ships in Task 15)
 
 Dependencies: Task 1 deploy URL. Scope: small.
 

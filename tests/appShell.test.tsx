@@ -18,9 +18,7 @@ describe("App shell", () => {
     expect(screen.getByRole("heading", { name: "Today" })).toBeInTheDocument();
     expect(screen.getByRole("navigation", { name: "Primary" })).toBeInTheDocument();
     expect(screen.getByRole("main")).toBeInTheDocument();
-    expect(
-      screen.getByRole("link", { name: "Today" }),
-    ).toHaveAttribute("aria-current", "page");
+    expect(screen.getByRole("link", { name: "Today" })).toHaveAttribute("aria-current", "page");
   });
 
   it("navigates to another view through a hash link and back", async () => {
@@ -30,10 +28,7 @@ describe("App shell", () => {
     await user.click(screen.getByRole("link", { name: "Plan" }));
     expect(window.location.hash).toBe("#/plan");
     expect(screen.getByRole("heading", { name: "Plan" })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Plan" })).toHaveAttribute(
-      "aria-current",
-      "page",
-    );
+    expect(screen.getByRole("link", { name: "Plan" })).toHaveAttribute("aria-current", "page");
 
     await user.click(screen.getByRole("link", { name: "Today" }));
     expect(window.location.hash).toBe("#/today");
