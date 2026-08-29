@@ -4,6 +4,7 @@ import { PlanView } from "./PlanView";
 import { ProjectsView } from "./ProjectsView";
 import { PracticeView } from "./PracticeView";
 import { ReadinessView } from "./ReadinessView";
+import { ProgressView } from "./ProgressView";
 
 export type ViewKey =
   "today" | "plan" | "projects" | "practice" | "readiness" | "progress" | "settings";
@@ -46,7 +47,7 @@ export const VIEWS: Record<ViewKey, ViewDefinition> = {
     key: "progress",
     path: "/progress",
     label: "Progress",
-    component: ProgressPlaceholder,
+    component: ProgressView,
   },
   settings: {
     key: "settings",
@@ -73,14 +74,6 @@ function Placeholder({ title, note }: { title: string; note: string }) {
   );
 }
 
-function ProgressPlaceholder() {
-  return (
-    <Placeholder
-      title="Progress"
-      note="Planned versus completed minutes and outcome trends will appear here."
-    />
-  );
-}
 function SettingsPlaceholder() {
   return (
     <Placeholder

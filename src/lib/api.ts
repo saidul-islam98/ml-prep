@@ -193,6 +193,7 @@ export interface PrepApi {
   seedPlan(): Promise<{ status: string; counts?: Record<string, number> }>;
   fetchTasks(): Promise<TaskRow[]>;
   fetchTaskEvents(taskId: string): Promise<TaskEventRow[]>;
+  fetchAllTaskEvents(): Promise<TaskEventRow[]>;
   fetchProjects(): Promise<ProjectRow[]>;
   fetchPlanWeeks(): Promise<PlanWeekRow[]>;
   createCustomTask(input: TaskInput): Promise<TaskRow>;
@@ -319,6 +320,15 @@ export function createPrepApi(client: SupabaseClient): PrepApi {
         .from("task_events")
         .select("*")
         .eq("task_id", taskId)
+        .order("occurred_at");
+      if (error) throw new CommandError(error.message);
+      return (data ?? []) as TaskEventRow[];
+    },
+
+    async fetchAllTaskEvents() {
+      const { data, error } = await client
+        .from("task_events")
+        .select("*")
         .order("occurred_at");
       if (error) throw new CommandError(error.message);
       return (data ?? []) as TaskEventRow[];
