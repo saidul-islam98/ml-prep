@@ -29,20 +29,25 @@
 
   // Defense-in-depth: excluded even when same-origin (local Supabase runs
   // same-origin in some dev setups).
-  var NEVER_CACHE_PATHS = [
-    "/auth/",
-    "/rest/",
-    "/realtime/",
-    "/storage/",
-    "/functions/",
-    "/pg/",
-  ];
+  var NEVER_CACHE_PATHS = ["/auth/", "/rest/", "/realtime/", "/storage/", "/functions/", "/pg/"];
 
   var NEVER_CACHE_PARAMS = ["apikey", "token", "code"];
 
   var STATIC_EXTENSIONS = [
-    ".js", ".mjs", ".css", ".woff2", ".woff", ".png", ".jpg", ".jpeg",
-    ".svg", ".webp", ".ico", ".webmanifest", ".txt", ".json",
+    ".js",
+    ".mjs",
+    ".css",
+    ".woff2",
+    ".woff",
+    ".png",
+    ".jpg",
+    ".jpeg",
+    ".svg",
+    ".webp",
+    ".ico",
+    ".webmanifest",
+    ".txt",
+    ".json",
   ];
 
   function endsWithAny(path, suffixes) {

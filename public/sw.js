@@ -90,11 +90,9 @@ self.addEventListener("fetch", function (event) {
           return response;
         })
         .catch(function () {
-          return caches
-            .match(event.request)
-            .then(function (hit) {
-              return hit || caches.match("./");
-            });
+          return caches.match(event.request).then(function (hit) {
+            return hit || caches.match("./");
+          });
         }),
     );
   }
