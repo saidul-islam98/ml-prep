@@ -10,7 +10,10 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
 type Decision = { mode: "passthrough" | "static" | "shell"; reason: string };
-type Rules = { CACHE_NAME: string; decide: (url: string, method: string, mode: string, origin: string) => Decision };
+type Rules = {
+  CACHE_NAME: string;
+  decide: (url: string, method: string, mode: string, origin: string) => Decision;
+};
 
 let rules: Rules;
 const ORIGIN = "https://owner.github.io";

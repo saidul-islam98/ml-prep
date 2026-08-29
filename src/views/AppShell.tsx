@@ -18,6 +18,9 @@ export function AppShell({ active, children }: AppShellProps) {
 
   return (
     <div className="app-shell">
+      <a href="#main" className="skip-link">
+        Skip to main content
+      </a>
       <header className="app-banner">
         <p className="app-title">Cohere Preparation Tracker</p>
       </header>
