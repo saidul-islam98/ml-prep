@@ -1,19 +1,37 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="dark">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="color-scheme" content="light dark" />
-    <meta name="theme-color" content="#0b57d0" />
+    <meta name="color-scheme" content="dark light" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#09090b" />
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff" />
     <link rel="manifest" href="manifest.webmanifest" />
     <link rel="icon" href="icon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
     <meta
       name="description"
-      content="Private tracker for a 14-week ML engineer interview preparation plan."
+      content="Company-specific machine learning interview preparation: paced paths, resume projects, mock interviews, and readiness tracking."
     />
-    <title>Cohere Preparation Tracker</title>
+    <title>Interview Prep: Company-Specific ML Interview Preparation | Deep-ML</title>
+    <script>
+      (function () {
+        try {
+          var saved = localStorage.getItem("user-theme");
+          var theme = saved || "dark";
+          document.documentElement.classList.remove("light", "dark");
+          document.documentElement.classList.add(theme);
+          document.documentElement.setAttribute("data-theme", theme);
+        } catch (e) {}
+      })();
+    </script>
   </head>
-  <body>
+  <body class="dark-transition">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

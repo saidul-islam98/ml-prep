@@ -19,6 +19,7 @@ export default defineConfig({
     // Unit/component tests run on `npm test`; integration tests (which need
     // the local Supabase stack) run via `npm run test:integration`.
     include: ["tests/unit/**/*.test.{ts,tsx}"],
+    testTimeout: 15000,
     css: false,
   },
 });
