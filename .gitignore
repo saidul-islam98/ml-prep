@@ -28,3 +28,4 @@ supabase/.env.local
 # Logs
 npm-debug.log*
 logs/
+all-migrations.sql

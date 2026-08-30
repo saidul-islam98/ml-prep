@@ -5,7 +5,10 @@ import App from "./App";
 import { ErrorBoundary } from "./lib/ErrorBoundary";
 import { bootstrapApp } from "./auth/bootstrap";
 import { queryClient } from "./lib/queryClient";
+import "./styles/tokens.css";
+import "./styles/primitives.css";
 import "./styles/global.css";
+import "./styles/shell.css";
 
 const rootElement = document.getElementById("root");
 if (!rootElement) {

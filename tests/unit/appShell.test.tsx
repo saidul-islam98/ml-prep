@@ -62,7 +62,8 @@ describe("App shell", () => {
     expect(await screen.findByRole("heading", { name: "Today", level: 1 })).toBeInTheDocument();
     expect(screen.getByRole("navigation", { name: "Primary" })).toBeInTheDocument();
     expect(screen.getByRole("main")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Today" })).toHaveAttribute("aria-current", "page");
+    const todayLinks = screen.getAllByRole("link", { name: "Today" });
+    expect(todayLinks.some((l) => l.getAttribute("aria-current") === "page")).toBe(true);
   });
 
   it("navigates to another view through a hash link and back", async () => {
@@ -70,12 +71,16 @@ describe("App shell", () => {
     renderApp();
     await screen.findByRole("heading", { name: "Today", level: 1 });
 
-    await user.click(screen.getByRole("link", { name: "Plan" }));
+    await user.click(screen.getAllByRole("link", { name: "Plan" })[0]);
     expect(window.location.hash).toBe("#/plan");
     expect(await screen.findByRole("heading", { name: "Plan", level: 1 })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Plan" })).toHaveAttribute("aria-current", "page");
+    expect(
+      screen
+        .getAllByRole("link", { name: "Plan" })
+        .some((l) => l.getAttribute("aria-current") === "page"),
+    ).toBe(true);
 
-    await user.click(screen.getByRole("link", { name: "Today" }));
+    await user.click(screen.getAllByRole("link", { name: "Today" })[0]);
     expect(window.location.hash).toBe("#/today");
     expect(await screen.findByRole("heading", { name: "Today", level: 1 })).toBeInTheDocument();
   });

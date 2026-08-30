@@ -4,8 +4,8 @@
  */
 
 import { useEffect } from "react";
-import { useQueryClient } from "@tanstack/react-query";
 import { useProfile, useSeedPlan } from "../hooks/useProfile";
+import { useCurrentPlanWeek } from "../hooks/usePlanWeek";
 import { AppShell } from "./AppShell";
 import { resolveView } from "./views";
 import { VIEWS } from "./views";
@@ -19,7 +19,7 @@ export function AuthenticatedApp({
 }) {
   const { data: profile, isLoading } = useProfile();
   const seed = useSeedPlan();
-  const queryClient = useQueryClient();
+  const currentWeek = useCurrentPlanWeek();
 
   useEffect(() => {
     if (!isLoading && (profile == null || profile.template_version !== 1) && seed.isIdle) {
@@ -63,10 +63,9 @@ export function AuthenticatedApp({
   }
 
   const active = resolveView(route.path);
-  void queryClient;
 
   return (
-    <AppShell active={active.key}>
+    <AppShell active={active.key} currentWeek={currentWeek}>
       {initialAuthError && (
         <p role="alert" className="auth-error">
           {initialAuthError}
