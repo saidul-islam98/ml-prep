@@ -339,7 +339,7 @@ Every task preserves existing data/API behavior and leaves its focused tests gre
 
 **Verification:**
 
-- [ ] Run: `npm test && npm run test:integration && npm run format:check && npm run build && npm run verify:subpath`.
+- [x] Run: `npm test && npm run test:integration && npm run format:check && npm run build && npm run verify:subpath`.
 - [ ] Manual check: Linux desktop and Android phone/tablet.
 
 **Dependencies:** UI-13 through UI-15
