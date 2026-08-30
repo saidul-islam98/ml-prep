@@ -24,6 +24,8 @@ import { useCreateCustomTask, useTaskTransition, useTasks } from "../hooks/useTa
 import { useOnlineStatus } from "../hooks/useOnlineStatus";
 import { TaskCard } from "../components/TaskCard";
 import { ComprehensiveStudyResources, WeeklyStudyResources } from "../components/StudyResources";
+import { getCurriculumWeek } from "../curriculum";
+import { WeekSummaryBanner } from "../components/WeekSummaryBanner";
 
 interface Filters {
   role: string;
@@ -241,6 +243,9 @@ export function PlanView() {
             </button>
             {isOpen && (
               <>
+                {getCurriculumWeek(week.week_number) && (
+                  <WeekSummaryBanner week={getCurriculumWeek(week.week_number)!} />
+                )}
                 <p className="plan-exit-check">{`Exit check: ${week.exit_check}`}</p>
                 <WeeklyStudyResources weekNumber={week.week_number} />
                 {weekTasks.length === 0 ? (

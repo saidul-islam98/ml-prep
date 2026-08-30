@@ -1,3 +1,4 @@
 supabase/templates/
 supabase/migrations/20260829020000_template_artifact.sql
 package-lock.json
+.agents/

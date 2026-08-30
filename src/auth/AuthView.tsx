@@ -78,8 +78,8 @@ export function AuthView() {
           </svg>
         </div>
         <div>
-          <h1 id="auth-title">Deep-ML</h1>
-          <span className="auth-badge">Cohere MTS Interview Prep</span>
+          <h1 id="auth-title">Cohere MTS Prep</h1>
+          <span className="auth-badge">Interview Curriculum</span>
         </div>
       </div>
       <p className="auth-privacy">

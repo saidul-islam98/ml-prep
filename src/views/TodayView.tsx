@@ -17,6 +17,8 @@ import { useTaskTransition, useTasks } from "../hooks/useTasks";
 import { useOnlineStatus } from "../hooks/useOnlineStatus";
 import { TaskCard } from "../components/TaskCard";
 import { OverdueQueue } from "../components/OverdueQueue";
+import { getCurriculumWeek } from "../curriculum";
+import { WeekSummaryBanner } from "../components/WeekSummaryBanner";
 import { VIEWS } from "./views";
 
 const CATEGORY_ORDER = ["deep_work", "practice", "application", "review"] as const;
@@ -121,6 +123,10 @@ export function TodayView() {
 
       {isLoading && <p role="status">Loading tasks…</p>}
       {isError && <p role="alert">Could not load your tasks. Check your connection and refresh.</p>}
+
+      {week && getCurriculumWeek(week.week_number) && (
+        <WeekSummaryBanner week={getCurriculumWeek(week.week_number)!} />
+      )}
 
       <OverdueQueue
         tasks={tasks}

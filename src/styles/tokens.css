@@ -1,9 +1,9 @@
-/* Design tokens (Deep-ML Dark/Light Theme System).
+/* Design tokens (ML Prep Theme System).
    Single source of truth for all design primitives.
    Primary accent: indigo/violet. Status highlights: amber, emerald, red. */
 
 :root {
-  /* Canvas and surfaces (Dark default for Deep-ML) */
+  /* Canvas and surfaces (Dark default) */
   --canvas: #09090b;
   --surface: #121215;
   --surface-2: #1e1e24;
@@ -19,7 +19,7 @@
   --border: #27272a;
   --border-strong: #3f3f46;
 
-  /* Primary accent (Deep-ML indigo) */
+  /* Primary accent (indigo) */
   --accent: #6366f1;
   --accent-strong: #4f46e5;
   --accent-soft: rgba(99, 102, 241, 0.12);

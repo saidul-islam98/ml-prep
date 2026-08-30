@@ -1,5 +1,5 @@
 /**
- * Company Tracks Explorer (Deep-ML Interview Prep UI):
+ * Company Tracks Explorer (Interview Prep Tracks):
  * Company-specific preparation tracks (Cohere, Anthropic, OpenAI, DeepMind, Jane Street, Meta)
  * with role tracks, paced syllabus breakdown, resume portfolio projects, and readiness criteria.
  */

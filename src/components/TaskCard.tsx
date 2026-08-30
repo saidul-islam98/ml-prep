@@ -26,6 +26,10 @@ import {
   type TaskActionContext,
   type TaskDialog,
 } from "./TaskActionMenu";
+import { getCurriculumTask } from "../curriculum";
+import { TaskDetailModal } from "./TaskDetailModal";
+import { FocusModeModal } from "./FocusModeModal";
+import { CompletionGateModal } from "./CompletionGateModal";
 
 export interface TaskCardProps {
   task: TaskRow;
@@ -61,8 +65,13 @@ export function TaskCard({
   const [error, setError] = useState<string | null>(null);
   const [conflict, setConflict] = useState<ConflictState | null>(null);
   const [historyOpen, setHistoryOpen] = useState(false);
+  const [detailOpen, setDetailOpen] = useState(false);
+  const [focusOpen, setFocusOpen] = useState(false);
+  const [gateOpen, setGateOpen] = useState(false);
 
   const isOverdue = variant === "overdue";
+  const curriculumTask =
+    getCurriculumTask(task.template_task_key ?? "") || getCurriculumTask(task.id);
 
   async function run(transition: TransitionName, payload?: TransitionPayload) {
     setError(null);
@@ -157,6 +166,18 @@ export function TaskCard({
         )}
       </p>
 
+      {curriculumTask && (
+        <div className="task-curriculum-chips ui-chip-row">
+          <Badge tone="neutral">⚡ {curriculumTask.todos.length} steps</Badge>
+          {curriculumTask.resources && curriculumTask.resources.length > 0 && (
+            <Badge tone="neutral">📖 {curriculumTask.resources.length} resources</Badge>
+          )}
+          {curriculumTask.deliverables && curriculumTask.deliverables.length > 0 && (
+            <Badge tone="neutral">📦 {curriculumTask.deliverables.length} artifact</Badge>
+          )}
+        </div>
+      )}
+
       {task.acceptance_note && <p className="task-acceptance">{task.acceptance_note}</p>}
       {task.evidence_url && (
         <p className="task-evidence">
@@ -237,6 +258,26 @@ export function TaskCard({
       )}
 
       <div className="task-actions">
+        {curriculumTask && (
+          <>
+            <Button
+              small
+              variant="ghost"
+              onClick={() => setDetailOpen(true)}
+              aria-label={`Open details for ${task.title}`}
+            >
+              Details ↗
+            </Button>
+            <Button
+              small
+              variant="ghost"
+              onClick={() => setFocusOpen(true)}
+              aria-label={`Launch focus mode for ${task.title}`}
+            >
+              ⏱ Focus
+            </Button>
+          </>
+        )}
         {primary && (
           <Button variant="primary" disabled={offline} onClick={primary.run}>
             {primary.label}
@@ -249,6 +290,50 @@ export function TaskCard({
         )}
         <Menu triggerLabel={`More actions for ${task.title}`} items={items} />
       </div>
+
+      {curriculumTask && detailOpen && (
+        <TaskDetailModal
+          task={curriculumTask}
+          isOpen={detailOpen}
+          isCompleted={task.state === "completed"}
+          onClose={() => setDetailOpen(false)}
+          onStartFocus={() => {
+            setDetailOpen(false);
+            setFocusOpen(true);
+          }}
+          onComplete={() => {
+            setDetailOpen(false);
+            setGateOpen(true);
+          }}
+        />
+      )}
+
+      {curriculumTask && focusOpen && (
+        <FocusModeModal
+          task={curriculumTask}
+          isOpen={focusOpen}
+          onClose={() => setFocusOpen(false)}
+          onCompleteTask={() => {
+            setFocusOpen(false);
+            setGateOpen(true);
+          }}
+        />
+      )}
+
+      {curriculumTask && gateOpen && (
+        <CompletionGateModal
+          task={curriculumTask}
+          isOpen={gateOpen}
+          onClose={() => setGateOpen(false)}
+          onConfirmComplete={(_t, overrideRationale) => {
+            setGateOpen(false);
+            void run("complete", {
+              actual_minutes: task.estimated_minutes,
+              ...(overrideRationale ? { evidence_note: `Override: ${overrideRationale}` } : {}),
+            });
+          }}
+        />
+      )}
 
       <TaskHistory taskId={task.id} open={historyOpen} onToggle={() => setHistoryOpen((o) => !o)} />
     </article>

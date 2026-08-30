@@ -1,6 +1,6 @@
-/* Shell styles (Deep-ML Modern Layout System).
-   Sticky Top Navigation with dropdowns, hero tracks explorer, responsive content container,
-   sleek dark/light theme transitions, and authentic footer. */
+/* Shell styles (ML Prep Layout System).
+   Sticky Top Navigation with view switcher, hero tracks explorer, responsive content container,
+   sleek dark/light theme transitions, and footer. */
 
 html,
 body {
@@ -67,7 +67,7 @@ a:hover {
   background: var(--canvas);
 }
 
-/* Deep-ML Top Navigation Bar */
+/* Top Navigation Bar */
 .deepml-navbar {
   position: sticky;
   top: 0;
@@ -100,7 +100,7 @@ a:hover {
   min-width: 0;
 }
 
-/* Deep-ML Brand Logo */
+/* Brand Logo */
 .deepml-logo-link {
   display: flex;
   align-items: center;
@@ -387,7 +387,7 @@ a:hover {
   gap: var(--space-2);
 }
 
-/* Deep-ML Company Tracks Hero & Grid */
+/* Company Tracks Hero & Grid */
 .deepml-prep-hero {
   position: relative;
   margin-bottom: var(--space-8);
@@ -897,7 +897,7 @@ a:hover {
   border-top: 1px solid var(--border);
 }
 
-/* Deep-ML Footer */
+/* Footer */
 .deepml-footer {
   background: var(--surface);
   border-top: 1px solid var(--border);
@@ -1172,4 +1172,478 @@ a:hover {
 .deepml-footer-meta {
   font-family: var(--font-mono);
   color: var(--text-muted);
+}
+
+/* ==========================================================================
+   Task Execution & Progressive Disclosure Styles (ml_prep_ui_upgrade)
+   ========================================================================== */
+
+.task-curriculum-chips {
+  margin-top: var(--space-2);
+  margin-bottom: var(--space-2);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.deepml-task-detail-card,
+.deepml-focus-card,
+.deepml-gate-card {
+  max-width: 800px;
+  width: 95vw;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.deepml-task-summary {
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  margin-top: var(--space-2);
+  line-height: 1.5;
+}
+
+.deepml-task-action-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-6);
+  background: var(--surface-2);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.deepml-task-progress-stat {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+}
+
+.deepml-task-action-btns {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.deepml-task-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+  padding: 0 var(--space-6);
+  background: var(--surface-1);
+  overflow-x: auto;
+  gap: var(--space-2);
+}
+
+.deepml-task-tab {
+  padding: var(--space-3) var(--space-4);
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--text-muted);
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all var(--motion-fast) var(--ease-out);
+}
+
+.deepml-task-tab:hover {
+  color: var(--text-strong);
+}
+
+.deepml-task-tab.is-active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+.deepml-task-detail-body {
+  overflow-y: auto;
+  padding: var(--space-6);
+}
+
+.deepml-task-block {
+  margin-bottom: var(--space-6);
+}
+
+.deepml-block-heading {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-strong);
+  margin-bottom: var(--space-2);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.deepml-task-list,
+.deepml-deliverable-list,
+.deepml-interview-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.deepml-task-list li,
+.deepml-deliverable-list li {
+  font-size: 0.9rem;
+  color: var(--text);
+  line-height: 1.5;
+}
+
+.deepml-checklist {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.deepml-checklist-item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--motion-fast) var(--ease-out);
+}
+
+.deepml-checklist-item:hover {
+  border-color: var(--border-strong);
+  background: var(--surface-raised);
+}
+
+.deepml-checklist-item.is-checked {
+  background: rgba(99, 102, 241, 0.06);
+  border-color: rgba(99, 102, 241, 0.3);
+}
+
+.deepml-checklist-item input[type="checkbox"] {
+  margin-top: 3px;
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent);
+}
+
+.deepml-checklist-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.deepml-step-time {
+  font-size: 0.72rem;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+}
+
+.deepml-step-output {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.deepml-step-output code {
+  background: var(--surface-3);
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  color: var(--accent-strong);
+}
+
+.deepml-resource-cards {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin-top: var(--space-3);
+}
+
+.deepml-resource-card {
+  padding: var(--space-4);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.deepml-resource-card-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.deepml-resource-title a {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-strong);
+  text-decoration: none;
+}
+
+.deepml-resource-title a:hover {
+  color: var(--accent);
+  text-decoration: underline;
+}
+
+.deepml-resource-instruction {
+  font-size: 0.88rem;
+  color: var(--text);
+  line-height: 1.5;
+  background: var(--surface-3);
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+}
+
+.deepml-interview-box {
+  padding: var(--space-4);
+  background: rgba(99, 102, 241, 0.05);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  border-radius: var(--radius-lg);
+}
+
+.deepml-interview-list li {
+  font-style: italic;
+  color: var(--text-strong);
+  font-size: 0.95rem;
+}
+
+/* Focus Mode */
+.deepml-focus-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-5) var(--space-6);
+  border-bottom: 1px solid var(--border);
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.deepml-focus-title {
+  font-size: 1.25rem;
+  margin-top: var(--space-1);
+}
+
+.deepml-focus-timer-box {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  background: var(--surface-2);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+}
+
+.deepml-focus-timer-digits {
+  font-family: var(--font-mono);
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.deepml-focus-timer-controls {
+  display: flex;
+  gap: var(--space-1);
+}
+
+.deepml-focus-progress-track {
+  width: 100%;
+  height: 4px;
+  background: var(--surface-2);
+}
+
+.deepml-focus-progress-fill {
+  height: 100%;
+  background: var(--accent);
+  transition: width var(--motion-normal) var(--ease-out);
+}
+
+.deepml-focus-body {
+  padding: var(--space-6);
+}
+
+.deepml-focus-step-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.deepml-focus-step-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.deepml-focus-step-num {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.deepml-focus-step-text {
+  font-size: 1.15rem;
+  color: var(--text-strong);
+  line-height: 1.5;
+}
+
+.deepml-focus-step-output {
+  font-size: 0.9rem;
+  padding: var(--space-3);
+  background: var(--surface-2);
+  border-radius: var(--radius-md);
+}
+
+.deepml-focus-resources-preview {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.deepml-resource-heading {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.deepml-resource-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.deepml-resource-pill-link {
+  font-size: 0.85rem;
+  padding: 4px 10px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  color: var(--text);
+  text-decoration: none;
+}
+
+.deepml-resource-pill-link:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.deepml-focus-notes-area {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.deepml-textarea {
+  width: 100%;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 0.88rem;
+  resize: vertical;
+}
+
+.deepml-textarea:focus {
+  outline: 3px solid var(--accent);
+}
+
+.deepml-focus-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-4) var(--space-6);
+  border-top: 1px solid var(--border);
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.deepml-focus-nav-left,
+.deepml-focus-nav-right {
+  display: flex;
+  gap: var(--space-2);
+}
+
+/* Completion Gate */
+.deepml-gate-body {
+  padding: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.deepml-gate-warning-box {
+  padding: var(--space-4);
+  background: rgba(245, 158, 11, 0.08);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  border-radius: var(--radius-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.deepml-gate-warning-title {
+  font-weight: 700;
+  color: var(--warning);
+}
+
+/* Week Summary Banner */
+.deepml-week-summary-banner {
+  margin-bottom: var(--space-6);
+  padding: var(--space-5);
+  background: var(--surface-glass, var(--surface));
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+
+.deepml-week-summary-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.deepml-week-summary-title-group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.deepml-week-badges {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.deepml-week-banner-h3 {
+  font-size: 1.25rem;
+  color: var(--text-strong);
+  margin: 0;
+}
+
+.deepml-week-objective {
+  font-size: 0.92rem;
+  color: var(--text);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.deepml-week-summary-expanded {
+  margin-top: var(--space-5);
+  padding-top: var(--space-5);
+  border-top: 1px solid var(--border);
+}
+
+.deepml-week-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--space-5);
 }

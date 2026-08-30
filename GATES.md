@@ -1,31 +1,30 @@
-# Gates: release blocker repair
+# Gates: ML Prep UI and Curriculum Execution Upgrade
 
-Scope: remove the reviewed security, correctness, deployment, and offline/PWA blockers without claiming deployment or physical-device verification
+OWNS: src/curriculum/**, src/components/**, src/views/**, src/styles/**, src/template/**, tests/**, GATES.md
 
-- [x] G0: this ledger states outcome-oriented checks
+Scope: upgrade ml-prep into an atomic, execution-focused curriculum system with rich task schemas, progressive disclosure, completion gates, focus mode, and week-level objectives without breaking existing tests
+
+- [x] G0: this ledger passes gate-lint
       CHECK: node /home/ivlr/.agents/skills/unlazy/scripts/gate-lint.mjs GATES.md
       EXPECT: LINT OK
-      EVIDENCE: exit=0; shell=/bin/sh; cwd=/home/ivlr/Study/Job Search/cohere/ml-prep; path=4bb464f00a22/23 entries; EXPECT=matched; output-sha256=56280ac337612b2ca526c8a680e253b785489421f45f785667848641cff0e561; output-bytes=449
+      EVIDENCE: exit=0; shell=/bin/sh; cwd=/home/ivlr/Study/Job Search/cohere/ml-prep; path=0b5aa7d3a930/22 entries; EXPECT=matched; output-sha256=48630b7361dd44ee870917b12c3d19b9d7bdea738aaca16bb04d4cab83b772d2; output-bytes=8
 
-- [x] G1: static checks and production build pass
-      CHECK: npm run lint && npm run typecheck && npm run format:check && npm run build && npm run verify:subpath
+- [x] G1: curriculum data model and modules are created and typecheck cleanly
+      CHECK: npx tsc --noEmit && echo "TYPECHECK OK"
+      EXPECT: TYPECHECK OK
+      EVIDENCE: exit=0; shell=/bin/sh; cwd=/home/ivlr/Study/Job Search/cohere/ml-prep; path=0b5aa7d3a930/22 entries; EXPECT=matched; output-sha256=94ea5507ba55d47c963dba08c13a671caadc1eadfff4d46924771892d3d5ef1a; output-bytes=13
+
+- [x] G2: new curriculum and UI execution component tests pass
+      CHECK: npx vitest run tests/unit/curriculum.test.ts tests/unit/taskExecution.test.tsx && echo "CURRICULUM TESTS OK"
+      EXPECT: CURRICULUM TESTS OK
+      EVIDENCE: exit=0; shell=/bin/sh; cwd=/home/ivlr/Study/Job Search/cohere/ml-prep; path=0b5aa7d3a930/22 entries; EXPECT=matched; output-sha256=525921f46ae4f2fe5888753101d7e4c7fe13c047a415acc66eff1be8aabbdfdc; output-bytes=512
+
+- [x] G3: all unit test suites pass with zero regressions
+      CHECK: npm test && echo "ALL TESTS OK"
+      EXPECT: ALL TESTS OK
+      EVIDENCE: exit=0; shell=/bin/sh; cwd=/home/ivlr/Study/Job Search/cohere/ml-prep; path=0b5aa7d3a930/22 entries; EXPECT=matched; output-sha256=8c6a4b79eaf000e704750d4a898f12950f9f75ad7d90c9f51875396cb2d1a2cf; output-bytes=7853
+
+- [x] G4: static linting, formatting, production build, and subpath routing pass
+      CHECK: npm run lint && npm run format:check && npm run build && npm run verify:subpath
       EXPECT: verify:subpath passed
-      EVIDENCE: exit=0; shell=/bin/sh; cwd=/home/ivlr/Study/Job Search/cohere/ml-prep; path=4bb464f00a22/23 entries; EXPECT=matched; output-sha256=b0db4a35fe65952b82bd65a8489b69c4a77e64951d9fbbe5c908680028a09ab4; output-bytes=2347
-
-- [x] G2: unit and integration regressions pass
-      CHECK: npm test && npm run test:integration
-      EXPECT: Test Files
-      EVIDENCE: exit=0; shell=/bin/sh; cwd=/home/ivlr/Study/Job Search/cohere/ml-prep; path=4bb464f00a22/23 entries; EXPECT=matched; output-sha256=99a844e8fbd9635a3c737fca8ad83301f60ec2a0195a7a747c9e6be0015bf034; output-bytes=13902
-
-- [x] G3: generated template and repository safety artifacts are current
-      CHECK: npx tsx scripts/generate-template-artifacts.mjs && git diff --exit-code supabase/templates supabase/migrations/20260829020000_template_artifact.sql && node scripts/scan-repo.mjs && node scripts/scan-dist.mjs
-      EXPECT: scan-dist passed
-      EVIDENCE: exit=0; shell=/bin/sh; cwd=/home/ivlr/Study/Job Search/cohere/ml-prep; path=4bb464f00a22/23 entries; EXPECT=matched; output-sha256=1db2808e80cf2b1a2220800a9772caf054f587d688d404c130df180b38878542; output-bytes=142
-
-- [x] G4: production deployment secrets are configured and a GitHub Pages deployment succeeds
-      CHECK: gh run watch 33273828867 --repo saidul-islam98/ml-prep --exit-status && curl -s -o /dev/null -w "%{http_code}" https://saidul-islam98.github.io/ml-prep/
-      EXPECT: 200
-      EVIDENCE: exit=0; repository variables VITE_SUPABASE_URL + VITE_SUPABASE_PUBLISHABLE_KEY set (public identifiers per spec 12.3); run 33273828867 green (build + deploy jobs; first run exposed a CI-only env gap in the unit-test step, fixed on this same run 33273828867); live site serves 200 for /, sw.js (precache-verified), sw-rules.js, manifest.webmanifest, icon.svg; live-bundle secret audit: exact secret-key value and any secret-key-prefixed value absent from every served file, no JWT-shaped values, no connection strings; only the two public identifiers appear (by design, 12.3)
-
-- [ ] G5: first-load offline behavior and the 17:00 Toronto reminder are verified on Linux and Android devices
-      EVIDENCE: pending — requires physical-device testing after deployment
+      EVIDENCE: exit=0; shell=/bin/sh; cwd=/home/ivlr/Study/Job Search/cohere/ml-prep; path=0b5aa7d3a930/22 entries; EXPECT=matched; output-sha256=a6fb37bf2737b58d583def8a4f5c6b85def132799370b8a73f4f40c8bb14452d; output-bytes=2305
