@@ -18,6 +18,15 @@ import {
 import { commandErrorMessage, isValidHttpsUrl } from "../lib/constants";
 import { torontoToday, formatDisplayDate } from "../lib/toronto";
 import { useApi } from "../hooks/useApi";
+import {
+  Badge,
+  Button,
+  Card,
+  EmptyState,
+  PageHeader,
+  ProgressBar,
+  SkeletonRows,
+} from "../components/ui";
 
 const MISTAKE_CATEGORIES = [
   "knowledge",
@@ -43,6 +52,7 @@ export function PracticeView() {
 
   const [showCodingForm, setShowCodingForm] = useState(false);
   const [showMockForm, setShowMockForm] = useState(false);
+  const [activePanel, setActivePanel] = useState<"coding" | "mock">("coding");
 
   const invalidate = () => {
     void queryClient.invalidateQueries({ queryKey: ["practice-sessions"] });
@@ -74,6 +84,14 @@ export function PracticeView() {
 
   const latestTen = useMemo(() => latestTenQualifyingCodingSessions(sessions), [sessions]);
   const gate = codingGateSummary(latestTen);
+  const codingSessions = useMemo(
+    () => sessions.filter((session) => session.session_type === "coding"),
+    [sessions],
+  );
+  const mockSessions = useMemo(
+    () => sessions.filter((session) => session.session_type === "mock"),
+    [sessions],
+  );
   const scoresBySession = useMemo(() => {
     const map: Record<string, Record<string, number>> = {};
     for (const s of mockScores) {
@@ -89,109 +107,187 @@ export function PracticeView() {
 
   return (
     <div className="practice-view">
-      <section aria-labelledby="practice-title">
-        <h1 id="practice-title">Practice</h1>
-        <p className="overdue-note">
-          Two reviewed coding sessions per week through Week 10, then mocks. The coding readiness
-          gate reads the latest ten qualifying sessions - not lifetime volume.
-        </p>
-      </section>
-
-      <section aria-labelledby="coding-gate" className="practice-gate">
-        <h2 id="coding-gate">Coding readiness (latest ten)</h2>
-        {latestTen.length === 0 ? (
-          <p className="overdue-note">
-            No qualifying sessions yet - complete coding sessions with a recorded result to build
-            the window.
-          </p>
-        ) : (
+      <PageHeader
+        title="Practice"
+        description={
           <>
-            <p>
-              {gate.solved}/{gate.total} solved in the latest ten
-              {gate.total === 10
-                ? gate.meetsGate
-                  ? " - meets the 8-of-10 gate signal."
-                  : " - below the 8-of-10 gate signal."
-                : ` - ${10 - gate.total} more needed for the full window.`}
-            </p>
-            <ol className="latest-ten">
-              {latestTen.map((s) => (
-                <li key={s.id}>
-                  {formatDisplayDate(s.date)} - {s.topic} - {s.result}
-                </li>
-              ))}
-            </ol>
+            Two reviewed coding sessions per week through Week 10, then mocks. The coding readiness
+            gate reads the latest ten qualifying sessions - not lifetime volume.
           </>
-        )}
-      </section>
+        }
+      >
+        <Badge tone={gate.meetsGate ? "success" : "accent"}>
+          {gate.solved}/{gate.total || 10} latest-ten solved
+        </Badge>
+      </PageHeader>
 
-      <section aria-labelledby="coding-sessions">
-        <h2 id="coding-sessions">Coding sessions</h2>
-        <button type="button" onClick={() => setShowCodingForm((s) => !s)}>
-          {showCodingForm ? "Close form" : "Log coding session"}
+      <div className="practice-tabs" role="tablist" aria-label="Practice type">
+        <button
+          id="practice-tab-coding"
+          type="button"
+          role="tab"
+          aria-selected={activePanel === "coding"}
+          aria-controls="practice-panel-coding"
+          className={activePanel === "coding" ? "practice-tab is-active" : "practice-tab"}
+          onClick={() => setActivePanel("coding")}
+        >
+          Coding
         </button>
-        {showCodingForm && (
-          <SessionForm
-            kind="coding"
-            today={today}
-            pending={create.isPending}
-            error={creationError()}
-            onSubmit={async (input) => {
-              await create.mutateAsync(input);
-            }}
-          />
-        )}
-        {isLoading && <p role="status">Loading sessions…</p>}
-        {sessions
-          .filter((s) => s.session_type === "coding")
-          .map((s) => (
-            <SessionCard
-              key={s.id}
-              session={s}
-              scores={null}
-              onUpdate={(fields) => update.mutate({ id: s.id, fields })}
-              onCreateCorrection={(input) => createCorrection.mutateAsync(input)}
-              correctionError={
-                createCorrection.error ? commandErrorMessage(createCorrection.error) : null
-              }
-            />
-          ))}
-      </section>
+        <button
+          id="practice-tab-mock"
+          type="button"
+          role="tab"
+          aria-selected={activePanel === "mock"}
+          aria-controls="practice-panel-mock"
+          className={activePanel === "mock" ? "practice-tab is-active" : "practice-tab"}
+          onClick={() => setActivePanel("mock")}
+        >
+          Mocks
+        </button>
+      </div>
 
-      <section aria-labelledby="mock-sessions">
-        <h2 id="mock-sessions">Mock interviews</h2>
-        <button type="button" onClick={() => setShowMockForm((s) => !s)}>
-          {showMockForm ? "Close form" : "Log mock interview"}
-        </button>
-        {showMockForm && (
-          <SessionForm
-            kind="mock"
-            today={today}
-            pending={create.isPending}
-            error={creationError()}
-            onSubmit={async (input) => {
-              await create.mutateAsync(input);
-            }}
-          />
-        )}
-        {sessions
-          .filter((s) => s.session_type === "mock")
-          .map((s) => (
-            <SessionCard
-              key={s.id}
-              session={s}
-              scores={scoresBySession[s.id] ?? {}}
-              onScore={(dimension, score) =>
-                saveScore.mutate({ sessionId: s.id, dimension, score })
-              }
-              onUpdate={(fields) => update.mutate({ id: s.id, fields })}
-              onCreateCorrection={(input) => createCorrection.mutateAsync(input)}
-              correctionError={
-                createCorrection.error ? commandErrorMessage(createCorrection.error) : null
-              }
+      {activePanel === "coding" ? (
+        <section id="practice-panel-coding" role="tabpanel" aria-labelledby="practice-tab-coding">
+          <Card className="practice-gate" ariaLabel="Coding readiness summary">
+            <div className="practice-gate__header">
+              <div>
+                <h2>Coding readiness</h2>
+                <p className="overdue-note">Latest ten qualifying sessions · target: 8 solved</p>
+              </div>
+              <strong>
+                {gate.solved}/{gate.total || 10}
+              </strong>
+            </div>
+            <ProgressBar
+              value={gate.solved}
+              max={10}
+              label="Solved coding sessions in latest ten"
+              tone={gate.meetsGate ? "success" : "accent"}
             />
-          ))}
-      </section>
+            {latestTen.length === 0 ? (
+              <EmptyState title="Build your readiness window">
+                Complete coding sessions with a recorded result to populate the latest ten.
+              </EmptyState>
+            ) : (
+              <>
+                <p className="practice-gate__copy">
+                  {gate.meetsGate
+                    ? "The latest ten meet the 8-of-10 gate signal."
+                    : `${Math.max(0, 8 - gate.solved)} more solved result${gate.solved === 7 ? "" : "s"} needed to reach the signal.`}
+                </p>
+                <ol
+                  className="latest-ten practice-result-cells"
+                  aria-label="Latest ten coding results"
+                >
+                  {latestTen.map((session, index) => {
+                    const solved =
+                      session.result?.toLowerCase().includes("solved") &&
+                      !session.result?.toLowerCase().includes("unsolved");
+                    return (
+                      <li
+                        key={session.id}
+                        className={
+                          solved
+                            ? "practice-result-cell is-solved"
+                            : "practice-result-cell is-unsolved"
+                        }
+                        aria-label={`Coding result ${index + 1}: ${session.result ?? "not recorded"}, ${formatDisplayDate(session.date)}`}
+                      >
+                        <span aria-hidden="true">{solved ? "✓" : "×"}</span>
+                        <span className="practice-result-cell__number">{index + 1}</span>
+                      </li>
+                    );
+                  })}
+                </ol>
+              </>
+            )}
+          </Card>
+
+          <section className="practice-panel__section" aria-labelledby="coding-sessions">
+            <div className="practice-panel__heading">
+              <div>
+                <h2 id="coding-sessions">Coding sessions</h2>
+                <p>{codingSessions.length} recorded</p>
+              </div>
+              <Button onClick={() => setShowCodingForm((show) => !show)}>
+                {showCodingForm ? "Close form" : "Log coding session"}
+              </Button>
+            </div>
+
+            {showCodingForm && (
+              <SessionForm
+                kind="coding"
+                today={today}
+                pending={create.isPending}
+                error={creationError()}
+                onSubmit={async (input) => {
+                  await create.mutateAsync(input);
+                }}
+              />
+            )}
+            {isLoading && <SkeletonRows label="Loading coding sessions" />}
+            {codingSessions.map((s) => (
+              <SessionCard
+                key={s.id}
+                session={s}
+                scores={null}
+                onUpdate={(fields) => update.mutate({ id: s.id, fields })}
+                onCreateCorrection={(input) => createCorrection.mutateAsync(input)}
+                correctionError={
+                  createCorrection.error ? commandErrorMessage(createCorrection.error) : null
+                }
+              />
+            ))}
+          </section>
+        </section>
+      ) : (
+        <section id="practice-panel-mock" role="tabpanel" aria-labelledby="practice-tab-mock">
+          <section className="practice-panel__section" aria-labelledby="mock-sessions">
+            <div className="practice-panel__heading">
+              <div>
+                <h2 id="mock-sessions">Mock interviews</h2>
+                <p>{mockSessions.length} recorded · score the eight dimensions after completion.</p>
+              </div>
+              <Button onClick={() => setShowMockForm((show) => !show)}>
+                {showMockForm ? "Close form" : "Log mock interview"}
+              </Button>
+            </div>
+
+            {showMockForm && (
+              <SessionForm
+                kind="mock"
+                today={today}
+                pending={create.isPending}
+                error={creationError()}
+                onSubmit={async (input) => {
+                  await create.mutateAsync(input);
+                }}
+              />
+            )}
+            {isLoading && <SkeletonRows label="Loading mock interviews" />}
+            {!isLoading && mockSessions.length === 0 ? (
+              <EmptyState title="Your mock interviews will appear here">
+                Log a mock interview when you are ready to assess the rubric.
+              </EmptyState>
+            ) : null}
+            {mockSessions.map((s) => (
+              <SessionCard
+                key={s.id}
+                session={s}
+                scores={scoresBySession[s.id] ?? {}}
+                onScore={(dimension, score) =>
+                  saveScore.mutate({ sessionId: s.id, dimension, score })
+                }
+                onUpdate={(fields) => update.mutate({ id: s.id, fields })}
+                onCreateCorrection={(input) => createCorrection.mutateAsync(input)}
+                correctionError={
+                  createCorrection.error ? commandErrorMessage(createCorrection.error) : null
+                }
+              />
+            ))}
+          </section>
+        </section>
+      )}
     </div>
   );
 }
@@ -421,30 +517,55 @@ function SessionCard({
       {isMock && scores !== null && session.state === "completed" && (
         <div className="mock-scores">
           <h4>Rubric scores (1-5) — {Object.keys(scores).length}/8 recorded</h4>
-          {MOCK_DIMENSIONS.map((dimension) => (
-            <div key={dimension} className="mock-score-row">
-              <label htmlFor={`score-${session.id}-${dimension}`}>
-                {MOCK_DIMENSION_LABELS[dimension]}
-              </label>
-              <select
-                id={`score-${session.id}-${dimension}`}
-                value={scores[dimension] ?? ""}
-                onChange={(e) => {
-                  const value = Number(e.target.value);
-                  if (Number.isInteger(value) && value >= 1 && value <= 5) {
-                    onScore?.(dimension, value);
-                  }
-                }}
+          {MOCK_DIMENSIONS.map((dimension) => {
+            const score = scores[dimension];
+            const label = MOCK_DIMENSION_LABELS[dimension];
+            return (
+              <div
+                key={dimension}
+                className={
+                  score !== undefined && score <= 2
+                    ? "mock-score-row mock-score-row--low"
+                    : "mock-score-row"
+                }
               >
-                <option value="">-</option>
-                {[1, 2, 3, 4, 5].map((n) => (
-                  <option key={n} value={n}>
-                    {n}
-                  </option>
-                ))}
-              </select>
-            </div>
-          ))}
+                <label htmlFor={`score-${session.id}-${dimension}`}>{label}</label>
+                <select
+                  id={`score-${session.id}-${dimension}`}
+                  value={score ?? ""}
+                  onChange={(e) => {
+                    const value = Number(e.target.value);
+                    if (Number.isInteger(value) && value >= 1 && value <= 5) {
+                      onScore?.(dimension, value);
+                    }
+                  }}
+                >
+                  <option value="">-</option>
+                  {[1, 2, 3, 4, 5].map((n) => (
+                    <option key={n} value={n}>
+                      {n}
+                    </option>
+                  ))}
+                </select>
+                {score !== undefined && score <= 2 ? (
+                  <Button
+                    small
+                    onClick={() => {
+                      void onCreateCorrection({
+                        title: `Correction: ${label} — ${session.topic}`,
+                        scheduled_date: correctionDate,
+                        estimated_minutes: Math.max(30, Math.round(session.allotted_minutes / 2)),
+                        source_practice_session_id: session.id,
+                      });
+                      setShowCorrection(true);
+                    }}
+                  >
+                    Create correction for {label}
+                  </Button>
+                ) : null}
+              </div>
+            );
+          })}
           {session.correction_due_date && !session.corrected_at && (
             <p className="overdue-note">
               Correction due {formatDisplayDate(session.correction_due_date)}

@@ -561,6 +561,141 @@ button[type="button"] {
   letter-spacing: 0.04em;
 }
 
+/* Practice redesign (Task UI-8). */
+.practice-tabs {
+  display: inline-flex;
+  gap: var(--space-1);
+  padding: var(--space-1);
+  margin-bottom: var(--space-5);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-2);
+}
+
+.practice-tab {
+  min-height: var(--target-min);
+  min-width: 6rem;
+  padding: 0 var(--space-3);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-muted);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.practice-tab.is-active {
+  background: var(--surface);
+  color: var(--accent);
+  box-shadow: var(--shadow-sm);
+}
+
+.practice-gate {
+  margin-bottom: var(--space-6);
+}
+
+.practice-gate__header,
+.practice-panel__heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.practice-gate__header h2,
+.practice-panel__heading h2 {
+  margin: 0;
+  font-size: var(--fs-xl);
+}
+
+.practice-gate__header strong {
+  font-size: var(--fs-2xl);
+  line-height: 1;
+  color: var(--accent);
+}
+
+.practice-gate__copy,
+.practice-panel__heading p {
+  margin: var(--space-1) 0 0;
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+}
+
+.practice-result-cells {
+  display: grid;
+  grid-template-columns: repeat(10, minmax(0, 1fr));
+  gap: var(--space-2);
+  list-style: none;
+  margin: var(--space-4) 0 0;
+  padding: 0;
+}
+
+.practice-result-cell {
+  display: grid;
+  min-height: var(--target-min);
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-weight: 700;
+}
+
+.practice-result-cell.is-solved {
+  background: var(--success-soft);
+  border-color: var(--success);
+  color: var(--success);
+}
+
+.practice-result-cell.is-unsolved {
+  background: var(--danger-soft);
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+.practice-result-cell__number {
+  font-size: var(--fs-xs);
+  font-weight: 500;
+}
+
+.practice-panel__section {
+  margin-top: var(--space-5);
+}
+
+.mock-score-row {
+  display: grid;
+  grid-template-columns: minmax(9rem, 1fr) minmax(4rem, 7rem) auto;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.mock-score-row--low {
+  padding-inline: var(--space-2);
+  border-left: 3px solid var(--warning);
+  background: var(--warning-soft);
+}
+
+@media (max-width: 40rem) {
+  .practice-panel__heading,
+  .practice-gate__header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .practice-panel__heading .ui-btn {
+    width: 100%;
+  }
+
+  .practice-result-cells {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+
+  .mock-score-row {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* Plan view */
 .plan-week {
   margin: var(--space-4) 0;

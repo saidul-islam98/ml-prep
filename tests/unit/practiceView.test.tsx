@@ -83,7 +83,7 @@ describe("PracticeView", () => {
 
   it("shows the latest-ten readiness window with a count and empty state", async () => {
     renderView();
-    expect(await screen.findByText(/No qualifying sessions yet/)).toBeInTheDocument();
+    expect(await screen.findByText("Build your readiness window")).toBeInTheDocument();
   });
 
   it("reports the 8-of-10 gate signal from qualifying sessions", async () => {
@@ -100,8 +100,36 @@ describe("PracticeView", () => {
     );
     renderView();
 
-    expect(await screen.findByText(/7\/10 solved in the latest ten/)).toBeInTheDocument();
-    expect(screen.getByText(/below the 8-of-10 gate signal/)).toBeInTheDocument();
+    expect(await screen.findByText("7/10", { selector: "strong" })).toBeInTheDocument();
+    expect(
+      screen.getByText("1 more solved result needed to reach the signal."),
+    ).toBeInTheDocument();
+  });
+
+  it("uses an accessible practice switcher and renders the latest ten as result cells", async () => {
+    vi.mocked(api.fetchPracticeSessions).mockResolvedValue(
+      Array.from({ length: 10 }, (_, i) =>
+        session({
+          id: `coding-${i}`,
+          date: "2026-08-31",
+          state: "completed",
+          completed_at: new Date(Date.UTC(2026, 7, 20 + i, 10)).toISOString(),
+          result: i < 8 ? "solved" : "unsolved",
+        }),
+      ),
+    );
+    renderView();
+
+    expect(await screen.findByRole("tab", { name: "Coding" })).toHaveAttribute(
+      "aria-selected",
+      "true",
+    );
+    expect(screen.getByRole("tab", { name: "Mocks" })).toBeInTheDocument();
+    expect(await screen.findByRole("list", { name: "Latest ten coding results" })).toHaveAttribute(
+      "aria-label",
+      "Latest ten coding results",
+    );
+    expect(screen.getAllByRole("listitem", { name: /coding result/i })).toHaveLength(10);
   });
 
   it("creates a coding session through the validated form", async () => {
@@ -165,6 +193,7 @@ describe("PracticeView", () => {
     ]);
     renderView();
 
+    await user.click(await screen.findByRole("tab", { name: "Mocks" }));
     const framing = await screen.findByLabelText(/Problem framing/);
     await user.selectOptions(framing, "4");
     await waitFor(() => {
@@ -175,6 +204,33 @@ describe("PracticeView", () => {
     await waitFor(() => {
       expect(api.saveMockScore).toHaveBeenCalledWith("mock-1", "integrity", 5);
     });
+  });
+
+  it("places a correction action beside low mock-rubric scores", async () => {
+    const user = userEvent.setup();
+    vi.mocked(api.fetchPracticeSessions).mockResolvedValue([
+      session({
+        id: "mock-low-score",
+        session_type: "mock",
+        topic: "Agent environment design",
+        state: "completed",
+        completed_at: "2026-08-31T18:00:00Z",
+        result: "completed",
+      }),
+    ]);
+    vi.mocked(api.fetchMockScores).mockResolvedValue([
+      {
+        practice_session_id: "mock-low-score",
+        dimension_key: "communication",
+        score: 2,
+      },
+    ] as Awaited<ReturnType<PrepApi["fetchMockScores"]>>);
+    renderView();
+
+    await user.click(await screen.findByRole("tab", { name: "Mocks" }));
+    expect(
+      await screen.findByRole("button", { name: "Create correction for Communication" }),
+    ).toBeInTheDocument();
   });
 
   it("creates a dated correction task linked to the source session", async () => {
@@ -196,6 +252,7 @@ describe("PracticeView", () => {
     } as unknown as import("../../src/lib/api").TaskRow);
     renderView();
 
+    await user.click(await screen.findByRole("tab", { name: "Mocks" }));
     const button = await screen.findByRole("button", { name: /create dated correction task/ });
     await user.click(button);
 

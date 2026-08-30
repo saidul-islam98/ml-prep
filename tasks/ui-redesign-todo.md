@@ -163,9 +163,9 @@ Every task preserves existing data/API behavior and leaves its focused tests gre
 
 **Acceptance criteria:**
 
-- [ ] Coding and mock sections use a responsive switcher/tabs with target, completed volume, and next-session action.
-- [ ] Latest-ten coding readiness is visualized as ten accessible result cells plus an 8/10 target summary.
-- [ ] Mock rubric results highlight low dimensions and place correction creation next to the gap that caused it.
+- [x] Coding and mock sections use a responsive switcher/tabs with target, completed volume, and next-session action.
+- [x] Latest-ten coding readiness is visualized as ten accessible result cells plus an 8/10 target summary.
+- [x] Mock rubric results highlight low dimensions and place correction creation next to the gap that caused it.
 
 **Verification:**
 
