@@ -177,3 +177,24 @@ Implementation should begin only after the user approves:
 - the mobile five-item navigation with a More menu;
 - the compact task action model;
 - the plan recorded in `tasks/ui-redesign-todo.md`.
+
+## DeepML-Inspired Visual Pass
+
+The approved second pass replaces the generic dashboard treatment with a dense,
+editorial interview-prep workspace. It takes inspiration from DeepML's paced,
+company-and-role-specific preparation model—not its brand, content, or code.
+
+```text
+UI-13 visual foundation + shell
+  └── UI-14 Today + Plan as paced curriculum
+        └── UI-15 Projects + Practice + Readiness + Progress as evidence modules
+              └── UI-16 visual/accessibility acceptance
+```
+
+Key decisions:
+
+- Use a warm neutral canvas, ink-forward typography, compact rules, restrained
+  orange/indigo accents, and fewer floating cards.
+- Treat tasks as numbered training reps and weeks as chapters in a paced path.
+- Keep the current routes, APIs, data model, offline behavior, and WCAG rules.
+- Use the same responsive app shell; do not copy DeepML visual assets or branding.

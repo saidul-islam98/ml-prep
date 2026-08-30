@@ -269,3 +269,79 @@ Every task preserves existing data/API behavior and leaves its focused tests gre
 - [ ] User accepts the redesigned Today, Plan, and Progress screenshots.
 - [ ] All routes preserve original functionality and private-data boundaries.
 - [ ] Automated and physical-device acceptance is recorded.
+
+## Task UI-13: Establish the DeepML-inspired visual foundation
+
+**Description:** Replace the generic dashboard look with an editorial interview-prep system: warm neutral canvas, ink-forward typography, compact rules, a high-signal sidebar, and reusable chapter/module primitives.
+
+**Acceptance criteria:**
+
+- [x] The shell clearly identifies Cohere MTS Prep, the active week, and the current route without imitating DeepML branding.
+- [x] Tokens and primitives support the editorial hierarchy in light and dark themes without changing interaction behavior.
+- [x] Mobile remains legible with the existing navigation model and 44px targets.
+
+**Verification:**
+
+- [x] Tests pass: `tests/unit/uiPrimitives.test.tsx`, `tests/unit/appShell.test.tsx`, and accessibility checks.
+- [x] Run: `npm run typecheck && npm run lint && npm run build`.
+
+**Dependencies:** Existing UI-2/UI-3
+**Files likely touched:** `src/styles/tokens.css`, `src/styles/primitives.css`, `src/styles/shell.css`, `src/views/AppShell.tsx`, `tests/unit/appShell.test.tsx`
+**Estimated scope:** Medium
+
+## Task UI-14: Rebuild Today and Plan as a paced curriculum
+
+**Description:** Present the daily queue as the next training rep and the 14-week plan as numbered chapters with compact lesson rows, progress, and explicit exit checks.
+
+**Acceptance criteria:**
+
+- [ ] Today prioritizes one next rep and groups remaining work as compact practice modules.
+- [ ] Plan weeks read as chapters with progress, focus, and expandable task rows instead of generic cards.
+- [ ] All task actions and filters retain their existing behavior.
+
+**Verification:**
+
+- [ ] Tests pass: Today and Plan focused suites.
+- [ ] Manual check: 360px and 1440px layouts remain scannable.
+
+**Dependencies:** UI-13
+**Files likely touched:** `src/views/TodayView.tsx`, `src/views/PlanView.tsx`, `src/styles/global.css`, `tests/unit/todayView.test.tsx`, `tests/unit/planView.test.tsx`
+**Estimated scope:** Medium
+
+## Task UI-15: Rebuild evidence, practice, and readiness surfaces as modules
+
+**Description:** Apply the same training-module language to Projects, Practice, Readiness, and Progress so evidence, scores, and role readiness feel like one curriculum.
+
+**Acceptance criteria:**
+
+- [ ] Project evidence, practice scores, readiness gates, and progress metrics share module headings and compact data treatment.
+- [ ] Dense data remains understandable without color alone.
+- [ ] Existing creation, assessment, and evidence workflows remain available.
+
+**Verification:**
+
+- [ ] Tests pass: Projects, Practice, Readiness, Progress, and metrics suites.
+- [ ] Run: `npm run typecheck && npm run lint`.
+
+**Dependencies:** UI-13
+**Files likely touched:** `src/views/ProjectsView.tsx`, `src/views/PracticeView.tsx`, `src/views/ReadinessView.tsx`, `src/views/ProgressView.tsx`, `src/styles/global.css`
+**Estimated scope:** Large; implement as two commits if needed.
+
+## Task UI-16: Complete the reference-inspired acceptance pass
+
+**Description:** Verify the composed visual system against the approved direction and preserve functional, responsive, and accessibility quality.
+
+**Acceptance criteria:**
+
+- [ ] Every route has intentional light/dark, empty, loading, and error treatment with no overflow.
+- [ ] Keyboard/focus, semantic labels, contrast, and reduced motion remain compliant.
+- [ ] Before/after captures demonstrate an editorial curriculum rather than a generic dashboard.
+
+**Verification:**
+
+- [ ] Run: `npm test && npm run test:integration && npm run format:check && npm run build && npm run verify:subpath`.
+- [ ] Manual check: Linux desktop and Android phone/tablet.
+
+**Dependencies:** UI-13 through UI-15
+**Files likely touched:** `src/styles/global.css`, `docs/UI_REDESIGN.md`, `docs/acceptance.md`, `tests/unit/accessibility.test.tsx`
+**Estimated scope:** Medium

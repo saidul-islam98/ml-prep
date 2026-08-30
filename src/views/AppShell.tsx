@@ -30,8 +30,9 @@ export function AppShell({ active, currentWeek, children }: AppShellProps) {
 
       <aside className="sidebar">
         <div className="sidebar__brand">
-          <p className="sidebar__title">ml-prep</p>
-          <p className="sidebar__window">Aug 31 - Dec 6, 2026</p>
+          <p className="sidebar__eyebrow">Interview curriculum</p>
+          <p className="sidebar__title">Cohere MTS Prep</p>
+          <p className="sidebar__window">14-week role-specific training</p>
           {currentWeek && (
             <p className="sidebar__week">
               Week {currentWeek.week_number} - {currentWeek.phase}
