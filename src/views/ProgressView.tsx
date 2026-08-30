@@ -25,6 +25,7 @@ import { addDays, formatDisplayDate, torontoToday } from "../lib/toronto";
 import { useApi } from "../hooks/useApi";
 import { useProfile } from "../hooks/useProfile";
 import { useTasks } from "../hooks/useTasks";
+import { Card, PageHeader } from "../components/ui";
 
 const TOOLTIP_ON_TIME =
   "On-time completion rate = tasks completed on original schedule / eligible tasks originally due in the period. Rescheduling never moves a task between cohorts.";
@@ -133,33 +134,53 @@ export function ProgressView() {
 
   return (
     <div className="progress-view">
-      <section aria-labelledby="progress-title">
-        <h1 id="progress-title">Progress</h1>
-        <p className="overdue-note">
-          Cohorts freeze at the original scheduled date. Skipping or rescheduling never inflates
-          completion.
-        </p>
-      </section>
+      <PageHeader
+        title="Progress"
+        description={
+          <>
+            Cohorts freeze at the original scheduled date. Skipping or rescheduling never inflates
+            completion.
+          </>
+        }
+      />
 
       <section aria-labelledby="p-rates" className="progress-rates">
         <h2 id="p-rates">Completion quality</h2>
-        <div className="rate-grid">
-          <div className="rate" title={TOOLTIP_ON_TIME}>
-            <span className="rate-value">{formatRate(current.onTimeCompletionRate)}</span>
-            <span className="rate-label">On-time completion (7 days)</span>
-          </div>
-          <div className="rate" title={TOOLTIP_RESOLUTION}>
-            <span className="rate-value">{formatRate(current.resolutionRate)}</span>
-            <span className="rate-label">Resolution (7 days)</span>
-          </div>
-          <div className="rate" title={TOOLTIP_ATTAINMENT}>
-            <span className="rate-value">{formatRate(current.plannedMinuteAttainment)}</span>
-            <span className="rate-label">Planned-minute attainment (7 days)</span>
-          </div>
-          <div className="rate" title={TOOLTIP_ON_TIME}>
-            <span className="rate-value">{formatRate(previous.onTimeCompletionRate)}</span>
-            <span className="rate-label">On-time (previous 7 days)</span>
-          </div>
+        <div className="progress-periods">
+          <Card className="progress-period" ariaLabel="Current 7 days">
+            <h3>Current 7 days</h3>
+            <div className="rate-grid">
+              <div className="rate" title={TOOLTIP_ON_TIME}>
+                <span className="rate-value">{formatRate(current.onTimeCompletionRate)}</span>
+                <span className="rate-label">On-time completion</span>
+              </div>
+              <div className="rate" title={TOOLTIP_RESOLUTION}>
+                <span className="rate-value">{formatRate(current.resolutionRate)}</span>
+                <span className="rate-label">Resolution</span>
+              </div>
+              <div className="rate" title={TOOLTIP_ATTAINMENT}>
+                <span className="rate-value">{formatRate(current.plannedMinuteAttainment)}</span>
+                <span className="rate-label">Planned-minute attainment</span>
+              </div>
+            </div>
+          </Card>
+          <Card className="progress-period" ariaLabel="Previous 7 days">
+            <h3>Previous 7 days</h3>
+            <div className="rate-grid">
+              <div className="rate" title={TOOLTIP_ON_TIME}>
+                <span className="rate-value">{formatRate(previous.onTimeCompletionRate)}</span>
+                <span className="rate-label">On-time completion</span>
+              </div>
+              <div className="rate" title={TOOLTIP_RESOLUTION}>
+                <span className="rate-value">{formatRate(previous.resolutionRate)}</span>
+                <span className="rate-label">Resolution</span>
+              </div>
+              <div className="rate" title={TOOLTIP_ATTAINMENT}>
+                <span className="rate-value">{formatRate(previous.plannedMinuteAttainment)}</span>
+                <span className="rate-label">Planned-minute attainment</span>
+              </div>
+            </div>
+          </Card>
         </div>
         <p className="overdue-note">
           Current period: {current.completedOnOriginalSchedule} on original schedule,{" "}
@@ -171,7 +192,7 @@ export function ProgressView() {
 
       <section aria-labelledby="p-trend" className="progress-trend">
         <h2 id="p-trend">Fourteen-week resolution trend</h2>
-        <div className="trend-bars" role="img" aria-label="Weekly resolution rate bar chart">
+        <div className="trend-bars" role="img" aria-label="Weekly resolution trend">
           {weeks.map((week, i) => {
             const rate = trend[i]?.resolutionRate ?? null;
             return (
@@ -190,6 +211,16 @@ export function ProgressView() {
             );
           })}
         </div>
+        <p className="sr-only">
+          {weeks.length === 0
+            ? "No weekly trend data is available."
+            : weeks
+                .map(
+                  (week, index) =>
+                    `Week ${week.week_number}: ${formatRate(trend[index]?.resolutionRate ?? null)}`,
+                )
+                .join(". ")}
+        </p>
       </section>
 
       <section aria-labelledby="p-effort" className="progress-effort">

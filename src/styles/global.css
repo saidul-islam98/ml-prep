@@ -1135,6 +1135,41 @@ button[type="button"] {
   margin: var(--space-3) 0;
 }
 
+.progress-periods {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+.progress-period h3 {
+  margin: 0 0 var(--space-3);
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+}
+
+.progress-period .rate-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (max-width: 40rem) {
+  .progress-periods,
+  .progress-period .rate-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .rate {
   background: var(--color-surface);
   border: 1px solid var(--color-border);

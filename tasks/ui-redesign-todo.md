@@ -203,9 +203,9 @@ Every task preserves existing data/API behavior and leaves its focused tests gre
 
 **Acceptance criteria:**
 
-- [ ] Current/previous week planned vs completed minutes and task outcomes are presented as comparable summary cards.
-- [ ] Fourteen-week trend, project milestones, latest-ten coding, mock rubric trends, and readiness matrix use accessible visualizations with null/empty handling.
-- [ ] Metric definitions remain available through concise help/disclosure and never relabel resolution as completion.
+- [x] Current/previous week planned vs completed minutes and task outcomes are presented as comparable summary cards.
+- [x] Fourteen-week trend, project milestones, latest-ten coding, mock rubric trends, and readiness matrix use accessible visualizations with null/empty handling.
+- [x] Metric definitions remain available through concise help/disclosure and never relabel resolution as completion.
 
 **Verification:**
 
