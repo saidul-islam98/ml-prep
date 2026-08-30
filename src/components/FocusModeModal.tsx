@@ -1,5 +1,8 @@
-import React, { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import type { CurriculumTask } from "../curriculum/schemas";
+import type { TaskExecutionProgressInput } from "../lib/api";
+import { elapsedSeconds, emptyTaskExecution, pauseExecution } from "../hooks/useTaskExecution";
+import { useModalFocus } from "../hooks/useModalFocus";
 import { Badge, Button } from "./ui";
 
 interface FocusModeModalProps {
@@ -7,56 +10,92 @@ interface FocusModeModalProps {
   isOpen: boolean;
   onClose: () => void;
   onCompleteTask: (task: CurriculumTask) => void;
+  progress?: TaskExecutionProgressInput;
+  onProgressChange?: (progress: TaskExecutionProgressInput) => void | Promise<unknown>;
 }
 
-export const FocusModeModal: React.FC<FocusModeModalProps> = ({
+function formatTime(totalSeconds: number) {
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+}
+
+export function FocusModeModal({
   task,
   isOpen,
   onClose,
   onCompleteTask,
-}) => {
-  const [currentStepIndex, setCurrentStepIndex] = useState(0);
-  const [secondsElapsed, setSecondsElapsed] = useState(0);
-  const [isTimerRunning, setIsTimerRunning] = useState(true);
-  const [stepNotes, setStepNotes] = useState<Record<string, string>>({});
-  const [completedSteps, setCompletedSteps] = useState<Record<string, boolean>>({});
+  progress: controlledProgress,
+  onProgressChange,
+}: FocusModeModalProps) {
+  const [localProgress, setLocalProgress] = useState<TaskExecutionProgressInput>(() => ({
+    ...emptyTaskExecution(),
+    timer_started_at: new Date().toISOString(),
+    started_at: new Date().toISOString(),
+  }));
+  const [now, setNow] = useState(Date.now());
+  const progress = controlledProgress ?? localProgress;
+  const dialogRef = useModalFocus<HTMLDivElement>(isOpen, onClose);
+
+  function save(next: TaskExecutionProgressInput) {
+    if (!controlledProgress) setLocalProgress(next);
+    void onProgressChange?.(next);
+  }
 
   useEffect(() => {
-    if (!isOpen) return;
-    function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === "Escape") onClose();
-    }
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, onClose]);
+    if (!isOpen || !progress.timer_started_at) return;
+    const interval = window.setInterval(() => setNow(Date.now()), 1000);
+    return () => window.clearInterval(interval);
+  }, [isOpen, progress.timer_started_at]);
 
   useEffect(() => {
-    if (!isOpen || !isTimerRunning) return;
-    const interval = setInterval(() => {
-      setSecondsElapsed((prev) => prev + 1);
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [isOpen, isTimerRunning]);
+    if (!isOpen || progress.started_at) return;
+    const started = new Date().toISOString();
+    save({ ...progress, started_at: started, timer_started_at: started });
+  }, [isOpen, progress.started_at]);
 
   if (!isOpen) return null;
 
   const totalSteps = task.todos.length;
+  const currentStepIndex = Math.min(progress.current_step_index, Math.max(0, totalSteps - 1));
   const currentStep = task.todos[currentStepIndex];
+  const shownSeconds = elapsedSeconds(progress, now);
+  const completed = currentStep ? progress.completed_todo_ids.includes(currentStep.id) : false;
 
-  const formatTime = (totalSeconds: number) => {
-    const mins = Math.floor(totalSeconds / 60);
-    const secs = totalSeconds % 60;
-    return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
-  };
+  function pauseAndClose() {
+    save(pauseExecution(progress));
+    onClose();
+  }
 
-  const markCurrentStepDone = () => {
-    if (currentStep) {
-      setCompletedSteps((prev) => ({ ...prev, [currentStep.id]: true }));
+  function toggleTimer() {
+    if (progress.timer_started_at) {
+      save(pauseExecution(progress));
+    } else {
+      save({ ...progress, timer_started_at: new Date().toISOString(), paused_at: null });
+      setNow(Date.now());
     }
-    if (currentStepIndex < totalSteps - 1) {
-      setCurrentStepIndex((prev) => prev + 1);
-    }
-  };
+  }
+
+  function move(index: number) {
+    save({ ...progress, current_step_index: Math.max(0, Math.min(totalSteps - 1, index)) });
+  }
+
+  function markCurrentStepDone() {
+    if (!currentStep) return;
+    const ids = Array.from(new Set([...progress.completed_todo_ids, currentStep.id]));
+    save({
+      ...progress,
+      completed_todo_ids: ids,
+      current_step_index: Math.min(totalSteps - 1, currentStepIndex + 1),
+    });
+  }
+
+  function recordResource(resourceId: string) {
+    save({
+      ...progress,
+      opened_resource_ids: Array.from(new Set([...progress.opened_resource_ids, resourceId])),
+    });
+  }
 
   return (
     <div
@@ -64,10 +103,14 @@ export const FocusModeModal: React.FC<FocusModeModalProps> = ({
       role="dialog"
       aria-modal="true"
       aria-labelledby="focus-modal-title"
-      onClick={onClose}
+      onClick={pauseAndClose}
     >
-      <div className="deepml-modal-card deepml-focus-card" onClick={(e) => e.stopPropagation()}>
-        {/* Top Header */}
+      <div
+        ref={dialogRef}
+        tabIndex={-1}
+        className="deepml-modal-card deepml-focus-card"
+        onClick={(event) => event.stopPropagation()}
+      >
         <div className="deepml-focus-header">
           <div className="deepml-focus-header-info">
             <div className="deepml-modal-eyebrow">
@@ -81,34 +124,42 @@ export const FocusModeModal: React.FC<FocusModeModalProps> = ({
               {task.title}
             </h2>
           </div>
-
-          {/* Timer Display */}
           <div className="deepml-focus-timer-box">
-            <div className="deepml-focus-timer-digits">{formatTime(secondsElapsed)}</div>
+            <div className="deepml-focus-timer-digits" aria-live="off">
+              {formatTime(shownSeconds)}
+            </div>
             <div className="deepml-focus-timer-controls">
               <Button
                 variant="ghost"
-                onClick={() => setIsTimerRunning((r) => !r)}
-                aria-label={isTimerRunning ? "Pause Timer" : "Resume Timer"}
+                onClick={toggleTimer}
+                aria-label={progress.timer_started_at ? "Pause Timer" : "Resume Timer"}
               >
-                {isTimerRunning ? "⏸ Pause" : "▶ Resume"}
+                {progress.timer_started_at ? "Pause" : "Resume"}
               </Button>
-              <Button variant="ghost" onClick={() => setSecondsElapsed(0)} aria-label="Reset Timer">
-                ↺ Reset
+              <Button
+                variant="ghost"
+                onClick={() =>
+                  save({
+                    ...progress,
+                    elapsed_seconds: 0,
+                    timer_started_at: progress.timer_started_at ? new Date().toISOString() : null,
+                  })
+                }
+                aria-label="Reset Timer"
+              >
+                Reset
               </Button>
             </div>
           </div>
         </div>
 
-        {/* Progress Bar */}
         <div className="deepml-focus-progress-track">
           <div
             className="deepml-focus-progress-fill"
-            style={{ width: `${((currentStepIndex + 1) / totalSteps) * 100}%` }}
+            style={{ width: `${totalSteps ? ((currentStepIndex + 1) / totalSteps) * 100 : 0}%` }}
           />
         </div>
 
-        {/* Body / Current Step */}
         <div className="deepml-modal-body deepml-focus-body">
           {currentStep ? (
             <div className="deepml-focus-step-card">
@@ -117,91 +168,85 @@ export const FocusModeModal: React.FC<FocusModeModalProps> = ({
                 {currentStep.estimatedMinutes && (
                   <Badge tone="role-agent-env">Budget: {currentStep.estimatedMinutes} min</Badge>
                 )}
-                {completedSteps[currentStep.id] && <Badge tone="success">✓ Step Completed</Badge>}
+                {completed && <Badge tone="success">Step Completed</Badge>}
               </div>
-
               <h3 className="deepml-focus-step-text">{currentStep.text}</h3>
-
               {currentStep.output && (
                 <div className="deepml-focus-step-output">
                   <strong>Target Output:</strong> <code>{currentStep.output}</code>
                 </div>
               )}
-
-              {/* Task Resources */}
-              {task.resources && task.resources.length > 0 && (
+              {task.resources?.length ? (
                 <div className="deepml-focus-resources-preview">
                   <span className="deepml-resource-heading">Targeted Reading / Tool:</span>
                   <div className="deepml-resource-pills">
-                    {task.resources.map((res) => (
+                    {task.resources.map((resource) => (
                       <a
-                        key={res.id}
-                        href={res.url}
+                        key={resource.id}
+                        href={resource.url}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="deepml-resource-pill-link"
+                        onClick={() => recordResource(resource.id)}
                       >
-                        📖 {res.title} ↗
+                        {resource.title} - open
                       </a>
                     ))}
                   </div>
                 </div>
-              )}
-
-              {/* Notes / Evidence workspace */}
+              ) : null}
               <div className="deepml-focus-notes-area">
-                <label htmlFor="step-notes" className="deepml-label">
+                <label htmlFor={`step-notes-${task.key}`} className="deepml-label">
                   Execution Notes / Output Log:
                 </label>
                 <textarea
-                  id="step-notes"
+                  id={`step-notes-${task.key}`}
                   className="deepml-textarea"
                   rows={4}
-                  placeholder="Record findings, complexity derivation, code snippets, or error causes..."
-                  value={stepNotes[currentStep.id] || ""}
-                  onChange={(e) =>
-                    setStepNotes((prev) => ({
-                      ...prev,
-                      [currentStep.id]: e.target.value,
-                    }))
+                  placeholder="Record findings, complexity, test results, or error causes..."
+                  value={progress.step_notes[currentStep.id] ?? ""}
+                  onChange={(event) =>
+                    save({
+                      ...progress,
+                      step_notes: { ...progress.step_notes, [currentStep.id]: event.target.value },
+                    })
                   }
                 />
               </div>
             </div>
           ) : (
-            <p>All steps completed!</p>
+            <p>All steps completed.</p>
           )}
         </div>
 
-        {/* Footer Navigation */}
         <div className="deepml-modal-footer deepml-focus-footer">
           <div className="deepml-focus-nav-left">
             <Button
               variant="ghost"
               disabled={currentStepIndex === 0}
-              onClick={() => setCurrentStepIndex((i) => Math.max(0, i - 1))}
+              onClick={() => move(currentStepIndex - 1)}
             >
-              ← Previous Step
+              Previous Step
             </Button>
             <Button
               variant="ghost"
               disabled={currentStepIndex >= totalSteps - 1}
-              onClick={() => setCurrentStepIndex((i) => Math.min(totalSteps - 1, i + 1))}
+              onClick={() => move(currentStepIndex + 1)}
             >
-              Next Step →
+              Next Step
             </Button>
           </div>
-
           <div className="deepml-focus-nav-right">
-            <Button variant="secondary" onClick={onClose}>
+            <Button variant="secondary" onClick={pauseAndClose}>
               Exit Focus
             </Button>
             <Button variant="primary" onClick={markCurrentStepDone}>
-              {currentStepIndex < totalSteps - 1 ? "✓ Complete Step & Next" : "✓ Finish Last Step"}
+              {currentStepIndex < totalSteps - 1 ? "Complete Step & Next" : "Finish Last Step"}
             </Button>
             <Button
               variant="primary"
               onClick={() => {
+                save(pauseExecution(progress));
                 onClose();
                 onCompleteTask(task);
               }}
@@ -213,4 +258,4 @@ export const FocusModeModal: React.FC<FocusModeModalProps> = ({
       </div>
     </div>
   );
-};
+}

@@ -32,13 +32,13 @@ describe("Task Execution and Progressive Disclosure UI", () => {
     expect(screen.getByText(/Atomic Action Steps/)).toBeInTheDocument();
 
     // Check tabs
-    const resourceTab = screen.getByRole("button", { name: /Targeted Resources/i });
+    const resourceTab = screen.getByRole("tab", { name: /Targeted Resources/i });
     fireEvent.click(resourceTab);
     expect(screen.getByText(/NeetCode \/ LeetCode Structured Coding/)).toBeInTheDocument();
     expect(screen.getByText(/Pick two medium problems only/)).toBeInTheDocument();
 
     // Switch to Definition of Done tab
-    const criteriaTab = screen.getByRole("button", { name: /Definition of Done/i });
+    const criteriaTab = screen.getByRole("tab", { name: /Definition of Done/i });
     fireEvent.click(criteriaTab);
     expect(
       screen.getByText(/2 timed medium problems attempted under 40 min each/),
@@ -95,24 +95,27 @@ describe("Task Execution and Progressive Disclosure UI", () => {
 
     const completeBtn = screen.getByRole("button", { name: /Override & Complete Task/i });
     fireEvent.click(completeBtn);
-    expect(handleConfirm).toHaveBeenCalledWith(task, "Completed on LeetCode with test cases");
+    expect(handleConfirm).toHaveBeenCalledWith(
+      task,
+      expect.objectContaining({
+        actualMinutes: 120,
+        overrideReason: "Completed on LeetCode with test cases",
+        completedCriterionIds: [],
+      }),
+    );
   });
 
   it("renders WeekSummaryBanner with objectives, outcomes, and exit checks", () => {
     render(<WeekSummaryBanner week={week1} />);
 
-    expect(screen.getByText("Positioning, Baselines & Project Scope")).toBeInTheDocument();
-    expect(
-      screen.getByText(/Establish coding, agent-eval, and Cohere-fit baselines/),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Positioning and baselines")).toBeInTheDocument();
+    expect(screen.getByText(/Execute the canonical Week 1 routine/)).toBeInTheDocument();
 
     // Toggle details
     const toggleBtn = screen.getByRole("button", { name: /View Outcomes & Exit Check/i });
     fireEvent.click(toggleBtn);
 
-    expect(
-      screen.getByText(/Coding baseline measured and mistake log established/),
-    ).toBeInTheDocument();
-    expect(screen.getByText("practice/coding-baseline-YYYY-MM-DD.md")).toBeInTheDocument();
+    expect(screen.getByText(/8 scheduled sessions completed/)).toBeInTheDocument();
+    expect(screen.getAllByText(/Data\/Eval application submitted/)).toHaveLength(2);
   });
 });

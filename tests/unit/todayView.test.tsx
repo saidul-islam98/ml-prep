@@ -171,7 +171,7 @@ describe("TodayView", () => {
 
   it("completes a task with actual minutes and HTTPS evidence", async () => {
     const user = userEvent.setup();
-    vi.mocked(api.fetchTasks).mockResolvedValue([task()]);
+    vi.mocked(api.fetchTasks).mockResolvedValue([task({ template_task_key: null })]);
     vi.mocked(api.transition).mockResolvedValue({
       outcome: "ok",
       task: task({
@@ -208,7 +208,7 @@ describe("TodayView", () => {
 
   it("rejects non-HTTPS evidence client-side with a visible message", async () => {
     const user = userEvent.setup();
-    vi.mocked(api.fetchTasks).mockResolvedValue([task()]);
+    vi.mocked(api.fetchTasks).mockResolvedValue([task({ template_task_key: null })]);
     renderView();
 
     await screen.findByText("Timed Python + review");
@@ -225,7 +225,7 @@ describe("TodayView", () => {
 
   it("surfaces a stale-revision conflict with refresh/retry controls", async () => {
     const user = userEvent.setup();
-    vi.mocked(api.fetchTasks).mockResolvedValue([task()]);
+    vi.mocked(api.fetchTasks).mockResolvedValue([task({ template_task_key: null })]);
     vi.mocked(api.transition).mockResolvedValueOnce({
       outcome: "conflict",
       task: task({ revision: 3, state: "in_progress" }),

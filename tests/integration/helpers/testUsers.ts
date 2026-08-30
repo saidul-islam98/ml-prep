@@ -103,6 +103,7 @@ export async function resetAllUserData(): Promise<void> {
   await withDb(async (db) => {
     // App tables (schema lands in Task 3b; tolerate absence).
     const appTables = [
+      "task_execution_progress",
       "task_events",
       "tasks",
       "project_milestones",

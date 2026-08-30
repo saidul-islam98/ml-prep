@@ -20,6 +20,57 @@ beforeEach(async () => {
 });
 
 describe("cross-session synchronization", () => {
+  it("persists execution progress and exposes it to a second authenticated device", async () => {
+    const target = (await apiA.fetchTasks()).find((task) => task.template_task_key === "w02-wed")!;
+    const saved = await apiA.saveTaskExecution!(target.id, {
+      completed_todo_ids: ["w02-wed-contract"],
+      completed_criterion_ids: [],
+      opened_resource_ids: ["inspect_ai"],
+      current_step_index: 1,
+      elapsed_seconds: 725,
+      timer_started_at: null,
+      step_notes: { "w02-wed-contract": "Schema contracts drafted and reviewed." },
+      reflection_note: "Need a stronger verifier edge case.",
+      started_at: "2026-09-09T20:00:00.000Z",
+      paused_at: "2026-09-09T20:12:05.000Z",
+    });
+    expect(saved.elapsed_seconds).toBe(725);
+
+    const clientB = await authenticatedClient(user);
+    const fromSecondDevice = await createPrepApi(clientB).fetchTaskExecution!(target.id);
+    expect(fromSecondDevice).toMatchObject({
+      completed_todo_ids: ["w02-wed-contract"],
+      opened_resource_ids: ["inspect_ai"],
+      current_step_index: 1,
+      elapsed_seconds: 725,
+      step_notes: { "w02-wed-contract": "Schema contracts drafted and reviewed." },
+    });
+  });
+
+  it("records completion override separately from evidence in immutable history", async () => {
+    const target = (await apiA.fetchTasks()).find((task) => task.template_task_key === "w01-mon")!;
+    await apiA.transition(target.id, target.revision, "complete", {
+      actual_minutes: 83,
+      evidence_note: "Repository and scorecard attached",
+      completion_gate_verified: false,
+      completion_override_reason: "Equivalent pair of timed problems completed",
+      completed_criterion_ids: ["cc1", "cc2"],
+      elapsed_seconds: 4970,
+    });
+
+    const completed = (await apiA.fetchTaskEvents(target.id)).find(
+      (event) => event.event_type === "completed",
+    );
+    expect(completed?.metadata).toMatchObject({
+      actual_minutes: 83,
+      completion_gate_verified: false,
+      completion_override_reason: "Equivalent pair of timed problems completed",
+      completed_criterion_ids: ["cc1", "cc2"],
+      elapsed_seconds: 4970,
+    });
+    expect(completed?.metadata).not.toHaveProperty("evidence_note");
+  });
+
   it("a completion made in one session is visible in a second session", async () => {
     const tasksA = await apiA.fetchTasks();
     const target = tasksA.find((t) => t.template_task_key === "w01-mon");
@@ -256,6 +307,7 @@ describe("data export", () => {
       "plan_weeks",
       "tasks",
       "task_events",
+      "task_execution_progress",
       "projects",
       "project_milestones",
       "practice_sessions",

@@ -9,6 +9,7 @@ import { useState, type FormEvent } from "react";
 import type { TaskRow, TransitionName, TransitionOutcome, TransitionPayload } from "../lib/api";
 import { OfflineError } from "../lib/api";
 import { useTaskEvents } from "../hooks/useTasks";
+import { useTaskExecution } from "../hooks/useTaskExecution";
 import {
   CATEGORY_LABELS,
   ROLE_LABELS,
@@ -72,6 +73,7 @@ export function TaskCard({
   const isOverdue = variant === "overdue";
   const curriculumTask =
     getCurriculumTask(task.template_task_key ?? "") || getCurriculumTask(task.id);
+  const { progress, saveProgress } = useTaskExecution(task.id);
 
   async function run(transition: TransitionName, payload?: TransitionPayload) {
     setError(null);
@@ -83,11 +85,19 @@ export function TaskCard({
       } else {
         setDialog(null);
         setConflict(null);
+        return true;
       }
     } catch (err) {
       setDialog(null);
       setError(err instanceof OfflineError ? err.message : commandErrorMessage(err));
     }
+    return false;
+  }
+
+  async function startFocus() {
+    if (task.state === "completed" || task.state === "archived" || task.state === "skipped") return;
+    if (task.state === "not_started" && !(await run("start"))) return;
+    setFocusOpen(true);
   }
 
   async function retryWithLatest() {
@@ -108,7 +118,10 @@ export function TaskCard({
   const ctx: TaskActionContext = {
     task,
     run: (transition, payload) => void run(transition, payload),
-    openDialog: (d: TaskDialog) => setDialog(d),
+    openDialog: (d: TaskDialog) => {
+      if (d === "complete" && curriculumTask) setGateOpen(true);
+      else setDialog(d);
+    },
     toggleHistory: () => setHistoryOpen((o) => !o),
     historyOpen,
     offline,
@@ -271,7 +284,7 @@ export function TaskCard({
             <Button
               small
               variant="ghost"
-              onClick={() => setFocusOpen(true)}
+              onClick={() => void startFocus()}
               aria-label={`Launch focus mode for ${task.title}`}
             >
               ⏱ Focus
@@ -297,9 +310,11 @@ export function TaskCard({
           isOpen={detailOpen}
           isCompleted={task.state === "completed"}
           onClose={() => setDetailOpen(false)}
+          progress={progress}
+          onProgressChange={saveProgress}
           onStartFocus={() => {
             setDetailOpen(false);
-            setFocusOpen(true);
+            void startFocus();
           }}
           onComplete={() => {
             setDetailOpen(false);
@@ -313,6 +328,8 @@ export function TaskCard({
           task={curriculumTask}
           isOpen={focusOpen}
           onClose={() => setFocusOpen(false)}
+          progress={progress}
+          onProgressChange={saveProgress}
           onCompleteTask={() => {
             setFocusOpen(false);
             setGateOpen(true);
@@ -325,11 +342,21 @@ export function TaskCard({
           task={curriculumTask}
           isOpen={gateOpen}
           onClose={() => setGateOpen(false)}
-          onConfirmComplete={(_t, overrideRationale) => {
+          progress={progress}
+          onProgressChange={saveProgress}
+          initialEvidenceUrl={task.evidence_url}
+          initialEvidenceNote={task.evidence_note}
+          estimatedMinutes={task.estimated_minutes}
+          onConfirmComplete={(_t, result) => {
             setGateOpen(false);
             void run("complete", {
-              actual_minutes: task.estimated_minutes,
-              ...(overrideRationale ? { evidence_note: `Override: ${overrideRationale}` } : {}),
+              actual_minutes: result.actualMinutes,
+              evidence_url: result.evidenceUrl,
+              evidence_note: result.evidenceNote,
+              completion_gate_verified: !result.overrideReason,
+              completion_override_reason: result.overrideReason,
+              completed_criterion_ids: result.completedCriterionIds,
+              elapsed_seconds: result.elapsedSeconds,
             });
           }}
         />
@@ -378,6 +405,10 @@ function TaskHistory({
               {event.event_type === "rescheduled" &&
                 ` (${event.from_scheduled_date} -> ${event.to_scheduled_date})`}
               {typeof event.metadata?.reason === "string" && ` - ${event.metadata.reason}`}
+              {typeof event.metadata?.completion_override_reason === "string" &&
+                ` - Completion override: ${event.metadata.completion_override_reason}`}
+              {typeof event.metadata?.elapsed_seconds === "number" &&
+                ` - Focus time: ${Math.ceil(event.metadata.elapsed_seconds / 60)} min`}
             </li>
           ))}
         </ul>

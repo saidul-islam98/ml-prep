@@ -60,7 +60,7 @@ describe("App shell", () => {
     renderApp();
 
     expect(await screen.findByRole("heading", { name: "Today", level: 1 })).toBeInTheDocument();
-    expect(screen.getByText("Cohere MTS Prep")).toBeInTheDocument();
+    expect(screen.getAllByText("Cohere MTS Prep")).toHaveLength(2);
     expect(screen.getByText("Interview curriculum")).toBeInTheDocument();
     expect(screen.getByRole("navigation", { name: "Primary" })).toBeInTheDocument();
     expect(screen.getByRole("main")).toBeInTheDocument();

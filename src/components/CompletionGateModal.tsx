@@ -1,52 +1,100 @@
-import React, { useState, useEffect } from "react";
+import { useState } from "react";
 import type { CurriculumTask } from "../curriculum/schemas";
+import type { TaskExecutionProgressInput } from "../lib/api";
+import { elapsedSeconds, emptyTaskExecution } from "../hooks/useTaskExecution";
+import { useModalFocus } from "../hooks/useModalFocus";
+import { isValidHttpsUrl } from "../lib/constants";
 import { Badge, Button } from "./ui";
+
+export interface CompletionGateResult {
+  actualMinutes: number;
+  evidenceUrl?: string;
+  evidenceNote?: string;
+  overrideReason?: string;
+  completedCriterionIds: string[];
+  elapsedSeconds: number;
+}
 
 interface CompletionGateModalProps {
   task: CurriculumTask;
   isOpen: boolean;
   onClose: () => void;
-  onConfirmComplete: (task: CurriculumTask, overrideRationale?: string) => void;
+  onConfirmComplete: (task: CurriculumTask, result: CompletionGateResult) => void;
+  progress?: TaskExecutionProgressInput;
+  onProgressChange?: (progress: TaskExecutionProgressInput) => void | Promise<unknown>;
+  initialEvidenceUrl?: string | null;
+  initialEvidenceNote?: string | null;
+  estimatedMinutes?: number;
 }
 
-export const CompletionGateModal: React.FC<CompletionGateModalProps> = ({
+export function CompletionGateModal({
   task,
   isOpen,
   onClose,
   onConfirmComplete,
-}) => {
-  const [checkedCriteria, setCheckedCriteria] = useState<Record<string, boolean>>({});
-  const [overrideRationale, setOverrideRationale] = useState("");
-
-  useEffect(() => {
-    if (!isOpen) return;
-    function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === "Escape") onClose();
-    }
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, onClose]);
+  progress: controlledProgress,
+  onProgressChange,
+  initialEvidenceUrl,
+  initialEvidenceNote,
+  estimatedMinutes,
+}: CompletionGateModalProps) {
+  const [localProgress, setLocalProgress] = useState(emptyTaskExecution);
+  const progress = controlledProgress ?? localProgress;
+  const elapsed = elapsedSeconds(progress);
+  const [actualMinutes, setActualMinutes] = useState(
+    String(elapsed > 0 ? Math.max(1, Math.ceil(elapsed / 60)) : (estimatedMinutes ?? task.minutes)),
+  );
+  const [evidenceUrl, setEvidenceUrl] = useState(initialEvidenceUrl ?? "");
+  const [evidenceNote, setEvidenceNote] = useState(initialEvidenceNote ?? "");
+  const [overrideReason, setOverrideReason] = useState("");
+  const [validationError, setValidationError] = useState<string | null>(null);
+  const dialogRef = useModalFocus<HTMLDivElement>(isOpen, onClose);
 
   if (!isOpen) return null;
 
-  const requiredCriteria = task.completionCriteria.filter((c) => c.required);
-  const allRequiredChecked = requiredCriteria.every((c) => checkedCriteria[c.id]);
+  function save(next: TaskExecutionProgressInput) {
+    if (!controlledProgress) setLocalProgress(next);
+    void onProgressChange?.(next);
+  }
 
-  const toggleCriterion = (id: string) => {
-    setCheckedCriteria((prev) => ({ ...prev, [id]: !prev[id] }));
-  };
+  function toggleCriterion(id: string) {
+    const ids = progress.completed_criterion_ids.includes(id)
+      ? progress.completed_criterion_ids.filter((item) => item !== id)
+      : [...progress.completed_criterion_ids, id];
+    save({ ...progress, completed_criterion_ids: ids });
+  }
 
-  const handleConfirm = () => {
-    if (allRequiredChecked) {
-      onConfirmComplete(task);
-    } else {
-      if (!overrideRationale.trim()) {
-        return;
-      }
-      onConfirmComplete(task, overrideRationale.trim());
+  const required = task.completionCriteria.filter((criterion) => criterion.required);
+  const allRequiredChecked = required.every((criterion) =>
+    progress.completed_criterion_ids.includes(criterion.id),
+  );
+
+  function confirm() {
+    const minutes = Number(actualMinutes);
+    if (!Number.isInteger(minutes) || minutes <= 0) {
+      setValidationError("Actual minutes must be a positive whole number.");
+      return;
     }
-    onClose();
-  };
+    if (!isValidHttpsUrl(evidenceUrl)) {
+      setValidationError("Evidence links must use HTTPS.");
+      return;
+    }
+    if (!allRequiredChecked && !overrideReason.trim()) {
+      setValidationError(
+        "Explain why this task is complete despite the unchecked required criteria.",
+      );
+      return;
+    }
+    setValidationError(null);
+    onConfirmComplete(task, {
+      actualMinutes: minutes,
+      ...(evidenceUrl ? { evidenceUrl } : {}),
+      ...(evidenceNote ? { evidenceNote } : {}),
+      ...(!allRequiredChecked ? { overrideReason: overrideReason.trim() } : {}),
+      completedCriterionIds: progress.completed_criterion_ids,
+      elapsedSeconds: elapsed,
+    });
+  }
 
   return (
     <div
@@ -56,7 +104,12 @@ export const CompletionGateModal: React.FC<CompletionGateModalProps> = ({
       aria-labelledby="gate-modal-title"
       onClick={onClose}
     >
-      <div className="deepml-modal-card deepml-gate-card" onClick={(e) => e.stopPropagation()}>
+      <div
+        ref={dialogRef}
+        tabIndex={-1}
+        className="deepml-modal-card deepml-gate-card"
+        onClick={(event) => event.stopPropagation()}
+      >
         <div className="deepml-modal-header">
           <div>
             <div className="deepml-modal-eyebrow">
@@ -67,8 +120,8 @@ export const CompletionGateModal: React.FC<CompletionGateModalProps> = ({
               Verify Definition of Done
             </h2>
             <p className="deepml-task-summary">
-              Confirm that all required deliverables and verification checks exist for{" "}
-              <strong>{task.title}</strong>.
+              Confirm the required output and evidence for <strong>{task.title}</strong>. Unchecked
+              gates require an explicit, audited override.
             </p>
           </div>
           <button
@@ -77,48 +130,88 @@ export const CompletionGateModal: React.FC<CompletionGateModalProps> = ({
             onClick={onClose}
             aria-label="Close gate dialog"
           >
-            <span aria-hidden="true">✕</span>
+            x
           </button>
         </div>
 
         <div className="deepml-modal-body deepml-gate-body">
           <div className="deepml-checklist">
-            {task.completionCriteria.map((crit) => (
-              <label
-                key={crit.id}
-                className={`deepml-checklist-item ${checkedCriteria[crit.id] ? "is-checked" : ""}`}
-              >
-                <input
-                  type="checkbox"
-                  checked={!!checkedCriteria[crit.id]}
-                  onChange={() => toggleCriterion(crit.id)}
-                />
-                <div className="deepml-checklist-content">
-                  <span>{crit.text}</span>
-                  {crit.required && <Badge tone="warning">Required Gate</Badge>}
-                </div>
-              </label>
-            ))}
+            {task.completionCriteria.map((criterion) => {
+              const checked = progress.completed_criterion_ids.includes(criterion.id);
+              return (
+                <label
+                  key={criterion.id}
+                  className={`deepml-checklist-item ${checked ? "is-checked" : ""}`}
+                >
+                  <input
+                    type="checkbox"
+                    checked={checked}
+                    onChange={() => toggleCriterion(criterion.id)}
+                  />
+                  <div className="deepml-checklist-content">
+                    <span>{criterion.text}</span>
+                    {criterion.required && <Badge tone="warning">Required Gate</Badge>}
+                  </div>
+                </label>
+              );
+            })}
+          </div>
+
+          <div className="deepml-task-block">
+            <label className="deepml-label">
+              Actual minutes
+              <input
+                className="deepml-input"
+                inputMode="numeric"
+                value={actualMinutes}
+                onChange={(event) => setActualMinutes(event.target.value)}
+              />
+            </label>
+            <label className="deepml-label">
+              Evidence URL (HTTPS, optional)
+              <input
+                className="deepml-input"
+                type="url"
+                value={evidenceUrl}
+                onChange={(event) => setEvidenceUrl(event.target.value)}
+              />
+            </label>
+            <label className="deepml-label">
+              Evidence note (optional)
+              <textarea
+                className="deepml-textarea"
+                rows={2}
+                value={evidenceNote}
+                onChange={(event) => setEvidenceNote(event.target.value)}
+              />
+            </label>
           </div>
 
           {!allRequiredChecked && (
             <div className="deepml-gate-warning-box">
               <div className="deepml-gate-warning-title">
-                ⚠️ Some required criteria are not checked
+                Some required criteria are not checked
               </div>
               <p>
-                To maintain interview-defensible proof, tasks should only be marked complete when
-                all gates are met. If you have an alternative proof or equivalent work, provide an
-                explicit override justification below:
+                Provide a concrete equivalent proof or explain the deliberate exception. This reason
+                is stored in task history, separate from evidence.
               </p>
-              <textarea
-                className="deepml-textarea"
-                rows={3}
-                placeholder="Required override rationale (e.g. 'Completed equivalent problem set on LeetCode with test cases attached')..."
-                value={overrideRationale}
-                onChange={(e) => setOverrideRationale(e.target.value)}
-              />
+              <label className="deepml-label">
+                Required override rationale
+                <textarea
+                  className="deepml-textarea"
+                  rows={3}
+                  placeholder="Required override rationale"
+                  value={overrideReason}
+                  onChange={(event) => setOverrideReason(event.target.value)}
+                />
+              </label>
             </div>
+          )}
+          {validationError && (
+            <p className="task-error" role="alert">
+              {validationError}
+            </p>
           )}
         </div>
 
@@ -126,15 +219,11 @@ export const CompletionGateModal: React.FC<CompletionGateModalProps> = ({
           <Button variant="ghost" onClick={onClose}>
             Cancel
           </Button>
-          <Button
-            variant="primary"
-            onClick={handleConfirm}
-            disabled={!allRequiredChecked && !overrideRationale.trim()}
-          >
-            {allRequiredChecked ? "✓ Confirm & Complete Task" : "Override & Complete Task"}
+          <Button variant="primary" onClick={confirm}>
+            {allRequiredChecked ? "Confirm & Complete Task" : "Override & Complete Task"}
           </Button>
         </div>
       </div>
     </div>
   );
-};
+}

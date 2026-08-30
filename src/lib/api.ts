@@ -48,6 +48,27 @@ export interface TaskEventRow {
   metadata: Record<string, unknown>;
 }
 
+export interface TaskExecutionProgressRow {
+  task_id: string;
+  user_id: string;
+  completed_todo_ids: string[];
+  completed_criterion_ids: string[];
+  opened_resource_ids: string[];
+  current_step_index: number;
+  elapsed_seconds: number;
+  timer_started_at: string | null;
+  step_notes: Record<string, string>;
+  reflection_note: string | null;
+  started_at: string | null;
+  paused_at: string | null;
+  updated_at: string;
+}
+
+export type TaskExecutionProgressInput = Omit<
+  TaskExecutionProgressRow,
+  "task_id" | "user_id" | "updated_at"
+>;
+
 export interface ProjectRow {
   id: string;
   project_key: string;
@@ -109,6 +130,10 @@ export interface TransitionPayload {
   estimated_minutes?: number;
   category?: TaskCategory;
   role_tags?: string[];
+  completion_gate_verified?: boolean;
+  completion_override_reason?: string;
+  completed_criterion_ids?: string[];
+  elapsed_seconds?: number;
 }
 
 export type TransitionOutcome =
@@ -194,6 +219,11 @@ export interface PrepApi {
   fetchTasks(): Promise<TaskRow[]>;
   fetchTaskEvents(taskId: string): Promise<TaskEventRow[]>;
   fetchAllTaskEvents(): Promise<TaskEventRow[]>;
+  fetchTaskExecution?(taskId: string): Promise<TaskExecutionProgressRow | null>;
+  saveTaskExecution?(
+    taskId: string,
+    progress: TaskExecutionProgressInput,
+  ): Promise<TaskExecutionProgressRow>;
   fetchProjects(): Promise<ProjectRow[]>;
   fetchPlanWeeks(): Promise<PlanWeekRow[]>;
   createCustomTask(input: TaskInput): Promise<TaskRow>;
@@ -280,12 +310,20 @@ export function createPrepApi(client: SupabaseClient): PrepApi {
     transition: TransitionName,
     payload: TransitionPayload | undefined,
   ): Promise<TransitionOutcome> {
-    const { data, error } = await client.rpc("transition_task", {
-      p_task_id: taskId,
-      p_expected_revision: expectedRevision,
-      p_transition: transition,
-      p_payload: payload ?? {},
-    });
+    const { data, error } =
+      transition === "complete" &&
+      (payload?.completion_gate_verified || payload?.completion_override_reason)
+        ? await client.rpc("complete_task_with_gate", {
+            p_task_id: taskId,
+            p_expected_revision: expectedRevision,
+            p_payload: payload ?? {},
+          })
+        : await client.rpc("transition_task", {
+            p_task_id: taskId,
+            p_expected_revision: expectedRevision,
+            p_transition: transition,
+            p_payload: payload ?? {},
+          });
     if (error) throw new CommandError(error.message);
     const body = data as { status: string; task: TaskRow };
     if (body.status === "revision_conflict") {
@@ -315,6 +353,32 @@ export function createPrepApi(client: SupabaseClient): PrepApi {
         .order("template_task_key");
       if (error) throw new CommandError(error.message);
       return (data ?? []) as TaskRow[];
+    },
+
+    async fetchTaskExecution(taskId) {
+      const { data, error } = await client
+        .from("task_execution_progress")
+        .select("*")
+        .eq("task_id", taskId)
+        .limit(1);
+      if (error) throw new CommandError(error.message);
+      return (data?.[0] as TaskExecutionProgressRow | undefined) ?? null;
+    },
+
+    async saveTaskExecution(taskId, progress) {
+      const { data: userData } = await client.auth.getUser();
+      const userId = userData.user?.id;
+      if (!userId) throw new CommandError("unauthenticated");
+      const { data, error } = await client
+        .from("task_execution_progress")
+        .upsert(
+          { task_id: taskId, user_id: userId, ...progress, updated_at: new Date().toISOString() },
+          { onConflict: "task_id" },
+        )
+        .select("*")
+        .single();
+      if (error) throw new CommandError(error.message);
+      return data as TaskExecutionProgressRow;
     },
 
     async fetchTaskEvents(taskId) {
@@ -503,6 +567,7 @@ export function createPrepApi(client: SupabaseClient): PrepApi {
         "plan_weeks",
         "tasks",
         "task_events",
+        "task_execution_progress",
         "projects",
         "project_milestones",
         "practice_sessions",
