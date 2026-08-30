@@ -189,6 +189,19 @@ describe("PlanView", () => {
     expect(await screen.findByText("Chapter 1")).toBeInTheDocument();
   });
 
+  it("exposes the comprehensive resource guide and weekly primary references", async () => {
+    renderView();
+
+    expect(
+      await screen.findByRole("heading", { name: "Comprehensive study resources" }),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Supplemental 12-week guide")).toBeInTheDocument();
+    const cs336Links = await screen.findAllByRole("link", { name: "Stanford CS336" });
+    expect(cs336Links[0]).toHaveAttribute("href", "https://cs336.stanford.edu/");
+    expect(cs336Links[0]).toHaveAttribute("rel", "noopener noreferrer");
+    expect(screen.getAllByText("MUST").length).toBeGreaterThan(0);
+  });
+
   it("filters by role, category, and state", async () => {
     const user = userEvent.setup();
     vi.mocked(api.fetchTasks).mockResolvedValue([

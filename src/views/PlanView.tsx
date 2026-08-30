@@ -23,6 +23,7 @@ import { useProfile } from "../hooks/useProfile";
 import { useCreateCustomTask, useTaskTransition, useTasks } from "../hooks/useTasks";
 import { useOnlineStatus } from "../hooks/useOnlineStatus";
 import { TaskCard } from "../components/TaskCard";
+import { ComprehensiveStudyResources, WeeklyStudyResources } from "../components/StudyResources";
 
 interface Filters {
   role: string;
@@ -205,6 +206,8 @@ export function PlanView() {
       {isLoading && <p role="status">Loading plan…</p>}
       {isError && <p role="alert">Could not load the plan. Refresh to retry.</p>}
 
+      <ComprehensiveStudyResources />
+
       {weeks.map((week) => {
         const weekTasks = tasksForWeek(week);
         const plannedMinutes = weekTasks.reduce((s, t) => s + t.estimated_minutes, 0);
@@ -239,6 +242,7 @@ export function PlanView() {
             {isOpen && (
               <>
                 <p className="plan-exit-check">{`Exit check: ${week.exit_check}`}</p>
+                <WeeklyStudyResources weekNumber={week.week_number} />
                 {weekTasks.length === 0 ? (
                   <p className="overdue-note">No tasks match the current filters.</p>
                 ) : (

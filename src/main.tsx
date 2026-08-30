@@ -9,6 +9,7 @@ import "./styles/tokens.css";
 import "./styles/primitives.css";
 import "./styles/global.css";
 import "./styles/shell.css";
+import "./styles/resources.css";
 
 const rootElement = document.getElementById("root");
 if (!rootElement) {
