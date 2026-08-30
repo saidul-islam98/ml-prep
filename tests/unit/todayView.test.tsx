@@ -340,10 +340,11 @@ describe("OverdueQueue (Task 9)", () => {
     expect(await screen.findByText(/Originally 2026-08-30 - rescheduled 1x/)).toBeInTheDocument();
     expect(screen.getByText("Overdue requirement rows")).toBeInTheDocument();
 
-    // Reschedule through the overdue card's dialog (opener button + submit
-    // inside the dialog form; the today list has its own Reschedule button).
-    const openers = screen.getAllByRole("button", { name: "Reschedule" });
-    await user.click(openers[0]);
+    // Reschedule now lives in the overdue card's overflow menu.
+    await user.click(
+      screen.getByRole("button", { name: "More actions for Overdue requirement rows" }),
+    );
+    await user.click(screen.getByRole("menuitem", { name: "Reschedule" }));
     const dialog = document.querySelector("form.task-dialog")!;
     await user.click(within(dialog as HTMLElement).getByRole("button", { name: "Reschedule" }));
     await waitFor(() => {

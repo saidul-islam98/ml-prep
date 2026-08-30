@@ -307,7 +307,10 @@ describe("PlanView", () => {
     await expandWeek("Week 1:");
 
     const customCard = screen.getByLabelText("Task: Custom task").closest("article") as HTMLElement;
-    await user.click(within(customCard).getByRole("button", { name: "Edit task" }));
+    await user.click(
+      within(customCard).getByRole("button", { name: "More actions for Custom task" }),
+    );
+    await user.click(within(customCard).getByRole("menuitem", { name: "Edit task" }));
     await user.clear(within(customCard).getByLabelText("Title"));
     await user.type(within(customCard).getByLabelText("Title"), "Renamed custom");
     await user.click(within(customCard).getByRole("button", { name: "Save changes" }));
@@ -321,8 +324,11 @@ describe("PlanView", () => {
       );
     });
 
-    // Archive requires a reason.
-    await user.click(within(customCard).getByRole("button", { name: "Archive" }));
+    // Archive requires a reason and lives in the overflow menu.
+    await user.click(
+      within(customCard).getByRole("button", { name: "More actions for Custom task" }),
+    );
+    await user.click(within(customCard).getByRole("menuitem", { name: "Archive" }));
     await user.click(within(customCard).getByRole("button", { name: "Archive task" }));
     expect(await screen.findByText(/An archive reason is required/)).toBeInTheDocument();
 
@@ -330,9 +336,11 @@ describe("PlanView", () => {
     const templateCard = screen
       .getByLabelText("Task: Template task")
       .closest("article") as HTMLElement;
-    expect(
-      within(templateCard).queryByRole("button", { name: "Edit task" }),
-    ).not.toBeInTheDocument();
-    expect(within(templateCard).queryByRole("button", { name: "Archive" })).not.toBeInTheDocument();
+    const templateMenu = within(templateCard).getByRole("button", {
+      name: "More actions for Template task",
+    });
+    await user.click(templateMenu);
+    expect(screen.queryByRole("menuitem", { name: "Edit task" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("menuitem", { name: "Archive" })).not.toBeInTheDocument();
   });
 });

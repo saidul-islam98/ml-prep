@@ -1,7 +1,8 @@
 /**
- * Task card with state controls (WEBAPP_SPEC.md section 6.2). Every action
- * routes through the transactional RPC with the last-seen revision; failures
- * and stale-revision conflicts are surfaced inline with refresh/retry.
+ * Task card (Task UI-4): state, estimate, role/project context, and the next
+ * action are immediately clear; secondary actions live in an accessible
+ * overflow menu. Every action routes through the audited RPC with the
+ * last-seen revision; conflicts and failures surface inline.
  */
 
 import { useState, type FormEvent } from "react";
@@ -11,12 +12,20 @@ import { useTaskEvents } from "../hooks/useTasks";
 import {
   CATEGORY_LABELS,
   ROLE_LABELS,
-  STATE_LABELS,
   SKIP_REASONS,
   composeSkipReason,
   commandErrorMessage,
   isValidHttpsUrl,
 } from "../lib/constants";
+import { Badge, Button, Menu, type MenuItem } from "./ui";
+import {
+  cardVariantClass,
+  menuItems,
+  primaryAction,
+  secondaryAction,
+  type TaskActionContext,
+  type TaskDialog,
+} from "./TaskActionMenu";
 
 export interface TaskCardProps {
   task: TaskRow;
@@ -51,6 +60,7 @@ export function TaskCard({
   const [dialog, setDialog] = useState<Dialog>(null);
   const [error, setError] = useState<string | null>(null);
   const [conflict, setConflict] = useState<ConflictState | null>(null);
+  const [historyOpen, setHistoryOpen] = useState(false);
 
   const isOverdue = variant === "overdue";
 
@@ -86,45 +96,60 @@ export function TaskCard({
     }
   }
 
+  const ctx: TaskActionContext = {
+    task,
+    run: (transition, payload) => void run(transition, payload),
+    openDialog: (d: TaskDialog) => setDialog(d),
+    toggleHistory: () => setHistoryOpen((o) => !o),
+    historyOpen,
+    offline,
+  };
+
+  const primary = primaryAction(ctx);
+  const secondary = secondaryAction(ctx);
+  const items: MenuItem[] = menuItems(ctx);
+
   return (
-    <article
-      className={isOverdue ? "task-card overdue" : "task-card"}
-      aria-label={`Task: ${task.title}`}
-    >
-      <header className="task-card-header">
-        <div>
-          <h3 className="task-title">{task.title}</h3>
-          <p className="task-meta">
-            <span className="chip chip-category">{CATEGORY_LABELS[task.category]}</span>
-            <span className="chip">{task.estimated_minutes} min</span>
-            {task.role_tags.map((role) => (
-              <span key={role} className="chip chip-role">
-                {ROLE_LABELS[role] ?? role}
-              </span>
-            ))}
-            {projectName && <span className="chip chip-project">{projectName}</span>}
-            {isOverdue && (
-              <span className="chip chip-overdue">
-                {`Originally ${task.original_scheduled_date}${
-                  rescheduleCount > 0 ? ` - rescheduled ${rescheduleCount}x` : ""
-                }`}
-              </span>
-            )}
-          </p>
-          <p className="task-state" data-state={task.state}>
-            {`${STATE_LABELS[task.state]}${
-              task.state === "completed" && task.actual_minutes !== null
-                ? ` - ${task.actual_minutes} min actual`
-                : ""
-            }${task.state === "skipped" && task.skip_reason ? ` - ${task.skip_reason}` : ""}`}
-          </p>
-        </div>
+    <article className={cardVariantClass(task, isOverdue)} aria-label={`Task: ${task.title}`}>
+      <header className="task-card__head">
+        <span className="task-dot" data-state={task.state} aria-hidden="true" />
+        <h3 className="task-title">{task.title}</h3>
+        <Badge
+          tone={
+            task.state === "completed"
+              ? "success"
+              : task.state === "in_progress"
+                ? "accent"
+                : isOverdue
+                  ? "warning"
+                  : "neutral"
+          }
+        >
+          {isOverdue ? "Overdue" : stateLabel(task.state)}
+        </Badge>
       </header>
+
+      <p className="task-meta ui-chip-row">
+        <Badge>{CATEGORY_LABELS[task.category]}</Badge>
+        <Badge>{task.estimated_minutes} min</Badge>
+        {task.role_tags.map((role) => (
+          <Badge key={role} tone={role === "post_training" ? "role-post_training" : "neutral"}>
+            {ROLE_LABELS[role] ?? role}
+          </Badge>
+        ))}
+        {projectName && <Badge>{projectName}</Badge>}
+        {isOverdue && (
+          <Badge tone="warning">
+            {`Originally ${task.original_scheduled_date}${
+              rescheduleCount > 0 ? ` - rescheduled ${rescheduleCount}x` : ""
+            }`}
+          </Badge>
+        )}
+      </p>
 
       {task.acceptance_note && <p className="task-acceptance">{task.acceptance_note}</p>}
       {task.evidence_url && (
         <p className="task-evidence">
-          Evidence:{" "}
           <a href={task.evidence_url} target="_blank" rel="noopener noreferrer">
             {task.evidence_url}
           </a>
@@ -136,15 +161,15 @@ export function TaskCard({
         <div role="alert" className="task-conflict">
           <p>
             This task changed on another device. Latest state:{" "}
-            {STATE_LABELS[conflict.latestTask.state]}.
+            {stateLabel(conflict.latestTask.state)}.
           </p>
           <div className="task-actions">
-            <button type="button" onClick={() => setConflict(null)}>
+            <Button small onClick={() => setConflict(null)}>
               Discard my change
-            </button>
-            <button type="button" onClick={() => void retryWithLatest()}>
+            </Button>
+            <Button small variant="primary" onClick={() => void retryWithLatest()}>
               Apply to latest
-            </button>
+            </Button>
           </div>
         </div>
       )}
@@ -154,8 +179,6 @@ export function TaskCard({
           <p>{error}</p>
         </div>
       )}
-
-      {offline && <p className="task-offline">Offline - changes are disabled (read-only).</p>}
 
       {dialog === "complete" && (
         <CompleteDialog
@@ -203,104 +226,67 @@ export function TaskCard({
         />
       )}
 
-      {dialog === null && (
-        <div className="task-actions">
-          {task.state === "not_started" && (
-            <button type="button" disabled={offline} onClick={() => void run("start")}>
-              Start
-            </button>
-          )}
-          {(task.state === "not_started" || task.state === "in_progress") && (
-            <button type="button" disabled={offline} onClick={() => setDialog("complete")}>
-              Complete
-            </button>
-          )}
-          {task.state === "in_progress" && (
-            <button
-              type="button"
-              disabled={offline}
-              onClick={() => void run("reopen", { to_state: "not_started" })}
-            >
-              Stop
-            </button>
-          )}
-          {(task.state === "not_started" || task.state === "in_progress") && (
-            <button type="button" disabled={offline} onClick={() => setDialog("reschedule")}>
-              Reschedule
-            </button>
-          )}
-          {(task.state === "not_started" || task.state === "in_progress") && (
-            <button type="button" disabled={offline} onClick={() => setDialog("skip")}>
-              Skip
-            </button>
-          )}
-          {task.state === "completed" && (
-            <button
-              type="button"
-              disabled={offline}
-              onClick={() => void run("reopen", { to_state: "in_progress" })}
-            >
-              Reopen
-            </button>
-          )}
-          {task.state === "skipped" && (
-            <button type="button" disabled={offline} onClick={() => void run("reopen")}>
-              Reopen
-            </button>
-          )}
-          <button type="button" disabled={offline} onClick={() => setDialog("evidence")}>
-            {task.evidence_url || task.evidence_note ? "Edit evidence" : "Add evidence"}
-          </button>
-          {/* Editing and archiving are custom-task capabilities (section 6.3);
-              template tasks must be completed, skipped, or rescheduled. */}
-          {task.template_task_key === null &&
-            (task.state === "not_started" || task.state === "in_progress") && (
-              <button type="button" disabled={offline} onClick={() => setDialog("edit")}>
-                Edit task
-              </button>
-            )}
-          {task.template_task_key === null &&
-            (task.state === "not_started" || task.state === "in_progress") && (
-              <button type="button" disabled={offline} onClick={() => setDialog("archive")}>
-                Archive
-              </button>
-            )}
-          <TaskHistory taskId={task.id} />
-        </div>
-      )}
+      <div className="task-actions">
+        {primary && (
+          <Button variant="primary" disabled={offline} onClick={primary.run}>
+            {primary.label}
+          </Button>
+        )}
+        {secondary && (
+          <Button disabled={offline} onClick={secondary.run}>
+            {secondary.label}
+          </Button>
+        )}
+        <Menu triggerLabel={`More actions for ${task.title}`} items={items} />
+      </div>
+
+      <TaskHistory taskId={task.id} open={historyOpen} onToggle={() => setHistoryOpen((o) => !o)} />
     </article>
   );
 }
 
-/** On-demand immutable event history for this task (section 6.3). */
-function TaskHistory({ taskId }: { taskId: string }) {
-  const [open, setOpen] = useState(false);
+function stateLabel(state: TaskRow["state"]): string {
+  return state.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+/** On-demand immutable event history (WEBAPP_SPEC.md section 6.3). */
+function TaskHistory({
+  taskId,
+  open,
+  onToggle,
+}: {
+  taskId: string;
+  open: boolean;
+  onToggle: () => void;
+}) {
   const { data: events, isLoading } = useTaskEvents(open ? taskId : null);
 
   return (
     <>
       <button
         type="button"
-        className="link-button"
+        className="ui-disclosure-toggle"
         aria-expanded={open}
-        onClick={() => setOpen((o) => !o)}
+        onClick={onToggle}
       >
         {open ? "Hide history" : "History"}
       </button>
-      {open && (
+      {open ? (
         <ul className="task-history">
           {isLoading && <li role="status">Loading history…</li>}
           {events?.map((event) => (
             <li key={event.id}>
               <span className="task-history-type">{event.event_type}</span>{" "}
-              {new Date(event.occurred_at).toLocaleString("en-CA", { timeZone: "America/Toronto" })}
+              {new Date(event.occurred_at).toLocaleString("en-CA", {
+                timeZone: "America/Toronto",
+              })}
               {event.event_type === "rescheduled" &&
                 ` (${event.from_scheduled_date} -> ${event.to_scheduled_date})`}
               {typeof event.metadata?.reason === "string" && ` - ${event.metadata.reason}`}
             </li>
           ))}
         </ul>
-      )}
+      ) : null}
     </>
   );
 }
@@ -346,6 +332,7 @@ function CompleteDialog({
       <label htmlFor="complete-minutes">Actual minutes</label>
       <input
         id="complete-minutes"
+        className="ui-input"
         type="number"
         step="1"
         value={minutes}
@@ -355,6 +342,7 @@ function CompleteDialog({
       <label htmlFor="complete-url">Evidence link (optional, HTTPS)</label>
       <input
         id="complete-url"
+        className="ui-input"
         type="url"
         placeholder="https://"
         value={url}
@@ -363,6 +351,7 @@ function CompleteDialog({
       <label htmlFor="complete-note">Evidence note (optional)</label>
       <input
         id="complete-note"
+        className="ui-input"
         type="text"
         value={note}
         onChange={(e) => setNote(e.target.value)}
@@ -373,12 +362,10 @@ function CompleteDialog({
         </p>
       )}
       <div className="task-actions">
-        <button type="submit" disabled={offline}>
+        <Button variant="primary" type="submit" disabled={offline}>
           Save completion
-        </button>
-        <button type="button" onClick={onCancel}>
-          Cancel
-        </button>
+        </Button>
+        <Button onClick={onCancel}>Cancel</Button>
       </div>
     </form>
   );
@@ -405,7 +392,12 @@ function SkipDialog({
     <form className="task-dialog" onSubmit={submit}>
       <h4>Skip task</h4>
       <label htmlFor="skip-reason">Reason (required)</label>
-      <select id="skip-reason" value={reason} onChange={(e) => setReason(e.target.value)}>
+      <select
+        id="skip-reason"
+        className="ui-select"
+        value={reason}
+        onChange={(e) => setReason(e.target.value)}
+      >
         {SKIP_REASONS.map((r) => (
           <option key={r} value={r}>
             {r}
@@ -413,14 +405,18 @@ function SkipDialog({
         ))}
       </select>
       <label htmlFor="skip-note">Note (optional)</label>
-      <input id="skip-note" type="text" value={note} onChange={(e) => setNote(e.target.value)} />
+      <input
+        id="skip-note"
+        className="ui-input"
+        type="text"
+        value={note}
+        onChange={(e) => setNote(e.target.value)}
+      />
       <div className="task-actions">
-        <button type="submit" disabled={offline}>
+        <Button variant="primary" type="submit" disabled={offline}>
           Skip task
-        </button>
-        <button type="button" onClick={onCancel}>
-          Cancel
-        </button>
+        </Button>
+        <Button onClick={onCancel}>Cancel</Button>
       </div>
     </form>
   );
@@ -455,6 +451,7 @@ function RescheduleDialog({
       <label htmlFor="reschedule-date">New date (today or later)</label>
       <input
         id="reschedule-date"
+        className="ui-input"
         type="date"
         min={today}
         value={date}
@@ -466,12 +463,10 @@ function RescheduleDialog({
         </p>
       )}
       <div className="task-actions">
-        <button type="submit" disabled={offline}>
+        <Button variant="primary" type="submit" disabled={offline}>
           Reschedule
-        </button>
-        <button type="button" onClick={onCancel}>
-          Cancel
-        </button>
+        </Button>
+        <Button onClick={onCancel}>Cancel</Button>
       </div>
     </form>
   );
@@ -511,6 +506,7 @@ function EvidenceDialog({
       <label htmlFor="evidence-url">Evidence link (HTTPS)</label>
       <input
         id="evidence-url"
+        className="ui-input"
         type="url"
         placeholder="https://"
         value={url}
@@ -519,6 +515,7 @@ function EvidenceDialog({
       <label htmlFor="evidence-note">Evidence note</label>
       <input
         id="evidence-note"
+        className="ui-input"
         type="text"
         value={note}
         onChange={(e) => setNote(e.target.value)}
@@ -529,12 +526,10 @@ function EvidenceDialog({
         </p>
       )}
       <div className="task-actions">
-        <button type="submit" disabled={offline}>
+        <Button variant="primary" type="submit" disabled={offline}>
           Save evidence
-        </button>
-        <button type="button" onClick={onCancel}>
-          Cancel
-        </button>
+        </Button>
+        <Button onClick={onCancel}>Cancel</Button>
       </div>
     </form>
   );
@@ -582,10 +577,16 @@ function EditTaskDialog({
     <form className="task-dialog" onSubmit={submit}>
       <h4>Edit custom task</h4>
       <label htmlFor="edit-title">Title</label>
-      <input id="edit-title" value={title} onChange={(e) => setTitle(e.target.value)} />
+      <input
+        id="edit-title"
+        className="ui-input"
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+      />
       <label htmlFor="edit-category">Category</label>
       <select
         id="edit-category"
+        className="ui-select"
         value={category}
         onChange={(e) => setCategory(e.target.value as TaskRow["category"])}
       >
@@ -598,6 +599,7 @@ function EditTaskDialog({
       <label htmlFor="edit-minutes">Estimated minutes</label>
       <input
         id="edit-minutes"
+        className="ui-input"
         type="number"
         value={minutes}
         onChange={(e) => setMinutes(e.target.value)}
@@ -605,6 +607,7 @@ function EditTaskDialog({
       <label htmlFor="edit-description">Description</label>
       <input
         id="edit-description"
+        className="ui-input"
         value={description}
         onChange={(e) => setDescription(e.target.value)}
       />
@@ -614,12 +617,10 @@ function EditTaskDialog({
         </p>
       )}
       <div className="task-actions">
-        <button type="submit" disabled={offline}>
+        <Button variant="primary" type="submit" disabled={offline}>
           Save changes
-        </button>
-        <button type="button" onClick={onCancel}>
-          Cancel
-        </button>
+        </Button>
+        <Button onClick={onCancel}>Cancel</Button>
       </div>
     </form>
   );
@@ -655,19 +656,22 @@ function ArchiveDialog({
         re-enters a completed metric.
       </p>
       <label htmlFor="archive-reason">Reason (required)</label>
-      <input id="archive-reason" value={reason} onChange={(e) => setReason(e.target.value)} />
+      <input
+        id="archive-reason"
+        className="ui-input"
+        value={reason}
+        onChange={(e) => setReason(e.target.value)}
+      />
       {validationError && (
         <p role="alert" className="task-error-text">
           {validationError}
         </p>
       )}
       <div className="task-actions">
-        <button type="submit" disabled={offline}>
+        <Button variant="primary" type="submit" disabled={offline}>
           Archive task
-        </button>
-        <button type="button" onClick={onCancel}>
-          Cancel
-        </button>
+        </Button>
+        <Button onClick={onCancel}>Cancel</Button>
       </div>
     </form>
   );
