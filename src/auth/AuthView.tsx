@@ -9,6 +9,7 @@ import { useState, type FormEvent } from "react";
 import { getSupabaseClient } from "../lib/supabaseClient";
 import { redirectUrl } from "./authCallback";
 import { signOut } from "./useSession";
+import { Button } from "../components/ui";
 
 type FormStatus =
   { kind: "idle" } | { kind: "submitting" } | { kind: "sent" } | { kind: "error"; message: string };
@@ -61,7 +62,26 @@ export function AuthView() {
 
   return (
     <section aria-labelledby="auth-title" className="auth-view">
-      <h1 id="auth-title">Cohere Preparation Tracker</h1>
+      <div className="auth-brand">
+        <div className="auth-logo-icon" aria-hidden="true">
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+          </svg>
+        </div>
+        <div>
+          <h1 id="auth-title">Deep-ML</h1>
+          <span className="auth-badge">Cohere MTS Interview Prep</span>
+        </div>
+      </div>
       <p className="auth-privacy">
         Private, single-user preparation tracker. Your progress is stored privately and never
         published. Sign in with the pre-registered email address; a sign-in link will be sent to it.
@@ -85,9 +105,9 @@ export function AuthView() {
             onChange={(e) => setEmail(e.target.value)}
             disabled={status.kind === "submitting"}
           />
-          <button type="submit" disabled={status.kind === "submitting"}>
+          <Button type="submit" variant="primary" disabled={status.kind === "submitting"}>
             {status.kind === "submitting" ? "Sending…" : "Send sign-in link"}
-          </button>
+          </Button>
           {status.kind === "error" && (
             <p role="alert" className="auth-error">
               {status.message}
@@ -102,8 +122,8 @@ export function AuthView() {
 /** Rendered inside the shell after authentication (spec 6.1 sign-out control). */
 export function SignOutControl() {
   return (
-    <button type="button" onClick={() => void signOut()}>
+    <Button variant="ghost" onClick={() => void signOut()}>
       Sign out
-    </button>
+    </Button>
   );
 }

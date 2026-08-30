@@ -43,18 +43,22 @@ export function IconButton({ label, className, type = "button", ...rest }: IconB
   );
 }
 
-type BadgeTone =
+export type BadgeTone =
   | "neutral"
   | "accent"
   | "success"
   | "warning"
   | "danger"
+  | "role-data-eval"
+  | "role-agent-env"
+  | "role-post-training"
   | "role-data_eval"
   | "role-agent_env"
   | "role-post_training";
 
 export function Badge({ tone = "neutral", children }: { tone?: BadgeTone; children: ReactNode }) {
-  const cls = tone === "neutral" ? "ui-badge" : `ui-badge ui-badge--${tone}`;
+  const normalizedTone = tone.replace(/_/g, "-");
+  const cls = tone === "neutral" ? "ui-badge" : `ui-badge ui-badge--${normalizedTone}`;
   return <span className={cls}>{children}</span>;
 }
 

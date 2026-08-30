@@ -17,7 +17,7 @@ import {
   commandErrorMessage,
   isValidHttpsUrl,
 } from "../lib/constants";
-import { Badge, Button, Menu, type MenuItem } from "./ui";
+import { Badge, Button, Menu, type BadgeTone, type MenuItem } from "./ui";
 import {
   cardVariantClass,
   menuItems,
@@ -132,11 +132,21 @@ export function TaskCard({
       <p className="task-meta ui-chip-row">
         <Badge>{CATEGORY_LABELS[task.category]}</Badge>
         <Badge>{task.estimated_minutes} min</Badge>
-        {task.role_tags.map((role) => (
-          <Badge key={role} tone={role === "post_training" ? "role-post_training" : "neutral"}>
-            {ROLE_LABELS[role] ?? role}
-          </Badge>
-        ))}
+        {task.role_tags.map((role) => {
+          const tone: BadgeTone =
+            role === "post_training"
+              ? "role-post-training"
+              : role === "data_eval"
+                ? "role-data-eval"
+                : role === "agent_env"
+                  ? "role-agent-env"
+                  : "neutral";
+          return (
+            <Badge key={role} tone={tone}>
+              {ROLE_LABELS[role] ?? role}
+            </Badge>
+          );
+        })}
         {projectName && <Badge>{projectName}</Badge>}
         {isOverdue && (
           <Badge tone="warning">

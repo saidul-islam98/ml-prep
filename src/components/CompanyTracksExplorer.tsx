@@ -4,7 +4,7 @@
  * with role tracks, paced syllabus breakdown, resume portfolio projects, and readiness criteria.
  */
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Badge, Button } from "./ui";
 
 export interface CompanyTrack {
@@ -172,6 +172,15 @@ export function CompanyTracksExplorer({
   const [selectedTrack, setSelectedTrack] = useState<CompanyTrack | null>(null);
   const [filterRole, setFilterRole] = useState<string>("all");
 
+  useEffect(() => {
+    if (!selectedTrack) return;
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setSelectedTrack(null);
+    }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [selectedTrack]);
+
   const filteredTracks =
     filterRole === "all"
       ? COMPANY_TRACKS
@@ -280,14 +289,7 @@ export function CompanyTracksExplorer({
           >
             <div className="deepml-track-card__top">
               <div className="deepml-track-brand">
-                <div
-                  className="deepml-track-logo"
-                  style={{
-                    backgroundColor: `${track.color}15`,
-                    borderColor: `${track.color}40`,
-                    color: track.color,
-                  }}
-                >
+                <div className="deepml-track-logo" data-track={track.id}>
                   {track.company.slice(0, 2).toUpperCase()}
                 </div>
                 <div className="deepml-track-identity">
@@ -363,14 +365,7 @@ export function CompanyTracksExplorer({
           <div className="deepml-modal-card" onClick={(e) => e.stopPropagation()}>
             <div className="deepml-modal-header">
               <div className="deepml-track-brand">
-                <div
-                  className="deepml-track-logo"
-                  style={{
-                    backgroundColor: `${selectedTrack.color}20`,
-                    borderColor: `${selectedTrack.color}60`,
-                    color: selectedTrack.color,
-                  }}
-                >
+                <div className="deepml-track-logo" data-track={selectedTrack.id}>
                   {selectedTrack.company.slice(0, 2).toUpperCase()}
                 </div>
                 <div>
@@ -386,7 +381,7 @@ export function CompanyTracksExplorer({
                 aria-label="Close track details"
                 onClick={() => setSelectedTrack(null)}
               >
-                ✕
+                <span aria-hidden="true">✕</span>
               </button>
             </div>
 

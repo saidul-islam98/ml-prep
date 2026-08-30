@@ -114,7 +114,7 @@ a:hover {
   width: 32px;
   height: 32px;
   border-radius: var(--radius-md);
-  background: linear-gradient(135deg, #18181b 0%, #27272a 100%);
+  background: linear-gradient(135deg, var(--surface-raised) 0%, var(--border) 100%);
   border: 1px solid var(--border-strong);
   display: flex;
   align-items: center;
@@ -201,70 +201,6 @@ a:hover {
   box-shadow: 0 0 8px var(--accent);
 }
 
-/* Nav dropdowns */
-.deepml-dropdown {
-  position: relative;
-}
-
-.deepml-dropdown-menu {
-  position: absolute;
-  top: calc(100% + var(--space-2));
-  left: 0;
-  min-width: 320px;
-  background: var(--surface-raised);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-lg);
-  padding: var(--space-2);
-  z-index: 60;
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: var(--space-1);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-}
-
-.deepml-dropdown-item {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--space-3);
-  padding: var(--space-2) var(--space-3);
-  border-radius: var(--radius-md);
-  color: var(--text);
-  text-decoration: none;
-  transition: background-color var(--motion-fast) var(--ease-out);
-}
-
-.deepml-dropdown-item:hover {
-  background: var(--surface-2);
-  color: var(--text-strong);
-}
-
-.deepml-item-icon {
-  width: 20px;
-  height: 20px;
-  margin-top: 2px;
-  color: var(--accent);
-  flex-shrink: 0;
-}
-
-.deepml-item-title {
-  font-family: var(--font-mono);
-  font-size: var(--fs-xs);
-  font-weight: 600;
-  color: var(--text-strong);
-  display: flex;
-  align-items: center;
-  gap: var(--space-1);
-}
-
-.deepml-item-sub {
-  font-size: var(--fs-xs);
-  color: var(--text-muted);
-  line-height: 1.3;
-  margin-top: 2px;
-}
-
 /* Right Navigation Controls */
 .deepml-nav-right {
   display: flex;
@@ -283,12 +219,12 @@ a:hover {
   font-family: var(--font-mono);
   font-size: var(--fs-xs);
   font-weight: 700;
-  color: #09090b;
-  background: linear-gradient(110deg, #fcba03 0%, #ebe5d5 45%, #fcba03 70%);
+  color: var(--canvas);
+  background: linear-gradient(110deg, var(--highlight) 0%, #e0ddd0 45%, var(--highlight) 70%);
   background-size: 200% 100%;
   animation: deepml-shimmer 3s infinite linear;
-  border: 1px solid rgba(0, 0, 0, 0.4);
-  box-shadow: 0 1px 6px rgba(252, 186, 3, 0.25);
+  border: 1px solid rgba(0, 0, 0, 0.3);
+  box-shadow: 0 1px 6px var(--glow-accent);
   text-decoration: none;
   cursor: pointer;
 }
@@ -390,43 +326,6 @@ a:hover {
   display: none;
 }
 
-.deepml-subnav-list {
-  display: flex;
-  align-items: center;
-  gap: var(--space-1);
-  list-style: none;
-  margin: 0;
-  padding: var(--space-2) 0;
-}
-
-.deepml-subnav-link {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  min-height: 36px;
-  padding: 0 var(--space-3);
-  border-radius: var(--radius-md);
-  color: var(--text-muted);
-  font-family: var(--font-mono);
-  font-size: var(--fs-xs);
-  font-weight: 600;
-  text-decoration: none;
-  white-space: nowrap;
-  transition: all var(--motion-fast) var(--ease-out);
-}
-
-.deepml-subnav-link:hover {
-  color: var(--text-strong);
-  background: var(--surface-2);
-}
-
-.deepml-subnav-link.active,
-.deepml-subnav-link[aria-current="page"] {
-  color: var(--on-accent);
-  background: var(--accent);
-  box-shadow: var(--shadow-amber);
-}
-
 .deepml-track-tag-badge {
   display: inline-flex;
   align-items: center;
@@ -439,12 +338,30 @@ a:hover {
 
 /* App Main Content Container */
 .app-main {
+  position: relative;
   flex: 1;
   width: 100%;
   max-width: var(--content-max);
   margin: 0 auto;
   padding: var(--space-6) var(--space-4) var(--space-10);
   border: none;
+}
+.app-main::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-size: 32px 32px;
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  mask-image: radial-gradient(ellipse at center, black 40%, transparent 80%);
+  -webkit-mask-image: radial-gradient(ellipse at center, black 40%, transparent 80%);
+  pointer-events: none;
+  z-index: 0;
+}
+.app-main > * {
+  position: relative;
+  z-index: 1;
 }
 
 .app-content {
@@ -472,9 +389,18 @@ a:hover {
 
 /* Deep-ML Company Tracks Hero & Grid */
 .deepml-prep-hero {
+  position: relative;
   margin-bottom: var(--space-8);
   padding-bottom: var(--space-8);
   border-bottom: 1px solid var(--border);
+}
+.deepml-prep-hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% -20%, rgba(99, 102, 241, 0.18), transparent 70%);
+  pointer-events: none;
+  z-index: 0;
 }
 
 .deepml-hero-header {
@@ -502,7 +428,7 @@ a:hover {
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  border: 1px solid rgba(245, 158, 11, 0.3);
+  border: 1px solid rgba(99, 102, 241, 0.3);
 }
 
 .deepml-kicker-tag {
@@ -516,10 +442,14 @@ a:hover {
   margin: 0 0 var(--space-3);
   font-family: var(--font-mono);
   font-size: clamp(2rem, 3.5vw, 2.75rem);
-  font-weight: 700;
+  font-weight: 800;
   letter-spacing: -0.035em;
   color: var(--text-strong);
   line-height: 1.15;
+  background: linear-gradient(180deg, #ffffff 0%, #a1a1aa 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .deepml-hero-subtitle {
@@ -616,14 +546,16 @@ a:hover {
 /* Company Tracks Cards Grid */
 .deepml-tracks-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
   gap: var(--space-5);
 }
 
 .deepml-track-card {
-  background: var(--surface);
+  background: var(--surface-glass, var(--surface));
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   border: 1px solid var(--border);
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-lg);
   padding: var(--space-5);
   display: flex;
   flex-direction: column;
@@ -634,14 +566,14 @@ a:hover {
 }
 
 .deepml-track-card:hover {
-  transform: translateY(-2px);
-  border-color: var(--border-strong);
-  box-shadow: var(--shadow-md);
+  transform: translateY(-3px);
+  border-color: var(--accent);
+  box-shadow: var(--shadow-card-hover);
 }
 
 .deepml-track-card.is-active-plan {
-  border-color: rgba(245, 158, 11, 0.4);
-  box-shadow: 0 0 24px rgba(245, 158, 11, 0.08);
+  border-color: rgba(99, 102, 241, 0.4);
+  box-shadow: 0 0 24px var(--glow-accent);
 }
 
 .deepml-track-card.is-active-plan::before {
@@ -783,7 +715,7 @@ a:hover {
 .deepml-modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.75);
+  background: rgba(0, 0, 0, 0.7);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   z-index: 100;
@@ -1145,7 +1077,6 @@ a:hover {
   font-size: var(--fs-sm);
   font-weight: 500;
 }
-
 .more-sheet__item:hover,
 .more-sheet__item.active {
   background: var(--accent-soft);
@@ -1174,4 +1105,71 @@ a:hover {
   .deepml-modal-stats-grid {
     grid-template-columns: repeat(2, 1fr);
   }
+}
+
+.deepml-track-logo[data-track="cohere-mts"] {
+  background: rgba(245, 158, 11, 0.08);
+  border-color: rgba(245, 158, 11, 0.25);
+  color: #f59e0b;
+}
+.deepml-track-logo[data-track="anthropic-mle"] {
+  background: rgba(217, 119, 6, 0.08);
+  border-color: rgba(217, 119, 6, 0.25);
+  color: #d97706;
+}
+.deepml-track-logo[data-track="openai-research"] {
+  background: rgba(16, 185, 129, 0.08);
+  border-color: rgba(16, 185, 129, 0.25);
+  color: #10b981;
+}
+.deepml-track-logo[data-track="deepmind-researcher"] {
+  background: rgba(56, 189, 248, 0.08);
+  border-color: rgba(56, 189, 248, 0.25);
+  color: #38bdf8;
+}
+.deepml-track-logo[data-track="jane-street-ml"] {
+  background: rgba(168, 85, 247, 0.08);
+  border-color: rgba(168, 85, 247, 0.25);
+  color: #a855f7;
+}
+.deepml-track-logo[data-track="meta-fair"] {
+  background: rgba(244, 63, 94, 0.08);
+  border-color: rgba(244, 63, 94, 0.25);
+  color: #f43f5e;
+}
+
+.deepml-status-wrap {
+}
+
+.deepml-offline-indicator {
+  color: var(--warning);
+  background: var(--warning-soft);
+  border-color: rgba(245, 158, 11, 0.3);
+}
+
+.deepml-subnav-live {
+  background: transparent;
+  border: none;
+  padding: 0;
+}
+
+.deepml-week-tag {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-left: var(--space-3);
+}
+
+.deepml-pill--sm {
+  font-size: 0.72rem;
+  height: 28px;
+}
+
+.deepml-footer-badge-row {
+  margin-top: var(--space-4);
+}
+
+.deepml-footer-meta {
+  font-family: var(--font-mono);
+  color: var(--text-muted);
 }

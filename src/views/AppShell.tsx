@@ -27,8 +27,6 @@ export function AppShell({ active, currentWeek, children }: AppShellProps) {
     return saved === "light" ? "light" : "dark";
   });
 
-  const [learnOpen, setLearnOpen] = useState(false);
-  const [competeOpen, setCompeteOpen] = useState(false);
   const [showTracksBanner, setShowTracksBanner] = useState(false);
 
   // Sync theme changes with documentElement
@@ -81,136 +79,13 @@ export function AppShell({ active, currentWeek, children }: AppShellProps) {
 
             <nav className="sidebar__nav deepml-nav-links" aria-label="Primary">
               <ul className="deepml-nav-links">
-                {/* Learn dropdown menu */}
-                <li
-                  className="deepml-nav-item deepml-dropdown"
-                  onMouseEnter={() => setLearnOpen(true)}
-                  onMouseLeave={() => setLearnOpen(false)}
-                >
-                  <a
-                    href="#/plan"
-                    className="deepml-nav-link"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setLearnOpen((o) => !o);
-                    }}
-                  >
-                    Learn
-                    <svg
-                      width="14"
-                      height="14"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                    >
-                      <path d="m6 9 6 6 6-6" />
-                    </svg>
-                  </a>
-                  {learnOpen && (
-                    <div className="deepml-dropdown-menu">
-                      <a
-                        href="#/practice"
-                        className="deepml-dropdown-item"
-                        onClick={() => setLearnOpen(false)}
-                      >
-                        <svg
-                          className="deepml-item-icon"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="1.5"
-                        >
-                          <path d="m4.5 6.5 1.5 1.5 2.5-3M11.5 7h8m-15 5.5 1.5 1.5 2.5-3m5.5 0h8M6 19h14" />
-                        </svg>
-                        <div>
-                          <div className="deepml-item-title">Problems</div>
-                          <div className="deepml-item-sub">30 curated coding & ML challenges</div>
-                        </div>
-                      </a>
-                      <a
-                        href="#/plan"
-                        className="deepml-dropdown-item"
-                        onClick={() => setLearnOpen(false)}
-                      >
-                        <svg
-                          className="deepml-item-icon"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="1.5"
-                        >
-                          <circle cx="5" cy="20" r="1.8" />
-                          <circle cx="11" cy="14" r="1.8" />
-                          <circle cx="17" cy="8" r="1.8" />
-                          <path d="M5 20h6v-6h6V8" />
-                        </svg>
-                        <div>
-                          <div className="deepml-item-title">Learning Path</div>
-                          <div className="deepml-item-sub">
-                            14-week guided route through the fundamentals
-                          </div>
-                        </div>
-                      </a>
-                      <a
-                        href="#/projects"
-                        className="deepml-dropdown-item"
-                        onClick={() => setLearnOpen(false)}
-                      >
-                        <svg
-                          className="deepml-item-icon"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="1.5"
-                        >
-                          <rect x="4" y="16.5" width="16" height="4" rx="1" />
-                          <rect x="6" y="10.5" width="12" height="4" rx="1" />
-                          <rect x="8" y="4.5" width="8" height="4" rx="1" />
-                        </svg>
-                        <div>
-                          <div className="deepml-item-title">Projects</div>
-                          <div className="deepml-item-sub">
-                            Build an Eval Platform, Agent Sandbox, RLHF Lab
-                          </div>
-                        </div>
-                      </a>
-                      <a
-                        href="#/practice"
-                        className="deepml-dropdown-item"
-                        onClick={() => setLearnOpen(false)}
-                      >
-                        <svg
-                          className="deepml-item-icon"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="1.5"
-                        >
-                          <path d="M17 4.5H7l6 7.5-6 7.5h10" />
-                        </svg>
-                        <div>
-                          <div className="deepml-item-title">Mock Interviews</div>
-                          <div className="deepml-item-sub">
-                            8-dimension rubric scoring & correction loops
-                          </div>
-                        </div>
-                      </a>
-                    </div>
-                  )}
-                </li>
-
                 {/* Primary Nav Links */}
                 {(Object.entries(VIEWS) as [ViewKey, (typeof VIEWS)[ViewKey]][]).map(
                   ([key, view]) => (
                     <li key={key} className="deepml-nav-item">
                       <a
                         href={`#${view.path}`}
-                        className={
-                          key === active
-                            ? "app-nav-link deepml-nav-link is-active active"
-                            : "app-nav-link deepml-nav-link"
-                        }
+                        className={key === active ? "deepml-nav-link is-active" : "deepml-nav-link"}
                         aria-current={key === active ? "page" : undefined}
                       >
                         {view.label}
@@ -221,77 +96,6 @@ export function AppShell({ active, currentWeek, children }: AppShellProps) {
                     </li>
                   ),
                 )}
-
-                {/* Compete dropdown menu */}
-                <li
-                  className="deepml-nav-item deepml-dropdown"
-                  onMouseEnter={() => setCompeteOpen(true)}
-                  onMouseLeave={() => setCompeteOpen(false)}
-                >
-                  <a
-                    href="#/progress"
-                    className="deepml-nav-link"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setCompeteOpen((o) => !o);
-                    }}
-                  >
-                    Compete
-                    <svg
-                      width="14"
-                      height="14"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                    >
-                      <path d="m6 9 6 6 6-6" />
-                    </svg>
-                  </a>
-                  {competeOpen && (
-                    <div className="deepml-dropdown-menu" style={{ minWidth: "260px" }}>
-                      <a
-                        href="#/progress"
-                        className="deepml-dropdown-item"
-                        onClick={() => setCompeteOpen(false)}
-                      >
-                        <svg
-                          className="deepml-item-icon"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="1.5"
-                        >
-                          <path d="M4 20h16M5.5 20v-5.5h3.5V20M10.25 20V8.5h3.5V20M15 20v-8.5h3.5V20" />
-                        </svg>
-                        <div>
-                          <div className="deepml-item-title">Contests</div>
-                          <div className="deepml-item-sub">Timed challenge rounds</div>
-                        </div>
-                      </a>
-                      <a
-                        href="#/progress"
-                        className="deepml-dropdown-item"
-                        onClick={() => setCompeteOpen(false)}
-                      >
-                        <svg
-                          className="deepml-item-icon"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="1.5"
-                        >
-                          <circle cx="12" cy="8" r="4.5" />
-                          <path d="m12 5.6.9 1.7 1.9.3-1.4 1.4.3 1.9L12 10l-1.7.9.3-1.9-1.4-1.4 1.9-.3Z" />
-                        </svg>
-                        <div>
-                          <div className="deepml-item-title">Leaderboard</div>
-                          <div className="deepml-item-sub">Readiness and cohort metrics</div>
-                        </div>
-                      </a>
-                    </div>
-                  )}
-                </li>
               </ul>
             </nav>
           </div>
@@ -303,16 +107,9 @@ export function AppShell({ active, currentWeek, children }: AppShellProps) {
             </a>
 
             {/* Online / Offline status badge */}
-            <div className="sidebar__status">
+            <div className="deepml-status-wrap">
               {!online ? (
-                <span
-                  className="deepml-live-indicator"
-                  style={{
-                    color: "var(--warning)",
-                    background: "var(--warning-soft)",
-                    borderColor: "rgba(245,158,11,0.3)",
-                  }}
-                >
+                <span className="deepml-live-indicator deepml-offline-indicator">
                   <span className="deepml-pulse-dot deepml-pulse-dot--warning" />
                   Offline - read-only
                 </span>
@@ -369,23 +166,12 @@ export function AppShell({ active, currentWeek, children }: AppShellProps) {
       <div className="deepml-subnav" role="region" aria-label="Track Status and Controls">
         <div className="deepml-subnav-inner">
           <div className="deepml-subnav-track-info">
-            <span
-              className="deepml-live-indicator"
-              style={{ background: "transparent", border: "none", padding: 0 }}
-            >
+            <span className="deepml-live-indicator deepml-subnav-live">
               <span className="deepml-pulse-dot" />
               Active Track: <strong>Curriculum Track</strong>
             </span>
             {currentWeek && (
-              <span
-                className="sidebar__week"
-                style={{
-                  fontFamily: "var(--font-mono)",
-                  fontSize: "0.78rem",
-                  color: "var(--text-muted)",
-                  marginLeft: "var(--space-3)",
-                }}
-              >
+              <span className="deepml-week-tag">
                 Week {currentWeek.week_number} · {currentWeek.phase}
               </span>
             )}
@@ -393,9 +179,8 @@ export function AppShell({ active, currentWeek, children }: AppShellProps) {
           <div className="deepml-track-tag-badge">
             <button
               type="button"
-              className="deepml-pill"
+              className="deepml-pill deepml-pill--sm"
               onClick={() => setShowTracksBanner((v) => !v)}
-              style={{ fontSize: "0.72rem", height: "28px" }}
             >
               {showTracksBanner
                 ? "Hide Tracks Explorer"
@@ -444,7 +229,7 @@ export function AppShell({ active, currentWeek, children }: AppShellProps) {
                   Company-specific machine learning interview preparation: paced paths, resume
                   projects, mock interviews, and readiness tracking.
                 </p>
-                <div style={{ marginTop: "var(--space-4)" }}>
+                <div className="deepml-footer-badge-row">
                   <span className="deepml-kicker-badge">MTS Curriculum · 14 Weeks · 196 Hours</span>
                 </div>
               </div>
@@ -518,9 +303,7 @@ export function AppShell({ active, currentWeek, children }: AppShellProps) {
 
             <div className="deepml-footer-bottom">
               <p>© 2026 Deep-ML. All rights reserved.</p>
-              <p style={{ fontFamily: "var(--font-mono)", color: "var(--text-muted)" }}>
-                Single-user private workspace · Toronto (EST)
-              </p>
+              <p className="deepml-footer-meta">Single-user private workspace · Toronto (EST)</p>
             </div>
           </div>
         </footer>

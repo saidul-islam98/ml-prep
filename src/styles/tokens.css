@@ -1,6 +1,6 @@
 /* Design tokens (Deep-ML Dark/Light Theme System).
-   Optimized for high-contrast engineering dashboards, JetBrains Mono typography,
-   and warm amber/gold accents. */
+   Single source of truth for all design primitives.
+   Primary accent: indigo/violet. Status highlights: amber, emerald, red. */
 
 :root {
   /* Canvas and surfaces (Dark default for Deep-ML) */
@@ -8,6 +8,7 @@
   --surface: #121215;
   --surface-2: #1e1e24;
   --surface-raised: #18181b;
+  --surface-glass: rgba(18, 18, 21, 0.75);
 
   /* Text */
   --text-strong: #fafafa;
@@ -18,11 +19,20 @@
   --border: #27272a;
   --border-strong: #3f3f46;
 
-  /* Accent (Deep-ML amber signature) */
-  --accent: #f59e0b;
-  --accent-strong: #fbbf24;
-  --accent-soft: rgba(245, 158, 11, 0.12);
-  --on-accent: #09090b;
+  /* Primary accent (Deep-ML indigo) */
+  --accent: #6366f1;
+  --accent-strong: #4f46e5;
+  --accent-soft: rgba(99, 102, 241, 0.12);
+  --on-accent: #ffffff;
+
+  /* Glow effects */
+  --glow-accent: rgba(99, 102, 241, 0.25);
+  --glow-accent-strong: rgba(99, 102, 241, 0.45);
+
+  /* Highlight (amber — for status badges, warnings, active indicators) */
+  --highlight: #f59e0b;
+  --highlight-strong: #fbbf24;
+  --highlight-soft: rgba(245, 158, 11, 0.12);
 
   /* Status */
   --success: #10b981;
@@ -72,7 +82,8 @@
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.6);
   --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.5);
   --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.7);
-  --shadow-amber: 0 0 20px rgba(245, 158, 11, 0.15);
+  --shadow-glow: 0 0 20px var(--glow-accent);
+  --shadow-card-hover: 0 12px 24px -6px rgba(0, 0, 0, 0.5), 0 0 20px var(--glow-accent);
 
   /* Motion */
   --motion-fast: 120ms;
@@ -80,10 +91,19 @@
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
 
   /* Layout */
-  --sidebar-width: 256px;
   --content-max: 1280px;
   --target-min: 44px;
   --nav-height: 64px;
+
+  /* Backward-compat aliases for code that references old --color-* names */
+  --color-bg: var(--canvas);
+  --color-surface: var(--surface);
+  --color-text: var(--text);
+  --color-text-muted: var(--text-muted);
+  --color-accent: var(--accent);
+  --color-accent-text: var(--on-accent);
+  --color-border: var(--border);
+  --color-focus: var(--accent);
 
   color-scheme: dark;
 }
@@ -95,6 +115,7 @@ html.light,
   --surface: #ffffff;
   --surface-2: #f4f4f5;
   --surface-raised: #ffffff;
+  --surface-glass: rgba(255, 255, 255, 0.85);
 
   --text-strong: #09090b;
   --text: #27272a;
@@ -103,10 +124,17 @@ html.light,
   --border: #e4e4e7;
   --border-strong: #d4d4d8;
 
-  --accent: #d97706;
-  --accent-strong: #b45309;
-  --accent-soft: rgba(217, 119, 6, 0.12);
+  --accent: #4f46e5;
+  --accent-strong: #4338ca;
+  --accent-soft: rgba(79, 70, 229, 0.12);
   --on-accent: #ffffff;
+
+  --glow-accent: rgba(79, 70, 229, 0.18);
+  --glow-accent-strong: rgba(79, 70, 229, 0.35);
+
+  --highlight: #d97706;
+  --highlight-strong: #b45309;
+  --highlight-soft: rgba(217, 119, 6, 0.12);
 
   --success: #059669;
   --success-soft: #ecfdf5;
@@ -122,7 +150,18 @@ html.light,
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
   --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.12);
-  --shadow-amber: 0 0 20px rgba(217, 119, 6, 0.1);
+  --shadow-glow: 0 0 20px var(--glow-accent);
+  --shadow-card-hover: 0 8px 20px -4px rgba(0, 0, 0, 0.15), 0 0 16px var(--glow-accent);
+
+  /* Backward-compat aliases */
+  --color-bg: var(--canvas);
+  --color-surface: var(--surface);
+  --color-text: var(--text);
+  --color-text-muted: var(--text-muted);
+  --color-accent: var(--accent);
+  --color-accent-text: var(--on-accent);
+  --color-border: var(--border);
+  --color-focus: var(--accent);
 
   color-scheme: light;
 }

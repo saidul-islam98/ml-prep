@@ -1,47 +1,11 @@
 /* Global styles (Deep-ML Dark/Light Theme System).
    Minimum 44px interactive targets and visible focus. */
 
+/* Design tokens are defined in tokens.css. Backward-compat aliases
+   (--color-bg, --color-surface, etc.) are provided there so existing
+   var(--color-*) references continue to resolve correctly. */
 :root {
-  --color-bg: #09090b;
-  --color-surface: #121215;
-  --color-text: #e4e4e7;
-  --color-text-muted: #a1a1aa;
-  --color-accent: #f59e0b;
-  --color-accent-text: #09090b;
-  --color-border: #27272a;
-  --color-focus: #f59e0b;
-  --space-1: 4px;
-  --space-2: 8px;
-  --space-3: 12px;
-  --space-4: 16px;
-  --space-6: 24px;
   --target-min: 44px;
-  --nav-height: 56px;
-}
-
-html.light,
-[data-theme="light"] {
-  --color-bg: #fafafa;
-  --color-surface: #ffffff;
-  --color-text: #18181b;
-  --color-text-muted: #71717a;
-  --color-accent: #d97706;
-  --color-accent-text: #ffffff;
-  --color-border: #e4e4e7;
-  --color-focus: #d97706;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --color-bg: #09090b;
-    --color-surface: #121215;
-    --color-text: #e4e4e7;
-    --color-text-muted: #a1a1aa;
-    --color-accent: #f59e0b;
-    --color-accent-text: #09090b;
-    --color-border: #27272a;
-    --color-focus: #f59e0b;
-  }
 }
 
 * {
@@ -172,21 +136,60 @@ a {
 
 /* Auth view */
 .auth-view {
-  max-width: 32rem;
-  margin: var(--space-8) auto;
-  background: var(--surface);
+  max-width: 28rem;
+  margin: var(--space-10) auto;
+  background: var(--surface-glass, var(--surface));
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border: 1px solid var(--border);
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
   padding: var(--space-8) var(--space-6);
+}
+
+.auth-brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
+}
+
+.auth-logo-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-strong) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--on-accent);
+  box-shadow: 0 2px 12px var(--glow-accent);
+  flex-shrink: 0;
 }
 
 .auth-view h1 {
   font-family: var(--font-mono);
   font-size: 1.5rem;
   font-weight: 700;
-  margin-top: 0;
+  margin: 0;
   letter-spacing: -0.02em;
+}
+
+.auth-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  margin-top: var(--space-1);
 }
 
 .auth-privacy,
@@ -228,8 +231,7 @@ a {
   outline: none;
 }
 
-.auth-form button,
-button[type="button"] {
+.auth-form button {
   min-height: 44px;
   padding: 0 var(--space-4);
   border: 1px solid transparent;
@@ -283,11 +285,14 @@ button[type="button"] {
 }
 
 .today-summary {
-  background: var(--surface);
+  background: var(--surface-glass, var(--surface));
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border: 1px solid var(--border);
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-lg);
   padding: var(--space-6);
   margin-bottom: var(--space-6);
+  box-shadow: var(--shadow-sm);
 }
 
 .today-summary h1 {
@@ -325,12 +330,15 @@ button[type="button"] {
 }
 
 .next-rep {
-  background: color-mix(in srgb, var(--accent-soft) 25%, var(--surface));
-  border: 1px solid rgba(245, 158, 11, 0.35);
+  background: var(--surface-glass, var(--surface));
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(99, 102, 241, 0.35);
   border-left: 4px solid var(--accent);
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-lg);
   padding: var(--space-5);
   margin-bottom: var(--space-6);
+  box-shadow: var(--shadow-glow);
 }
 
 .module-heading {
@@ -363,18 +371,20 @@ button[type="button"] {
 }
 
 .task-card {
-  background: var(--surface);
+  background: var(--surface-glass, var(--surface));
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   border: 1px solid var(--border);
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-lg);
   padding: var(--space-4) var(--space-5);
   margin-bottom: var(--space-3);
-  transition:
-    border-color var(--motion-fast) var(--ease-out),
-    box-shadow var(--motion-fast) var(--ease-out);
+  transition: all var(--motion-fast) var(--ease-out);
 }
 
 .task-card:hover {
-  border-color: var(--border-strong);
+  border-color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-card-hover);
 }
 
 .task-card.overdue {
@@ -792,15 +802,17 @@ button[type="button"] {
 /* Plan view & Chapters */
 .plan-week {
   margin: var(--space-4) 0;
-  background: var(--surface);
+  background: var(--surface-glass, var(--surface));
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   border: 1px solid var(--border);
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-lg);
   padding: var(--space-5);
-  transition: border-color var(--motion-fast) var(--ease-out);
+  transition: all var(--motion-fast) var(--ease-out);
 }
 
 .plan-week:hover {
-  border-color: var(--border-strong);
+  border-color: var(--accent);
 }
 
 .plan-week__chapter {
@@ -822,6 +834,11 @@ button[type="button"] {
   cursor: pointer;
   padding: 0;
   min-height: 44px;
+  transition: opacity var(--motion-fast) var(--ease-out);
+}
+
+.plan-week-toggle:hover {
+  opacity: 0.85;
 }
 
 .plan-week-toggle h2 {
@@ -855,9 +872,11 @@ button[type="button"] {
   gap: var(--space-3);
   margin: var(--space-4) 0;
   padding: var(--space-4);
-  background: var(--surface);
+  background: var(--surface-glass, var(--surface));
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   border: 1px solid var(--border);
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-lg);
 }
 
 .plan-filters label {
@@ -882,9 +901,11 @@ button[type="button"] {
 
 /* Study Resources Library & Guides */
 .study-library {
-  background: var(--surface);
+  background: var(--surface-glass, var(--surface));
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   border: 1px solid var(--border);
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-lg);
   padding: var(--space-6);
   margin-bottom: var(--space-6);
 }
@@ -920,7 +941,7 @@ button[type="button"] {
   background: var(--accent-soft);
   padding: 3px 8px;
   border-radius: var(--radius-full);
-  border: 1px solid rgba(245, 158, 11, 0.3);
+  border: 1px solid rgba(99, 102, 241, 0.3);
   white-space: nowrap;
 }
 
@@ -942,7 +963,7 @@ button[type="button"] {
 }
 
 .study-resource:hover {
-  border-color: var(--border-strong);
+  border-color: var(--accent);
   transform: translateY(-1px);
 }
 
@@ -971,7 +992,7 @@ button[type="button"] {
 .study-priority--must {
   background: var(--accent-soft);
   color: var(--accent);
-  border: 1px solid rgba(245, 158, 11, 0.4);
+  border: 1px solid rgba(99, 102, 241, 0.4);
 }
 
 .study-priority--should {
@@ -1071,9 +1092,11 @@ button[type="button"] {
 /* Check-in */
 .checkin {
   margin-top: var(--space-6);
-  background: var(--surface);
+  background: var(--surface-glass, var(--surface));
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   border: 1px solid var(--border);
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-lg);
   padding: var(--space-5);
 }
 
@@ -1102,11 +1125,18 @@ button[type="button"] {
 
 /* Projects view */
 .project-card {
-  background: var(--surface);
+  background: var(--surface-glass, var(--surface));
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   border: 1px solid var(--border);
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-lg);
   padding: var(--space-6);
   margin-bottom: var(--space-5);
+  transition: border-color var(--motion-fast) var(--ease-out);
+}
+
+.project-card:hover {
+  border-color: var(--border-strong);
 }
 
 .project-card.locked {
@@ -1134,7 +1164,7 @@ button[type="button"] {
 }
 
 .chip-gate {
-  border-color: rgba(245, 158, 11, 0.4);
+  border-color: rgba(99, 102, 241, 0.4);
   color: var(--accent);
   background: var(--accent-soft);
   font-weight: 600;
@@ -1274,7 +1304,7 @@ button[type="button"] {
   margin-top: var(--space-5);
   padding: var(--space-5);
   border: 1px solid rgba(245, 158, 11, 0.4);
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-lg);
   background: var(--surface-2);
 }
 
@@ -1315,9 +1345,11 @@ button[type="button"] {
 
 /* Readiness view */
 .readiness-role {
-  background: var(--surface);
+  background: var(--surface-glass, var(--surface));
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   border: 1px solid var(--border);
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-lg);
   padding: var(--space-6);
   margin-bottom: var(--space-5);
 }
@@ -1409,9 +1441,11 @@ button[type="button"] {
 }
 
 .progress-period {
-  background: var(--surface);
+  background: var(--surface-glass, var(--surface));
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   border: 1px solid var(--border);
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-lg);
   padding: var(--space-5);
 }
 
@@ -1451,9 +1485,11 @@ button[type="button"] {
 .progress-projects,
 .progress-practice,
 .progress-readiness {
-  background: var(--surface);
+  background: var(--surface-glass, var(--surface));
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   border: 1px solid var(--border);
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-lg);
   padding: var(--space-5);
   margin-bottom: var(--space-5);
 }
@@ -1475,6 +1511,7 @@ button[type="button"] {
   gap: var(--space-2);
   height: 96px;
   padding: var(--space-3) 0;
+  overflow-x: auto;
 }
 
 .trend-col {
@@ -1483,6 +1520,7 @@ button[type="button"] {
   align-items: center;
   gap: var(--space-2);
   flex: 1;
+  min-width: 24px;
 }
 
 .trend-bar {
@@ -1509,6 +1547,7 @@ button[type="button"] {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: var(--space-3);
+  overflow-x: auto;
 }
 
 .rubric-averages li {
@@ -1528,6 +1567,8 @@ button[type="button"] {
   width: 100%;
   border-collapse: collapse;
   font-size: 0.92rem;
+  overflow-x: auto;
+  display: block;
 }
 
 .readiness-matrix th,
@@ -1553,9 +1594,11 @@ button[type="button"] {
 }
 
 .settings-section {
-  background: var(--surface);
+  background: var(--surface-glass, var(--surface));
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   border: 1px solid var(--border);
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-lg);
   box-shadow: var(--shadow-sm);
   padding: var(--space-6);
   margin: 0;
