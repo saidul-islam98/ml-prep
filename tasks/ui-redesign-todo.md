@@ -183,9 +183,9 @@ Every task preserves existing data/API behavior and leaves its focused tests gre
 
 **Acceptance criteria:**
 
-- [ ] Role cards/tabs show ready-count, current status, blocking gates, and optional-role labeling before gate details.
-- [ ] Gate rows remain compact until selected; assessment, note, and evidence controls open in a focused editor.
-- [ ] Ready, in-progress, at-risk, and not-assessed states use text/icon/shape as well as color.
+- [x] Role cards/tabs show ready-count, current status, blocking gates, and optional-role labeling before gate details.
+- [x] Gate rows remain compact until selected; assessment, note, and evidence controls open in a focused editor.
+- [x] Ready, in-progress, at-risk, and not-assessed states use text/icon/shape as well as color.
 
 **Verification:**
 

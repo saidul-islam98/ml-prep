@@ -109,6 +109,20 @@ describe("ReadinessView", () => {
     expect(screen.getByText("Ownership evidence gate")).toBeInTheDocument();
   });
 
+  it("keeps gate assessment controls closed until a gate is selected", async () => {
+    const user = userEvent.setup();
+    renderView();
+
+    const gateCard = (
+      await screen.findByText("Resume gate: evidence for 80% of core requirements")
+    ).closest("form") as HTMLFormElement;
+    expect(within(gateCard).queryByLabelText("Assessment")).not.toBeInTheDocument();
+
+    await user.click(within(gateCard).getByRole("button", { name: "Assess gate" }));
+    expect(within(gateCard).getByLabelText("Assessment")).toBeInTheDocument();
+    expect(within(gateCard).getByRole("button", { name: "Close assessment" })).toBeInTheDocument();
+  });
+
   it("refuses ready without evidence but saves with a note", async () => {
     const user = userEvent.setup();
     renderView();
@@ -116,6 +130,7 @@ describe("ReadinessView", () => {
     const form = (
       await screen.findByText("Resume gate: evidence for 80% of core requirements")
     ).closest("form") as HTMLFormElement;
+    await user.click(within(form).getByRole("button", { name: "Assess gate" }));
     await user.selectOptions(within(form).getByLabelText("Assessment"), "ready");
     await user.click(within(form).getByRole("button", { name: "Save assessment" }));
 
@@ -149,6 +164,7 @@ describe("ReadinessView", () => {
     const form = (
       await screen.findByText("Resume gate: evidence for 80% of core requirements")
     ).closest("form") as HTMLFormElement;
+    await user.click(within(form).getByRole("button", { name: "Assess gate" }));
     await user.selectOptions(within(form).getByLabelText("Assessment"), "ready");
     await user.type(
       within(form).getByLabelText("Evidence link (HTTPS)"),

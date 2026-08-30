@@ -1049,6 +1049,49 @@ button[type="button"] {
   align-items: center;
 }
 
+.readiness-role__header,
+.gate-row__summary {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.readiness-role__badges {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+
+.readiness-role__blocker {
+  margin: var(--space-3) 0;
+  padding: var(--space-2) var(--space-3);
+  border-left: 3px solid var(--warning);
+  border-radius: var(--radius-sm);
+  background: var(--warning-soft);
+  color: var(--text);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+}
+
+.gate-row {
+  margin-top: var(--space-3);
+  margin-bottom: 0;
+}
+
+.gate-row__summary .task-state {
+  margin-bottom: 0;
+}
+
+.gate-row__editor {
+  display: grid;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--border);
+}
+
 .gate-row label {
   font-size: 0.88rem;
   color: var(--color-text-muted);
@@ -1066,6 +1109,22 @@ button[type="button"] {
   color: var(--color-text);
   padding: 0 var(--space-2);
   margin-top: var(--space-1);
+}
+
+@media (max-width: 40rem) {
+  .readiness-role__header,
+  .gate-row__summary {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .readiness-role__badges {
+    justify-content: flex-start;
+  }
+
+  .gate-row__summary .ui-btn {
+    width: 100%;
+  }
 }
 
 /* Progress view */

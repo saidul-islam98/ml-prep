@@ -11,6 +11,7 @@ import type { ReadinessGateRow } from "../lib/api";
 import { commandErrorMessage, isValidHttpsUrl } from "../lib/constants";
 import { useApi } from "../hooks/useApi";
 import { useProfile } from "../hooks/useProfile";
+import { Badge, Button, Card, PageHeader, SkeletonRows } from "../components/ui";
 
 const ROLE_CARDS: { key: ReadinessGateRow["role_key"]; label: string; note: string }[] = [
   {
@@ -59,15 +60,17 @@ export function ReadinessView() {
 
   return (
     <div className="readiness-view">
-      <section aria-labelledby="readiness-title">
-        <h1 id="readiness-title">Readiness</h1>
-        <p className="overdue-note">
-          Evidence-based gates, not a confidence score. Marking a gate ready requires a note or an
-          HTTPS evidence link, and is always an explicit decision.
-        </p>
-      </section>
+      <PageHeader
+        title="Readiness"
+        description={
+          <>
+            Evidence-based gates, not a confidence score. Marking a gate ready requires a note or an
+            HTTPS evidence link, and is always an explicit decision.
+          </>
+        }
+      />
 
-      {isLoading && <p role="status">Loading gates…</p>}
+      {isLoading && <SkeletonRows label="Loading readiness gates" />}
 
       {ROLE_CARDS.map((role) => {
         const roleGates = byRole[role.key] ?? [];
@@ -77,19 +80,32 @@ export function ReadinessView() {
           return null;
         }
         return (
-          <section key={role.key} aria-labelledby={`role-${role.key}`} className="readiness-role">
-            <h2 id={`role-${role.key}`}>
-              {role.label}
-              {isOptional && <span className="chip">optional</span>}
-              <span className="chip">
-                {readyCount}/{roleGates.length} ready
-              </span>
-            </h2>
-            <p className="overdue-note">{role.note}</p>
+          <Card key={role.key} className="readiness-role" ariaLabel={`${role.label} readiness`}>
+            <div className="readiness-role__header">
+              <div>
+                <h2 id={`role-${role.key}`}>{role.label}</h2>
+                <p className="overdue-note">{role.note}</p>
+              </div>
+              <div className="readiness-role__badges">
+                {isOptional ? <Badge tone="warning">Optional</Badge> : null}
+                <Badge
+                  tone={
+                    readyCount === roleGates.length && roleGates.length > 0 ? "success" : "accent"
+                  }
+                >
+                  {readyCount}/{roleGates.length} ready
+                </Badge>
+              </div>
+            </div>
+            {roleGates.length > readyCount ? (
+              <p className="readiness-role__blocker">
+                Next gate: {roleGates.find((gate) => gate.state !== "ready")?.title}
+              </p>
+            ) : null}
             {roleGates.map((gate) => (
               <GateRow key={gate.id} gate={gate} />
             ))}
-          </section>
+          </Card>
         );
       })}
     </div>
@@ -104,6 +120,7 @@ function GateRow({ gate }: { gate: ReadinessGateRow }) {
   const [url, setUrl] = useState(gate.evidence_url ?? "");
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
+  const [open, setOpen] = useState(false);
 
   const save = useMutation({
     mutationFn: () =>
@@ -115,6 +132,7 @@ function GateRow({ gate }: { gate: ReadinessGateRow }) {
       }),
     onSuccess: () => {
       setSaved(true);
+      setOpen(false);
       void queryClient.invalidateQueries({ queryKey: ["readiness-gates"] });
     },
     onError: (err) => setError(commandErrorMessage(err)),
@@ -137,50 +155,65 @@ function GateRow({ gate }: { gate: ReadinessGateRow }) {
 
   return (
     <form className="task-card gate-row" onSubmit={submit} aria-label={`Gate: ${gate.title}`}>
-      <h3 className="task-title">{gate.title}</h3>
-      <p className="task-state" data-state={gate.state}>
-        {STATE_LABELS[gate.state]}
-        {gate.assessed_at
-          ? ` - assessed ${new Date(gate.assessed_at).toLocaleDateString("en-CA", { timeZone: "America/Toronto" })}`
-          : ""}
-      </p>
-      <label htmlFor={`gate-state-${gate.id}`}>Assessment</label>
-      <select
-        id={`gate-state-${gate.id}`}
-        value={state}
-        onChange={(e) => setState(e.target.value as ReadinessGateRow["state"])}
-      >
-        {STATES.map((s) => (
-          <option key={s} value={s}>
-            {STATE_LABELS[s]}
-          </option>
-        ))}
-      </select>
-      <label htmlFor={`gate-note-${gate.id}`}>Evidence note</label>
-      <input id={`gate-note-${gate.id}`} value={note} onChange={(e) => setNote(e.target.value)} />
-      <label htmlFor={`gate-url-${gate.id}`}>Evidence link (HTTPS)</label>
-      <input
-        id={`gate-url-${gate.id}`}
-        type="url"
-        placeholder="https://"
-        value={url}
-        onChange={(e) => setUrl(e.target.value)}
-      />
-      {error && (
-        <p role="alert" className="task-error-text">
-          {error}
-        </p>
-      )}
-      {saved && (
+      <div className="gate-row__summary">
+        <div>
+          <h3 className="task-title">{gate.title}</h3>
+          <p className="task-state" data-state={gate.state}>
+            {STATE_LABELS[gate.state]}
+            {gate.assessed_at
+              ? ` · assessed ${new Date(gate.assessed_at).toLocaleDateString("en-CA", { timeZone: "America/Toronto" })}`
+              : ""}
+          </p>
+        </div>
+        <Button small onClick={() => setOpen((value) => !value)}>
+          {open ? "Close assessment" : "Assess gate"}
+        </Button>
+      </div>
+      {open ? (
+        <div className="gate-row__editor">
+          <label htmlFor={`gate-state-${gate.id}`}>Assessment</label>
+          <select
+            id={`gate-state-${gate.id}`}
+            value={state}
+            onChange={(e) => setState(e.target.value as ReadinessGateRow["state"])}
+          >
+            {STATES.map((s) => (
+              <option key={s} value={s}>
+                {STATE_LABELS[s]}
+              </option>
+            ))}
+          </select>
+          <label htmlFor={`gate-note-${gate.id}`}>Evidence note</label>
+          <input
+            id={`gate-note-${gate.id}`}
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+          />
+          <label htmlFor={`gate-url-${gate.id}`}>Evidence link (HTTPS)</label>
+          <input
+            id={`gate-url-${gate.id}`}
+            type="url"
+            placeholder="https://"
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+          />
+          {error ? (
+            <p role="alert" className="task-error-text">
+              {error}
+            </p>
+          ) : null}
+          <div className="task-actions">
+            <Button type="submit" disabled={save.isPending}>
+              {save.isPending ? "Saving…" : "Save assessment"}
+            </Button>
+          </div>
+        </div>
+      ) : null}
+      {saved ? (
         <p role="status" className="overdue-note">
           Saved.
         </p>
-      )}
-      <div className="task-actions">
-        <button type="submit" disabled={save.isPending}>
-          {save.isPending ? "Saving…" : "Save assessment"}
-        </button>
-      </div>
+      ) : null}
     </form>
   );
 }
