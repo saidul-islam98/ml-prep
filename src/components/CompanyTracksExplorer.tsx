@@ -172,12 +172,14 @@ export function CompanyTracksExplorer({
   const [selectedTrack, setSelectedTrack] = useState<CompanyTrack | null>(null);
   const [filterRole, setFilterRole] = useState<string>("all");
 
-  const filteredTracks = filterRole === "all"
-    ? COMPANY_TRACKS
-    : COMPANY_TRACKS.filter((t) =>
-        t.roles.some((r) => r.toLowerCase().includes(filterRole.toLowerCase())) ||
-        t.skills.some((s) => s.toLowerCase().includes(filterRole.toLowerCase())),
-      );
+  const filteredTracks =
+    filterRole === "all"
+      ? COMPANY_TRACKS
+      : COMPANY_TRACKS.filter(
+          (t) =>
+            t.roles.some((r) => r.toLowerCase().includes(filterRole.toLowerCase())) ||
+            t.skills.some((s) => s.toLowerCase().includes(filterRole.toLowerCase())),
+        );
 
   return (
     <section className="deepml-prep-hero" aria-labelledby="deepml-hero-title">
@@ -194,7 +196,8 @@ export function CompanyTracksExplorer({
         </h2>
         <p className="deepml-hero-subtitle">
           Pick a company, choose a role, and follow a paced curriculum. Build the resume projects
-          that pass engineering screens, practice timed mock loops, and verify readiness before your interviews.
+          that pass engineering screens, practice timed mock loops, and verify readiness before your
+          interviews.
         </p>
 
         <div className="deepml-stats-strip">
@@ -270,7 +273,9 @@ export function CompanyTracksExplorer({
         {filteredTracks.map((track) => (
           <article
             key={track.id}
-            className={track.isActiveTrack ? "deepml-track-card is-active-plan" : "deepml-track-card"}
+            className={
+              track.isActiveTrack ? "deepml-track-card is-active-plan" : "deepml-track-card"
+            }
             onClick={() => setSelectedTrack(track)}
           >
             <div className="deepml-track-card__top">

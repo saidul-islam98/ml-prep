@@ -20,7 +20,9 @@ body {
 }
 
 body.dark-transition {
-  transition: background-color var(--motion) var(--ease-out), color var(--motion) var(--ease-out);
+  transition:
+    background-color var(--motion) var(--ease-out),
+    color var(--motion) var(--ease-out);
 }
 
 a {
@@ -75,7 +77,9 @@ a:hover {
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border);
-  transition: background-color var(--motion-fast) var(--ease-out), border-color var(--motion-fast) var(--ease-out);
+  transition:
+    background-color var(--motion-fast) var(--ease-out),
+    border-color var(--motion-fast) var(--ease-out);
 }
 
 .deepml-nav-inner {
@@ -170,7 +174,9 @@ a:hover {
   font-weight: 500;
   text-decoration: none;
   white-space: nowrap;
-  transition: color var(--motion-fast) var(--ease-out), background-color var(--motion-fast) var(--ease-out);
+  transition:
+    color var(--motion-fast) var(--ease-out),
+    background-color var(--motion-fast) var(--ease-out);
 }
 
 .deepml-nav-link:hover {
@@ -348,7 +354,8 @@ a:hover {
 }
 
 @keyframes deepml-pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
     transform: scale(1);
   }

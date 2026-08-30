@@ -368,7 +368,9 @@ button[type="button"] {
   border-radius: var(--radius-xl);
   padding: var(--space-4) var(--space-5);
   margin-bottom: var(--space-3);
-  transition: border-color var(--motion-fast) var(--ease-out), box-shadow var(--motion-fast) var(--ease-out);
+  transition:
+    border-color var(--motion-fast) var(--ease-out),
+    box-shadow var(--motion-fast) var(--ease-out);
 }
 
 .task-card:hover {
