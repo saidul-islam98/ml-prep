@@ -153,6 +153,22 @@ describe("TodayView", () => {
     expect(screen.getByText("Theory")).toBeInTheDocument();
   });
 
+  it("frames the first incomplete task as the next training rep", async () => {
+    vi.mocked(api.fetchTasks).mockResolvedValue([
+      task({ title: "First rep" }),
+      task({
+        id: "task-2",
+        template_task_key: "w01-tue",
+        title: "Completed rep",
+        state: "completed",
+      }),
+    ]);
+    renderView();
+
+    expect(await screen.findByText("Next training rep")).toBeInTheDocument();
+    expect(screen.getByText("First rep")).toBeInTheDocument();
+  });
+
   it("completes a task with actual minutes and HTTPS evidence", async () => {
     const user = userEvent.setup();
     vi.mocked(api.fetchTasks).mockResolvedValue([task()]);

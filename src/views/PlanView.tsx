@@ -104,7 +104,8 @@ export function PlanView() {
 
   return (
     <div className="plan-view">
-      <section aria-labelledby="plan-title">
+      <section aria-labelledby="plan-title" className="curriculum-intro">
+        <p className="curriculum-kicker">14-week curriculum</p>
         <h1 id="plan-title">Plan</h1>
         <p className="overdue-note">
           Fourteen weeks, August 31 - December 6, 2026. Tasks are grouped by their scheduled date;
@@ -226,6 +227,7 @@ export function PlanView() {
                 })
               }
             >
+              <p className="plan-week__chapter">Chapter {week.week_number}</p>
               <h2 id={`week-${week.week_number}`}>
                 Week {week.week_number}: {week.title}
               </h2>

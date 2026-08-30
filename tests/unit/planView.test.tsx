@@ -182,6 +182,13 @@ describe("PlanView", () => {
     expect(screen.getByText(/110\/200 min completed/)).toBeInTheDocument();
   });
 
+  it("frames weeks as numbered curriculum chapters", async () => {
+    renderView();
+
+    expect(await screen.findByText("14-week curriculum")).toBeInTheDocument();
+    expect(await screen.findByText("Chapter 1")).toBeInTheDocument();
+  });
+
   it("filters by role, category, and state", async () => {
     const user = userEvent.setup();
     vi.mocked(api.fetchTasks).mockResolvedValue([

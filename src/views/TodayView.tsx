@@ -41,6 +41,7 @@ export function TodayView() {
     .filter((t) => t.state === "completed")
     .reduce((sum, t) => sum + (t.actual_minutes ?? 0), 0);
   const completedCount = todays.filter((t) => t.state === "completed").length;
+  const nextTask = todays.find((task) => task.state !== "completed" && task.state !== "skipped");
   const roleTags = [...new Set(todays.flatMap((t) => t.role_tags))].filter(
     (r) => r !== "post_training" || postTrainingEnabled,
   );
@@ -86,7 +87,8 @@ export function TodayView() {
 
   return (
     <div className="today-view">
-      <section aria-labelledby="today-summary" className="today-summary">
+      <section aria-labelledby="today-summary" className="today-summary curriculum-intro">
+        <p className="curriculum-kicker">Daily lesson plan</p>
         <h1 id="today-summary">Today</h1>
         <p className="today-date">{formatDisplayDateWithYear(today)}</p>
         {week && (
@@ -128,6 +130,21 @@ export function TodayView() {
         onTransition={handleTransition}
       />
 
+      {nextTask && (
+        <section className="next-rep" aria-labelledby="next-rep-title">
+          <div className="module-heading">
+            <div>
+              <p className="curriculum-kicker">Start here</p>
+              <h2 id="next-rep-title">Next training rep</h2>
+            </div>
+            <span className="next-rep__minutes">{nextTask.estimated_minutes} min</span>
+          </div>
+          <p className="next-rep__copy">
+            Begin with the first unfinished task in the modules below.
+          </p>
+        </section>
+      )}
+
       {todays.length === 0 ? (
         <section className="placeholder">
           <h2>No tasks scheduled for today</h2>
@@ -141,8 +158,20 @@ export function TodayView() {
           const group = todays.filter((t) => t.category === category);
           if (group.length === 0) return null;
           return (
-            <section key={category} aria-labelledby={`group-${category}`}>
-              <h2 id={`group-${category}`}>{CATEGORY_LABELS[category]}</h2>
+            <section
+              key={category}
+              className="training-module"
+              aria-labelledby={`group-${category}`}
+            >
+              <div className="module-heading">
+                <div>
+                  <p className="curriculum-kicker">Training module</p>
+                  <h2 id={`group-${category}`}>{CATEGORY_LABELS[category]}</h2>
+                </div>
+                <span>
+                  {group.length} rep{group.length === 1 ? "" : "s"}
+                </span>
+              </div>
               {group.map((task) => (
                 <TaskCard
                   key={task.id}

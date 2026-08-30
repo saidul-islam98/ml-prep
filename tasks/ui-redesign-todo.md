@@ -295,13 +295,13 @@ Every task preserves existing data/API behavior and leaves its focused tests gre
 
 **Acceptance criteria:**
 
-- [ ] Today prioritizes one next rep and groups remaining work as compact practice modules.
-- [ ] Plan weeks read as chapters with progress, focus, and expandable task rows instead of generic cards.
-- [ ] All task actions and filters retain their existing behavior.
+- [x] Today prioritizes one next rep and groups remaining work as compact practice modules.
+- [x] Plan weeks read as chapters with progress, focus, and expandable task rows instead of generic cards.
+- [x] All task actions and filters retain their existing behavior.
 
 **Verification:**
 
-- [ ] Tests pass: Today and Plan focused suites.
+- [x] Tests pass: Today and Plan focused suites.
 - [ ] Manual check: 360px and 1440px layouts remain scannable.
 
 **Dependencies:** UI-13

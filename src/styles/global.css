@@ -1380,3 +1380,143 @@ input[type="email"] {
   padding: var(--space-2);
   overflow-x: auto;
 }
+
+/* Editorial curriculum pass (UI-14/UI-15). This layer intentionally wins over
+   the earlier dashboard rules while retaining the established component APIs. */
+.curriculum-intro {
+  margin-bottom: var(--space-6);
+  padding-bottom: var(--space-5);
+  border-bottom: 1px solid var(--border);
+}
+
+.curriculum-kicker,
+.plan-week__chapter {
+  margin: 0 0 var(--space-2);
+  color: var(--accent);
+  font-size: 0.68rem;
+  font-weight: 750;
+  letter-spacing: 0.12em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.curriculum-intro h1 {
+  font-size: clamp(2rem, 4vw, 3.2rem);
+  letter-spacing: -0.05em;
+  line-height: 0.98;
+}
+
+.next-rep,
+.training-module {
+  margin: 0 0 var(--space-6);
+}
+
+.next-rep {
+  padding: var(--space-5);
+  border: 1px solid var(--border-strong);
+  border-left: 4px solid var(--accent);
+  background: var(--surface);
+}
+
+.module-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--border);
+}
+
+.module-heading h2 {
+  margin: 0;
+  font-size: var(--fs-xl);
+  letter-spacing: -0.025em;
+}
+
+.module-heading > span,
+.next-rep__minutes {
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+  font-weight: 650;
+}
+
+.training-module .task-card,
+.plan-week .task-card,
+.gate-row {
+  border-width: 0 0 1px;
+  border-radius: 0;
+  box-shadow: none;
+  margin-bottom: 0;
+  padding-inline: 0;
+}
+
+.training-module .task-card:last-child,
+.plan-week .task-card:last-child {
+  border-bottom: 0;
+}
+
+.plan-week {
+  border-width: 0 0 1px;
+  border-radius: 0;
+  background: transparent;
+  padding: var(--space-4) 0;
+  margin: 0;
+}
+
+.plan-week-toggle {
+  padding: var(--space-2) 0;
+}
+
+.plan-week-toggle h2 {
+  font-size: var(--fs-xl);
+  letter-spacing: -0.025em;
+}
+
+.plan-week__chapter {
+  color: var(--text-muted);
+}
+
+.plan-exit-check {
+  margin: var(--space-3) 0;
+  padding: var(--space-3);
+  border-left: 3px solid var(--accent);
+  border-radius: 0;
+  background: var(--accent-soft);
+}
+
+.today-summary,
+.checkin,
+.project-card,
+.readiness-role,
+.progress-trend,
+.progress-effort,
+.progress-projects,
+.progress-practice,
+.progress-readiness,
+.rate,
+.progress-period,
+.practice-gate {
+  border-radius: var(--radius-md);
+  box-shadow: none;
+}
+
+.today-summary {
+  background: transparent;
+  border-width: 0;
+  padding: 0;
+}
+
+.next-rep__copy {
+  margin: 0;
+  color: var(--text);
+}
+
+@media (max-width: 40rem) {
+  .next-rep {
+    padding: var(--space-4);
+  }
+  .module-heading {
+    align-items: flex-start;
+  }
+}
