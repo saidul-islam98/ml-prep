@@ -151,16 +151,16 @@ UI-1 audit/contract
 
 ## Risks and Mitigations
 
-| Risk | Impact | Mitigation |
-| --- | --- | --- |
-| Styling refactor changes behavior | High | Keep API/hooks unchanged; redesign one vertical surface at a time; retain focused component tests |
-| Task actions become hard to discover | High | Keep primary action visible; use labeled More menu; test every state/action combination |
+| Risk                                          | Impact | Mitigation                                                                                                     |
+| --------------------------------------------- | ------ | -------------------------------------------------------------------------------------------------------------- |
+| Styling refactor changes behavior             | High   | Keep API/hooks unchanged; redesign one vertical surface at a time; retain focused component tests              |
+| Task actions become hard to discover          | High   | Keep primary action visible; use labeled More menu; test every state/action combination                        |
 | Mobile More navigation hides important routes | Medium | Today remains persistent; show badges/status in More; test keyboard, screen reader, and outside-click behavior |
-| Dark theme remains muddy | Medium | Define theme-specific semantic tokens and contrast-check both themes |
-| New charts misrepresent metrics | High | Consume existing metric outputs only; preserve formula labels, null states, and text equivalents |
-| Large CSS rewrite causes regressions | Medium | Split tokens/primitives/page styles; remove obsolete selectors only after each page lands |
-| Visual polish increases bundle size | Medium | Prefer CSS and small SVGs; measure the production bundle at every checkpoint |
-| Existing screenshots cover desktop only | Medium | Add phone/tablet/light-theme captures during UI-1 and retain them for final comparison |
+| Dark theme remains muddy                      | Medium | Define theme-specific semantic tokens and contrast-check both themes                                           |
+| New charts misrepresent metrics               | High   | Consume existing metric outputs only; preserve formula labels, null states, and text equivalents               |
+| Large CSS rewrite causes regressions          | Medium | Split tokens/primitives/page styles; remove obsolete selectors only after each page lands                      |
+| Visual polish increases bundle size           | Medium | Prefer CSS and small SVGs; measure the production bundle at every checkpoint                                   |
+| Existing screenshots cover desktop only       | Medium | Add phone/tablet/light-theme captures during UI-1 and retain them for final comparison                         |
 
 ## Non-goals
 
