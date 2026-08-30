@@ -50,7 +50,8 @@ export function ProjectsView() {
 
   return (
     <div className="projects-view">
-      <section aria-labelledby="projects-title">
+      <section aria-labelledby="projects-title" className="curriculum-intro">
+        <p className="curriculum-kicker">Portfolio builds</p>
         <h1 id="projects-title">Projects</h1>
         <p className="overdue-note">
           Agent Reliability Lab: two connected required projects, plus an optional post-training

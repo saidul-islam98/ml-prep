@@ -108,6 +108,7 @@ describe("ProjectsView", () => {
     renderView();
 
     expect(await screen.findByText("EvalOps for tool-using enterprise agents")).toBeInTheDocument();
+    expect(screen.getByText("Portfolio builds")).toBeInTheDocument();
     expect(screen.getAllByText(/0 of 33 h logged/).length).toBeGreaterThan(0);
     expect(screen.getByText(/two connected required projects/i)).toBeInTheDocument();
   });

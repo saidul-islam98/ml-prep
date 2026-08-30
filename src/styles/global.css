@@ -1512,6 +1512,159 @@ input[type="email"] {
   color: var(--text);
 }
 
+/* Evidence modules: project work, deliberate practice, gate reviews, and
+   progress records share a restrained document-like hierarchy. */
+.ui-page-header,
+.projects-view > .curriculum-intro {
+  margin-bottom: var(--space-6);
+  padding-bottom: var(--space-5);
+  border-bottom: 1px solid var(--border);
+}
+
+.ui-page-header h1,
+.projects-view > .curriculum-intro h1 {
+  margin: 0;
+  color: var(--text-strong);
+  font-size: clamp(2rem, 4vw, 3.2rem);
+  letter-spacing: -0.05em;
+  line-height: 0.98;
+}
+
+.ui-page-header__desc,
+.projects-view > .curriculum-intro .overdue-note {
+  max-width: 46rem;
+  margin: var(--space-3) 0 0;
+  color: var(--text-muted);
+}
+
+.project-card,
+.readiness-role,
+.practice-gate,
+.progress-period,
+.progress-trend,
+.progress-effort,
+.progress-projects,
+.progress-practice,
+.progress-readiness {
+  background: var(--surface);
+  border-color: var(--border);
+}
+
+.project-card,
+.readiness-role {
+  padding: var(--space-5);
+  border-left: 3px solid var(--border-strong);
+}
+
+.project-card h2,
+.readiness-role h2 {
+  color: var(--text-strong);
+  letter-spacing: -0.025em;
+}
+
+.project-roles {
+  color: var(--accent);
+  font-size: var(--fs-sm);
+  font-weight: 700;
+}
+
+.milestone {
+  padding: var(--space-3) 0;
+}
+
+.milestone.gate {
+  background: linear-gradient(90deg, var(--accent-soft), transparent 72%);
+}
+
+.practice-tabs {
+  border-radius: 0;
+  border-width: 0 0 1px;
+  background: transparent;
+  padding: 0;
+}
+
+.practice-tab {
+  border-radius: 0;
+  border-bottom: 2px solid transparent;
+}
+
+.practice-tab.is-active {
+  border-bottom-color: var(--accent);
+  background: transparent;
+  box-shadow: none;
+}
+
+.practice-gate {
+  border-left: 3px solid var(--accent);
+}
+
+.practice-panel__heading,
+.readiness-role__header,
+.progress-rates > h2,
+.progress-trend h2,
+.progress-effort h2,
+.progress-projects h2,
+.progress-practice h2,
+.progress-readiness h2 {
+  color: var(--text-strong);
+  letter-spacing: -0.025em;
+}
+
+.readiness-role__blocker {
+  border-radius: 0;
+}
+
+.rate-grid {
+  gap: 1px;
+  border: 1px solid var(--border);
+  background: var(--border);
+}
+
+.rate {
+  border: 0;
+  border-radius: 0;
+  background: var(--surface);
+}
+
+.progress-period {
+  border-radius: 0;
+  border-width: 1px 0;
+  padding: var(--space-4) 0;
+}
+
+.progress-trend,
+.progress-effort,
+.progress-projects,
+.progress-practice,
+.progress-readiness {
+  border-width: 1px 0;
+  border-radius: 0;
+  background: transparent;
+  padding: var(--space-5) 0;
+}
+
+.trend-bar {
+  border-radius: 0;
+  background: var(--accent);
+}
+
+.readiness-matrix th {
+  color: var(--text-muted);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+@media (max-width: 40rem) {
+  .project-card,
+  .readiness-role {
+    padding: var(--space-4);
+  }
+  .progress-period {
+    padding: var(--space-3) 0;
+  }
+}
+
 @media (max-width: 40rem) {
   .next-rep {
     padding: var(--space-4);

@@ -314,14 +314,14 @@ Every task preserves existing data/API behavior and leaves its focused tests gre
 
 **Acceptance criteria:**
 
-- [ ] Project evidence, practice scores, readiness gates, and progress metrics share module headings and compact data treatment.
-- [ ] Dense data remains understandable without color alone.
-- [ ] Existing creation, assessment, and evidence workflows remain available.
+- [x] Project evidence, practice scores, readiness gates, and progress metrics share module headings and compact data treatment.
+- [x] Dense data remains understandable without color alone.
+- [x] Existing creation, assessment, and evidence workflows remain available.
 
 **Verification:**
 
-- [ ] Tests pass: Projects, Practice, Readiness, Progress, and metrics suites.
-- [ ] Run: `npm run typecheck && npm run lint`.
+- [x] Tests pass: Projects, Practice, Readiness, Progress, and metrics suites.
+- [x] Run: `npm run typecheck && npm run lint`.
 
 **Dependencies:** UI-13
 **Files likely touched:** `src/views/ProjectsView.tsx`, `src/views/PracticeView.tsx`, `src/views/ReadinessView.tsx`, `src/views/ProgressView.tsx`, `src/styles/global.css`
