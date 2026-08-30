@@ -12,9 +12,9 @@ Every task preserves existing data/API behavior and leaves its focused tests gre
 
 **Acceptance criteria:**
 
-- [ ] Record annotated findings for all seven existing screenshots and capture missing 360px, tablet, and light-theme baselines.
-- [ ] Define page wireframes for the shell, Today, task card, Plan, Projects, Practice, Readiness, Progress, and Settings.
-- [ ] Document the approved navigation and task-action hierarchy without changing application behavior.
+- [x] Record annotated findings for all seven existing screenshots and capture missing 360px, tablet, and light-theme baselines.
+- [x] Define page wireframes for the shell, Today, task card, Plan, Projects, Practice, Readiness, Progress, and Settings.
+- [x] Document the approved navigation and task-action hierarchy without changing application behavior.
 
 **Verification:**
 
@@ -31,9 +31,9 @@ Every task preserves existing data/API behavior and leaves its focused tests gre
 
 **Acceptance criteria:**
 
-- [ ] Define complete color, typography, spacing, radius, elevation, role, status, and motion tokens; remove undefined tokens such as `--space-5`.
-- [ ] Add shared Button, IconButton, Badge, Card, ProgressBar, PageHeader, EmptyState, and disclosure/menu primitives with consistent variants.
-- [ ] All primitives meet focus, contrast, reduced-motion, disabled, loading, and 44px-target requirements.
+- [x] Define complete color, typography, spacing, radius, elevation, role, status, and motion tokens; remove undefined tokens such as `--space-5`.
+- [x] Add shared Button, IconButton, Badge, Card, ProgressBar, PageHeader, EmptyState, and disclosure/menu primitives with consistent variants.
+- [x] All primitives meet focus, contrast, reduced-motion, disabled, loading, and 44px-target requirements.
 
 **Verification:**
 
@@ -51,9 +51,9 @@ Every task preserves existing data/API behavior and leaves its focused tests gre
 
 **Acceptance criteria:**
 
-- [ ] Desktop sidebar shows product identity, current-week context, all seven routes, active state, and connectivity/account context without wasting the content canvas.
-- [ ] Mobile bottom navigation exposes Today, Plan, Projects, Practice, and More; More gives keyboard/screen-reader access to Readiness, Progress, and Settings.
-- [ ] Main content uses responsive page widths and does not hide behind fixed navigation.
+- [x] Desktop sidebar shows product identity, current-week context, all seven routes, active state, and connectivity/account context without wasting the content canvas.
+- [x] Mobile bottom navigation exposes Today, Plan, Projects, Practice, and More; More gives keyboard/screen-reader access to Readiness, Progress, and Settings.
+- [x] Main content uses responsive page widths and does not hide behind fixed navigation.
 
 **Verification:**
 
@@ -71,9 +71,9 @@ Every task preserves existing data/API behavior and leaves its focused tests gre
 
 **Acceptance criteria:**
 
-- [ ] Show one context-sensitive primary action and at most one visible secondary action; place remaining valid actions in an accessible labeled menu.
-- [ ] Separate task summary, acceptance/evidence detail, conflict/error state, and history without removing any transition.
-- [ ] Standard, overdue, completed, skipped, custom, and offline variants remain visually and semantically distinct.
+- [x] Show one context-sensitive primary action and at most one visible secondary action; place remaining valid actions in an accessible labeled menu.
+- [x] Separate task summary, acceptance/evidence detail, conflict/error state, and history without removing any transition.
+- [x] Standard, overdue, completed, skipped, custom, and offline variants remain visually and semantically distinct.
 
 **Verification:**
 
@@ -97,9 +97,9 @@ Every task preserves existing data/API behavior and leaves its focused tests gre
 
 **Acceptance criteria:**
 
-- [ ] Header presents Toronto date, week/phase, role focus, and a visual planned/completed minutes summary.
-- [ ] The next unfinished task is visually prioritized; remaining work is grouped cleanly by category using the compact task interaction model.
-- [ ] Overdue resolution and end-of-day check-in use distinct focused panels; empty/loading/error/offline states are intentionally designed without duplicate offline warnings.
+- [x] Header presents Toronto date, week/phase, role focus, and a visual planned/completed minutes summary.
+- [x] The next unfinished task is visually prioritized; remaining work is grouped cleanly by category using the compact task interaction model.
+- [x] Overdue resolution and end-of-day check-in use distinct focused panels; empty/loading/error/offline states are intentionally designed without duplicate offline warnings.
 
 **Verification:**
 
@@ -117,9 +117,9 @@ Every task preserves existing data/API behavior and leaves its focused tests gre
 
 **Acceptance criteria:**
 
-- [ ] Week headers show dates, phase, completion ratio, progress bar, and exit-check status at a glance.
-- [ ] Filters collapse into a responsive toolbar/sheet with active-filter chips and a clear result count.
-- [ ] Expanded weeks use compact task rows and progressive task detail; custom-task creation remains obvious but secondary.
+- [x] Week headers show dates, phase, completion ratio, progress bar, and exit-check status at a glance.
+- [x] Filters collapse into a responsive toolbar/sheet with active-filter chips and a clear result count.
+- [x] Expanded weeks use compact task rows and progressive task detail; custom-task creation remains obvious but secondary.
 
 **Verification:**
 
@@ -137,9 +137,9 @@ Every task preserves existing data/API behavior and leaves its focused tests gre
 
 **Acceptance criteria:**
 
-- [ ] Each project header shows role relevance, state/risk, budget vs actual, milestone completion, and the next gate.
-- [ ] Milestones are compact rows/timeline items; acceptance criteria and evidence editing open on demand.
-- [ ] Locked Post-Training clearly explains gate completion, the 1,200-minute swap, irreversible opt-in, and why unlock is unavailable.
+- [x] Each project header shows role relevance, state/risk, budget vs actual, milestone completion, and the next gate.
+- [x] Milestones are compact rows/timeline items; acceptance criteria and evidence editing open on demand.
+- [x] Locked Post-Training clearly explains gate completion, the 1,200-minute swap, irreversible opt-in, and why unlock is unavailable.
 
 **Verification:**
 
