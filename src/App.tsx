@@ -25,8 +25,8 @@ export default function App({ initialAuthError }: { initialAuthError?: string })
 
   if (session.status === "loading") {
     return (
-      <div className="app-shell" role="status" aria-live="polite">
-        <p className="loading-note">Loading…</p>
+      <div className="app-shell system-state" role="status" aria-live="polite">
+        <p className="loading-note">Loading your private preparation workspace…</p>
       </div>
     );
   }
@@ -42,7 +42,7 @@ function ConfigErrorState() {
   return (
     <div className="app-shell">
       <main className="app-main" id="main">
-        <section aria-labelledby="config-title" className="placeholder">
+        <section aria-labelledby="config-title" className="placeholder system-panel">
           <h1 id="config-title">Setup incomplete</h1>
           <p>
             This deployment is missing its Supabase configuration (public URL and publishable key).

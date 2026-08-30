@@ -229,9 +229,9 @@ Every task preserves existing data/API behavior and leaves its focused tests gre
 
 **Acceptance criteria:**
 
-- [ ] Settings groups reminder setup/status first, plan information second, data/account actions last, with clear consequence levels.
-- [ ] Authentication and plan-setup states use a focused branded panel with concise privacy and recovery messaging.
-- [ ] Shared skeleton, empty, error, offline, and conflict states are visually consistent and do not expose private data.
+- [x] Settings groups reminder setup/status first, plan information second, data/account actions last, with clear consequence levels.
+- [x] Authentication and plan-setup states use a focused branded panel with concise privacy and recovery messaging.
+- [x] Shared skeleton, empty, error, offline, and conflict states are visually consistent and do not expose private data.
 
 **Verification:**
 

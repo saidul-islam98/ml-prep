@@ -14,6 +14,7 @@ import { isValidHttpsUrl } from "../lib/constants";
 import { useApi } from "../hooks/useApi";
 import { useProfile } from "../hooks/useProfile";
 import { signOut, useSession } from "../auth/useSession";
+import { Badge, Button, PageHeader } from "../components/ui";
 
 /** The deployed Today URL for this installation. */
 export function deployedTodayUrl(): string {
@@ -76,24 +77,22 @@ export function SettingsView() {
 
   return (
     <div className="settings-view">
-      <section aria-labelledby="settings-title" className="settings-section">
-        <h1 id="settings-title">Settings</h1>
-      </section>
+      <PageHeader title="Settings" description="Reminder, plan, and private account controls." />
 
-      <section aria-labelledby="account-title" className="settings-section">
+      <section aria-labelledby="account-title" className="settings-section settings-account">
         <h2 id="account-title">Account</h2>
         <p>
           Signed in as <strong>{email}</strong>
         </p>
-        <button type="button" onClick={() => void signOut()}>
+        <Button variant="danger" onClick={() => void signOut()}>
           Sign out
-        </button>
+        </Button>
         <p className="overdue-note">
           Signing out clears the session and all cached data on this device.
         </p>
       </section>
 
-      <section aria-labelledby="reminder-title" className="settings-section">
+      <section aria-labelledby="reminder-title" className="settings-section settings-reminder">
         <h2 id="reminder-title">Daily reminder</h2>
         <p>
           Fixed at <strong>5:00 PM America/Toronto</strong>, every day, for the canonical plan
@@ -154,7 +153,7 @@ export function SettingsView() {
         )}
       </section>
 
-      <section aria-labelledby="plan-title" className="settings-section">
+      <section aria-labelledby="plan-title" className="settings-section settings-plan">
         <h2 id="plan-title">Plan window</h2>
         <p>
           Canonical window:{" "}
@@ -165,14 +164,16 @@ export function SettingsView() {
         </p>
         <p>
           Optional Post-Training track:{" "}
-          <strong>{profile?.post_training_enabled ? "enabled" : "locked"}</strong> - enable it from
-          the Projects view after both required projects' completion gates pass.
+          <Badge tone={profile?.post_training_enabled ? "success" : "warning"}>
+            {profile?.post_training_enabled ? "enabled" : "locked"}
+          </Badge>{" "}
+          - enable it from the Projects view after both required projects' completion gates pass.
         </p>
       </section>
 
       <ExportSection />
 
-      <section aria-labelledby="deletion-title" className="settings-section">
+      <section aria-labelledby="deletion-title" className="settings-section settings-deletion">
         <h2 id="deletion-title">Account deletion</h2>
         <p className="overdue-note">
           Deletion is performed by the operator in the Supabase Dashboard: deleting the Auth user
@@ -205,19 +206,19 @@ function ExportSection() {
   });
 
   return (
-    <section aria-labelledby="export-title" className="settings-section">
+    <section aria-labelledby="export-title" className="settings-section settings-export">
       <h2 id="export-title">Data export</h2>
       <p className="overdue-note">
         Downloads every row you own as a local JSON file. The export never contains credentials -
         the app never holds any.
       </p>
-      <button
+      <Button
         type="button"
         onClick={() => exportMutation.mutate()}
         disabled={exportMutation.isPending}
       >
         {exportMutation.isPending ? "Exporting…" : "Export all data (JSON)"}
-      </button>
+      </Button>
       {error && (
         <p role="alert" className="task-error-text">
           {error}

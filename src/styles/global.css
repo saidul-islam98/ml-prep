@@ -220,6 +220,46 @@ a {
   padding: var(--space-6) var(--space-4);
 }
 
+.settings-view {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.settings-section,
+.auth-view,
+.system-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: var(--space-5);
+  margin: 0;
+}
+
+.settings-reminder {
+  order: 1;
+}
+.settings-plan {
+  order: 2;
+}
+.settings-export {
+  order: 3;
+}
+.settings-account {
+  order: 4;
+}
+.settings-deletion {
+  order: 5;
+}
+
+.system-state {
+  display: grid;
+  min-height: 100vh;
+  place-items: center;
+  padding: var(--space-5);
+}
+
 .auth-view h1 {
   font-size: 1.25rem;
   margin-top: 0;
