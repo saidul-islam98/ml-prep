@@ -172,6 +172,8 @@
 }
 
 .ui-card {
+  position: relative;
+  z-index: 1;
   background: var(--surface-glass, var(--surface));
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
@@ -189,6 +191,16 @@
   transform: translateY(-2px);
   border-color: var(--accent);
   box-shadow: var(--shadow-card-hover);
+  z-index: 5;
+}
+
+.ui-card:focus-within {
+  z-index: 20;
+}
+
+.ui-card:has([aria-expanded="true"]),
+.ui-card:has(.ui-menu) {
+  z-index: 50;
 }
 
 .ui-card--warning {
@@ -335,6 +347,11 @@
 .ui-menu-wrap {
   position: relative;
   display: inline-block;
+  z-index: 30;
+}
+
+.ui-menu-wrap:has([aria-expanded="true"]) {
+  z-index: 60;
 }
 
 .ui-menu {
@@ -343,12 +360,15 @@
   top: calc(100% + var(--space-2));
   min-width: 14rem;
   background: var(--surface-raised);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-strong, var(--border));
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-lg);
+  box-shadow:
+    0 16px 36px rgba(0, 0, 0, 0.65),
+    0 0 1px rgba(255, 255, 255, 0.15);
   padding: var(--space-1);
-  z-index: 50;
-  backdrop-filter: blur(8px);
+  z-index: 100;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
 .ui-menu__item {
