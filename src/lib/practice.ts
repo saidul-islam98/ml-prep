@@ -8,12 +8,13 @@ export interface PracticeSessionLike {
   state: string;
   result: string | null;
   completed_at: string | null;
+  notes?: string | null;
 }
 
 /**
  * The latest-ten predicate: completed coding sessions with a recorded result,
  * newest completion first, capped at ten. Drives the coding readiness gate
- * ("solve 8 of the latest 10").
+ * ("solve 8 of the latest 10"). Only reviewed attempts qualify.
  */
 export function latestTenQualifyingCodingSessions<T extends PracticeSessionLike>(
   sessions: T[],
@@ -25,7 +26,9 @@ export function latestTenQualifyingCodingSessions<T extends PracticeSessionLike>
         s.state === "completed" &&
         s.result !== null &&
         s.result.trim() !== "" &&
-        s.completed_at !== null,
+        s.completed_at !== null &&
+        typeof s.notes === "string" &&
+        s.notes.trim() !== "",
     )
     .sort((a, b) => Date.parse(b.completed_at as string) - Date.parse(a.completed_at as string))
     .slice(0, 10);
@@ -39,6 +42,20 @@ export function codingGateSummary(latest: PracticeSessionLike[]): {
 } {
   const solved = latest.filter((s) => (s.result ?? "").trim().toLowerCase() === "solved").length;
   return { solved, total: latest.length, meetsGate: latest.length > 0 && solved >= 8 };
+}
+
+export interface CodingProblemIdentity {
+  id: string;
+  title: string;
+}
+
+/** Encodes static curriculum identity into the cross-device session topic. */
+export function codingPracticeTopic(problem: CodingProblemIdentity): string {
+  return `${problem.title} [${problem.id}]`;
+}
+
+export function codingProblemIdFromTopic(topic: string): string | null {
+  return topic.match(/\[(lc-[a-z0-9-]+)\]$/)?.[1] ?? null;
 }
 
 export const MOCK_DIMENSIONS = [

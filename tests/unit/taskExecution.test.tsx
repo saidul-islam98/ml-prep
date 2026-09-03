@@ -5,6 +5,7 @@ import { FocusModeModal } from "../../src/components/FocusModeModal";
 import { CompletionGateModal } from "../../src/components/CompletionGateModal";
 import { WeekSummaryBanner } from "../../src/components/WeekSummaryBanner";
 import { getCurriculumTask, getCurriculumWeek } from "../../src/curriculum";
+import { emptyTaskExecution } from "../../src/hooks/useTaskExecution";
 
 describe("Task Execution and Progressive Disclosure UI", () => {
   const task = getCurriculumTask("w01-mon")!;
@@ -51,6 +52,26 @@ describe("Task Execution and Progressive Disclosure UI", () => {
     const launchFocusBtn = screen.getAllByRole("button", { name: /Launch Focus Mode/i })[0];
     fireEvent.click(launchFocusBtn);
     expect(handleFocus).toHaveBeenCalledWith(task);
+  });
+
+  it("shows an optional-evidence deliverable as verified from its persisted verification control", () => {
+    const deliverable = task.deliverables.find((item) => item.required)!;
+    render(
+      <TaskDetailModal
+        task={task}
+        isOpen={true}
+        onClose={vi.fn()}
+        onStartFocus={vi.fn()}
+        onComplete={vi.fn()}
+        progress={{
+          ...emptyTaskExecution(),
+          completed_criterion_ids: [`deliverable:${deliverable.id}`],
+        }}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("tab", { name: /Execution/i }));
+    expect(screen.getByText("Verified")).toBeInTheDocument();
   });
 
   it("renders FocusModeModal with step progress and step timer", () => {

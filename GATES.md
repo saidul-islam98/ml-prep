@@ -43,3 +43,34 @@ Scope: align every executable week and task with the canonical preparation plan,
       CHECK: node scripts/verify-repository-scope.mjs
       EXPECT: REPOSITORY SCOPE OK
       EVIDENCE: exit=0; shell=/bin/sh; cwd=/home/ivlr/Study/Job Search/cohere/ml-prep; path=4bb464f00a22/23 entries; EXPECT=matched; output-sha256=f0f8e839b16606f131d45f473e35168a18a52adc80eb9d099b76abbfde7fa3f3; output-bytes=20
+
+---
+
+# Gates: verifiable deliverables and coding problem bank
+
+Scope: make required task artifacts individually verifiable and make the complete bookmarked LeetCode set schedulable and trackable while preserving the canonical preparation plan.
+
+- [x] G8: every required deliverable has an independently persisted verification control and required evidence cannot be removed from a completed task without an audited override
+      CHECK: npm test -- --run tests/unit/completionGateEvidence.test.tsx tests/unit/taskCardExecution.test.tsx && echo "DELIVERABLE GATES OK"
+      EXPECT: DELIVERABLE GATES OK
+      EVIDENCE: exit=0; shell=/bin/sh; cwd=/home/ivlr/Study/Job Search/cohere/ml-prep; path=b36f341b69f8/23 entries; EXPECT=matched; output-sha256=3053a87e684c59223d86950a477052e87ae28d32c59a0bc6d0a6365209c9b04b; output-bytes=1180
+
+- [x] G9: the application exposes all 60 unique bookmarked problems and the canonical schedule accounts for at least 30 timed reviewed attempts
+      CHECK: npm test -- --run tests/unit/codingProblems.test.ts tests/unit/practiceView.test.tsx && echo "PROBLEM BANK OK"
+      EXPECT: PROBLEM BANK OK
+      EVIDENCE: exit=0; shell=/bin/sh; cwd=/home/ivlr/Study/Job Search/cohere/ml-prep; path=b36f341b69f8/23 entries; EXPECT=matched; output-sha256=5f9a435afbef03678e69956a3bf78a3db74851dd0bc881c01d9ce58e03926d72; output-bytes=1165
+
+- [x] G10: coding attempts persist problem identity, duration, result, review, mistake category, and re-solve status through the existing cross-device data layer
+      CHECK: npm test -- --run tests/unit/practice.test.ts tests/unit/practiceView.test.tsx && echo "PRACTICE TRACKING OK"
+      EXPECT: PRACTICE TRACKING OK
+      EVIDENCE: exit=0; shell=/bin/sh; cwd=/home/ivlr/Study/Job Search/cohere/ml-prep; path=b36f341b69f8/23 entries; EXPECT=matched; output-sha256=fdc2ca7dfc83ffc1547fbdb2618a8b3a1cb4a01608d5252e4c8084a71741c83a; output-bytes=1251
+
+- [ ] G11: the complete application remains type-safe, lint-clean, formatted, regression-tested, and production-buildable
+      CHECK: npm run typecheck && npm run lint && npm run format:check && npm test && npm run test:integration && npm run build && npm run verify:subpath && echo "FULL VERIFICATION OK"
+      EXPECT: FULL VERIFICATION OK
+      EVIDENCE: pending
+
+- [x] G12: the resulting task and coding workflows remain grounded to the canonical 196-hour preparation plan without making Post-Training mandatory
+      CHECK: npm test -- --run tests/unit/templateV1.test.ts tests/unit/curriculum.test.ts tests/unit/planView.test.tsx && echo "PLAN GROUNDING OK"
+      EXPECT: PLAN GROUNDING OK
+      EVIDENCE: exit=0; shell=/bin/sh; cwd=/home/ivlr/Study/Job Search/cohere/ml-prep; path=b36f341b69f8/23 entries; EXPECT=matched; output-sha256=6fa190f024330f3ebe50658dac721932bdac228f85fa75f2b47047ecc0a427d9; output-bytes=1002

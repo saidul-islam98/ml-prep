@@ -40,20 +40,23 @@ Evidence types: `note`, `code`, `commit`, `notebook`, `benchmark`, `diagram`,
 
 ## Tiered evidence enforcement
 
-`evidenceRequired` is authored per task (32 tasks). When true, the completion
-gate blocks completion until evidence is present: an HTTPS link, a note, or
-both. Flagged tasks: both application submissions, the weekly reviews, the
-Project 1 v0.1 release, the week 10 CI regression gate, the week 11 report,
-all week 12-14 mocks and loop days, the final readiness reviews, and
-`pt-w14-final`. Routine practice and study tasks keep the criteria-based gate
-with evidence optional. As with `completion_gate_verified`, the server records
-the completion assertion in the audit event; the gate check itself is
-client-side, so no migration is required.
+Every required deliverable now has its own persisted verification checkbox in
+the completion gate. Its stable `deliverable:<id>` key is stored in the
+existing synced execution-progress record. `evidenceRequired` remains tiered:
+for the 32 flagged tasks, every required deliverable also needs a concrete
+repository path, commit, report section, recording, or submission reference.
+Routine practice and study tasks require explicit deliverable verification but
+keep the per-deliverable reference optional. Unchecked required controls can
+only pass with an audited override reason. Evidence cannot be cleared from a
+completed evidence-required task until the task is reopened, which records the
+state transition. No migration is required.
 
 ## Evidence storage
 
-Evidence (links and notes) lives only in Supabase (`tasks.evidence_url`,
-`tasks.evidence_note`) per the privacy rules in `WEBAPP_SPEC.md`. The public
+Task-level evidence lives in Supabase (`tasks.evidence_url`,
+`tasks.evidence_note`); per-deliverable verification and references live in the
+existing Supabase execution-progress JSON fields. Under the privacy rules in
+`WEBAPP_SPEC.md`, the public
 repository never stores personal progress or evidence artifacts.
 
 ## Coding problems
@@ -67,9 +70,12 @@ deterministically:
 - `w02-mon` .. `w10-mon`: 2 problems per Monday session (18).
 - Recorded coding mocks `w11-mon`, `w11-wed`, `w12-mon`, `w13-mon`, `w14-mon`:
   1 problem each (5).
-- The remaining 35 problems form `CODING_PROBLEM_BACKLOG_IDS`, exported for
-  manual selection during week 13 targeted repair and maintenance mode (no
-  feature consumes it yet).
+- Five backlog problems are explicit flex targets, bringing the tracked core
+  target to 30 without adding study hours; they are planned inside targeted
+  repair or replacement coding time.
+- The complete 60-problem bank is searchable in Practice. Any problem can create
+  a synced timed attempt; completed attempts retain duration, result, review
+  notes, mistake category, and re-solve status.
 
 Assigned problems attach to their task as `exercise` resources - via
 `resourcesFor()` for template-generated tasks, and via the handcrafted merge
@@ -86,7 +92,10 @@ canonical plan's week-2 topic guidance.
   week deliverables backed by real task keys; every evidence-required task has
   a required deliverable.
 - `tests/unit/codingProblems.test.ts` - 60 unique problems, URL shape,
-  assignment validity, no double assignment, documented 25/35 split.
-- `tests/unit/completionGateEvidence.test.tsx` - the gate blocks
-  evidence-required completions without a link or note, accepts either one,
-  and leaves unflagged tasks unchanged.
+  assignment validity, no double assignment, and the 25 fixed + 5 flex core target.
+- `tests/unit/completionGateEvidence.test.tsx` - every required deliverable has
+  an explicit persisted verification control; flagged tasks require a concrete
+  reference for each artifact, while unflagged references remain optional.
+- `tests/unit/practiceView.test.tsx` and `tests/unit/practice.test.ts` - all 60
+  problems render and create stable synced attempts; only reviewed completions
+  enter the latest-ten readiness window, and re-solves are tracked.

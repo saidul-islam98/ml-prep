@@ -2,6 +2,9 @@ import { describe, expect, it } from "vitest";
 import {
   CODING_PROBLEMS,
   CODING_PROBLEM_ASSIGNMENTS,
+  CODING_CORE_TARGET_IDS,
+  CODING_FLEX_TARGET_IDS,
+  CODING_TARGET_COUNT,
   CODING_PROBLEM_BACKLOG_IDS,
   codingProblemResource,
   getCodingProblem,
@@ -50,11 +53,15 @@ describe("coding problem pool and assignments", () => {
     expect(new Set(assigned).size).toBe(assigned.length);
   });
 
-  it("covers the documented split: 25 assigned sessions slots, 35 backlog", () => {
+  it("accounts for the canonical 30-problem target with scheduled and tracked flex picks", () => {
     const assigned = Object.values(CODING_PROBLEM_ASSIGNMENTS).flat();
     expect(assigned).toHaveLength(25);
     expect(CODING_PROBLEM_BACKLOG_IDS).toHaveLength(35);
     expect(assigned.length + CODING_PROBLEM_BACKLOG_IDS.length).toBe(CODING_PROBLEMS.length);
+    expect(CODING_TARGET_COUNT).toBe(30);
+    expect(CODING_FLEX_TARGET_IDS).toHaveLength(5);
+    expect(CODING_CORE_TARGET_IDS).toHaveLength(CODING_TARGET_COUNT);
+    expect(new Set(CODING_CORE_TARGET_IDS).size).toBe(CODING_TARGET_COUNT);
     // Two baseline problems, two per Monday session weeks 2-10, one per coding mock.
     expect(CODING_PROBLEM_ASSIGNMENTS["w01-mon"]).toHaveLength(2);
     for (let w = 2; w <= 10; w++) {

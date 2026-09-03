@@ -3,6 +3,11 @@ import type { CurriculumTask } from "../curriculum/schemas";
 import type { TaskExecutionProgressInput } from "../lib/api";
 import { emptyTaskExecution } from "../hooks/useTaskExecution";
 import { useModalFocus } from "../hooks/useModalFocus";
+import {
+  deliverableEvidenceKey,
+  deliverableVerificationId,
+  hasConcreteDeliverableEvidence,
+} from "../lib/deliverables";
 import { Badge, Button } from "./ui";
 
 interface TaskDetailModalProps {
@@ -205,18 +210,37 @@ export function TaskDetailModal({
                 <div className="deepml-task-block">
                   <h4 className="deepml-block-heading">Expected Deliverables</h4>
                   <ul className="deepml-deliverable-list">
-                    {task.deliverables.map((deliverable) => (
-                      <li key={deliverable.id}>
-                        <strong>{deliverable.name}</strong>
-                        {deliverable.required && <Badge tone="warning">Required</Badge>}
-                        <div className="deepml-step-output">
-                          Artifact: <code>{deliverable.artifact}</code>
-                        </div>
-                        <div className="deepml-resource-instruction">
-                          <strong>Verify:</strong> {deliverable.verify}
-                        </div>
-                      </li>
-                    ))}
+                    {task.deliverables.map((deliverable) => {
+                      const verified = progress.completed_criterion_ids.includes(
+                        deliverableVerificationId(deliverable.id),
+                      );
+                      const evidenceReference =
+                        progress.step_notes[deliverableEvidenceKey(deliverable.id)];
+                      const verificationComplete =
+                        verified &&
+                        (!task.evidenceRequired ||
+                          hasConcreteDeliverableEvidence(progress.step_notes, deliverable.id));
+                      return (
+                        <li key={deliverable.id}>
+                          <strong>{deliverable.name}</strong>
+                          {deliverable.required && <Badge tone="warning">Required</Badge>}
+                          <Badge tone={verificationComplete ? "success" : "neutral"}>
+                            {verificationComplete ? "Verified" : "Pending verification"}
+                          </Badge>
+                          <div className="deepml-step-output">
+                            Artifact: <code>{deliverable.artifact}</code>
+                          </div>
+                          <div className="deepml-resource-instruction">
+                            <strong>Verify:</strong> {deliverable.verify}
+                          </div>
+                          {evidenceReference && (
+                            <div className="deepml-resource-instruction">
+                              <strong>Evidence:</strong> {evidenceReference}
+                            </div>
+                          )}
+                        </li>
+                      );
+                    })}
                   </ul>
                 </div>
               ) : null}

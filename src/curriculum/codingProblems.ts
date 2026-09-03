@@ -257,6 +257,15 @@ export const CODING_PROBLEM_BACKLOG_IDS: string[] = CODING_PROBLEMS.map((item) =
   (id) => !Object.values(CODING_PROBLEM_ASSIGNMENTS).flat().includes(id),
 );
 
+/** Canonical plan target: 25 fixed assignments plus five user-scheduled flex picks. */
+export const CODING_TARGET_COUNT = 30;
+const ASSIGNED_PROBLEM_IDS = Object.values(CODING_PROBLEM_ASSIGNMENTS).flat();
+export const CODING_FLEX_TARGET_IDS = CODING_PROBLEM_BACKLOG_IDS.slice(
+  0,
+  CODING_TARGET_COUNT - ASSIGNED_PROBLEM_IDS.length,
+);
+export const CODING_CORE_TARGET_IDS = [...ASSIGNED_PROBLEM_IDS, ...CODING_FLEX_TARGET_IDS];
+
 const PROBLEM_INSTRUCTION =
   "Timed attempt (40 minutes max): state time and space complexity upfront, implement, and run edge-case tests without AI assistance. Then fully review: classify every miss in the mistake log and re-solve missed parts from a blank page.";
 

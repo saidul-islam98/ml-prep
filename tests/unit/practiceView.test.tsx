@@ -25,7 +25,7 @@ function session(overrides: Partial<PracticeSessionRow> = {}): PracticeSessionRo
     mistake_category: null,
     correction_due_date: null,
     corrected_at: null,
-    notes: null,
+    notes: "Reviewed approach, complexity, and edge cases.",
     evidence_url: null,
     ...overrides,
   };
@@ -132,6 +132,29 @@ describe("PracticeView", () => {
     expect(screen.getAllByRole("listitem", { name: /coding result/i })).toHaveLength(10);
   });
 
+  it("exposes all bookmarked problems and creates a tracked attempt from the bank", async () => {
+    const user = userEvent.setup();
+    vi.mocked(api.createPracticeSession).mockResolvedValue(session());
+    renderView();
+
+    expect(await screen.findByText("Problem bank")).toBeInTheDocument();
+    expect(screen.getByText((text) => text.includes("60 bookmarked problems"))).toBeInTheDocument();
+    expect(screen.getAllByRole("article", { name: /Problem:/ })).toHaveLength(60);
+    const problem = screen.getByRole("article", { name: "Problem: 3Sum" });
+    await user.click(within(problem).getByRole("button", { name: "Plan attempt" }));
+
+    await waitFor(() => {
+      expect(api.createPracticeSession).toHaveBeenCalledWith(
+        expect.objectContaining({
+          session_type: "coding",
+          topic: "3Sum [lc-3sum]",
+          allotted_minutes: 40,
+        }),
+        expect.anything(),
+      );
+    });
+  });
+
   it("creates a coding session through the validated form", async () => {
     const user = userEvent.setup();
     vi.mocked(api.createPracticeSession).mockResolvedValue(session());
@@ -155,6 +178,19 @@ describe("PracticeView", () => {
     );
   });
 
+  it("does not count a coding outcome as complete until review notes are recorded", async () => {
+    const user = userEvent.setup();
+    vi.mocked(api.fetchPracticeSessions).mockResolvedValue([session()]);
+    renderView();
+
+    await user.type(await screen.findByLabelText("Elapsed minutes"), "40");
+    await user.type(screen.getByLabelText(/Result/), "solved");
+    await user.click(screen.getByRole("button", { name: "Mark completed" }));
+
+    expect(screen.getByRole("alert")).toHaveTextContent("Review notes must record the approach");
+    expect(api.updatePracticeSession).not.toHaveBeenCalled();
+  });
+
   it("completes a session with elapsed time, result, and mistake category", async () => {
     const user = userEvent.setup();
     vi.mocked(api.fetchPracticeSessions).mockResolvedValue([session()]);
@@ -163,6 +199,10 @@ describe("PracticeView", () => {
     await user.type(await screen.findByLabelText("Elapsed minutes"), "85");
     await user.type(screen.getByLabelText(/Result/), "solved");
     await user.selectOptions(screen.getByLabelText(/Mistake category/), "reasoning");
+    await user.type(
+      screen.getByLabelText("Review notes"),
+      "Missed a visited-set edge case; re-solve queued.",
+    );
     await user.click(screen.getByRole("button", { name: "Mark completed" }));
 
     await waitFor(() => {
@@ -173,8 +213,36 @@ describe("PracticeView", () => {
           elapsed_minutes: 85,
           result: "solved",
           mistake_category: "reasoning",
+          notes: "Missed a visited-set edge case; re-solve queued.",
           completed_at: expect.any(String),
         }),
+      );
+    });
+  });
+
+  it("tracks a completed bookmarked problem as reviewed and re-solved", async () => {
+    const user = userEvent.setup();
+    vi.mocked(api.fetchPracticeSessions).mockResolvedValue([
+      session({
+        topic: "3Sum [lc-3sum]",
+        state: "completed",
+        completed_at: "2026-09-01T18:00:00Z",
+        elapsed_minutes: 39,
+        result: "solved",
+        notes: "Reviewed complexity and duplicate handling.",
+      }),
+    ]);
+    renderView();
+
+    await screen.findByText("Reviewed");
+    const problem = screen.getByRole("article", { name: "Problem: 3Sum" });
+    expect(within(problem).getByText("Reviewed")).toBeInTheDocument();
+    await user.click(within(problem).getByRole("button", { name: "Mark re-solved" }));
+
+    await waitFor(() => {
+      expect(api.updatePracticeSession).toHaveBeenCalledWith(
+        "s1",
+        expect.objectContaining({ corrected_at: expect.any(String) }),
       );
     });
   });

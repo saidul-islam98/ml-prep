@@ -105,4 +105,30 @@ describe("curriculum task completion routes", () => {
       await screen.findByRole("dialog", { name: "Timed Python coding baseline and mistake log" }),
     ).toBeInTheDocument();
   });
+
+  it("does not clear evidence from a completed evidence-required task", async () => {
+    const user = userEvent.setup();
+    const onTransition = vi.fn();
+    renderCard(
+      {
+        ...row("completed"),
+        template_task_key: "w02-tue",
+        title: "Submit Agentic Environments application",
+      },
+      onTransition,
+    );
+
+    await user.click(screen.getByRole("button", { name: "Edit evidence" }));
+    const form = screen.getByRole("heading", {
+      name: "Evidence: Submit Agentic Environments application",
+    }).parentElement as HTMLFormElement;
+    await user.clear(within(form).getByLabelText("Evidence link (HTTPS)"));
+    await user.clear(within(form).getByLabelText("Evidence note"));
+    await user.click(within(form).getByRole("button", { name: "Save evidence" }));
+
+    expect(within(form).getByRole("alert")).toHaveTextContent(
+      "Completed tasks with required evidence cannot have all evidence removed",
+    );
+    expect(onTransition).not.toHaveBeenCalled();
+  });
 });

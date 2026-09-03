@@ -13,9 +13,18 @@ import {
   MOCK_DIMENSIONS,
   MOCK_DIMENSION_LABELS,
   codingGateSummary,
+  codingPracticeTopic,
+  codingProblemIdFromTopic,
   latestTenQualifyingCodingSessions,
 } from "../lib/practice";
 import { commandErrorMessage, isValidHttpsUrl } from "../lib/constants";
+import {
+  CODING_CORE_TARGET_IDS,
+  CODING_FLEX_TARGET_IDS,
+  CODING_PROBLEM_ASSIGNMENTS,
+  CODING_PROBLEMS,
+  CODING_TARGET_COUNT,
+} from "../curriculum";
 import { torontoToday, formatDisplayDate } from "../lib/toronto";
 import { useApi } from "../hooks/useApi";
 import {
@@ -27,6 +36,14 @@ import {
   ProgressBar,
   SkeletonRows,
 } from "../components/ui";
+
+const ASSIGNMENT_BY_PROBLEM = new Map(
+  Object.entries(CODING_PROBLEM_ASSIGNMENTS).flatMap(([taskKey, problemIds]) =>
+    problemIds.map((problemId) => [problemId, taskKey] as const),
+  ),
+);
+const FLEX_TARGET_IDS = new Set(CODING_FLEX_TARGET_IDS);
+const CORE_TARGET_IDS = new Set(CODING_CORE_TARGET_IDS);
 
 const MISTAKE_CATEGORIES = [
   "knowledge",
@@ -53,6 +70,7 @@ export function PracticeView() {
   const [showCodingForm, setShowCodingForm] = useState(false);
   const [showMockForm, setShowMockForm] = useState(false);
   const [activePanel, setActivePanel] = useState<"coding" | "mock">("coding");
+  const [problemQuery, setProblemQuery] = useState("");
 
   const invalidate = () => {
     void queryClient.invalidateQueries({ queryKey: ["practice-sessions"] });
@@ -92,6 +110,30 @@ export function PracticeView() {
     () => sessions.filter((session) => session.session_type === "mock"),
     [sessions],
   );
+  const attemptsByProblem = useMemo(() => {
+    const map = new Map<string, PracticeSessionRow[]>();
+    for (const session of codingSessions) {
+      const problemId = codingProblemIdFromTopic(session.topic);
+      if (!problemId) continue;
+      map.set(problemId, [...(map.get(problemId) ?? []), session]);
+    }
+    return map;
+  }, [codingSessions]);
+  const visibleProblems = useMemo(() => {
+    const query = problemQuery.trim().toLowerCase();
+    return query
+      ? CODING_PROBLEMS.filter((problem) =>
+          [problem.title, problem.pattern, problem.difficulty].some((value) =>
+            value.toLowerCase().includes(query),
+          ),
+        )
+      : CODING_PROBLEMS;
+  }, [problemQuery]);
+  const reviewedCoreCount = CODING_CORE_TARGET_IDS.filter((problemId) =>
+    (attemptsByProblem.get(problemId) ?? []).some(
+      (attempt) => attempt.state === "completed" && Boolean(attempt.notes?.trim()),
+    ),
+  ).length;
   const scoresBySession = useMemo(() => {
     const map: Record<string, Record<string, number>> = {};
     for (const s of mockScores) {
@@ -202,6 +244,126 @@ export function PracticeView() {
               </>
             )}
           </Card>
+
+          <section
+            className="practice-panel__section problem-bank"
+            aria-labelledby="problem-bank-heading"
+          >
+            <div className="practice-panel__heading">
+              <div>
+                <h2 id="problem-bank-heading">Problem bank</h2>
+                <p>
+                  60 bookmarked problems · {reviewedCoreCount}/{CODING_TARGET_COUNT} core target
+                  reviewed
+                </p>
+              </div>
+              <Badge tone={reviewedCoreCount >= CODING_TARGET_COUNT ? "success" : "accent"}>
+                25 fixed + 5 flex
+              </Badge>
+            </div>
+            <p className="overdue-note">
+              Fixed assignments follow the weekly plan. The five flex targets close the canonical
+              30-problem requirement without adding study hours; schedule them inside
+              targeted-repair or replacement coding time. Every attempt is stored in your synced
+              practice history.
+            </p>
+            <label className="problem-bank__search">
+              Search problems
+              <input
+                type="search"
+                value={problemQuery}
+                placeholder="Title, pattern, or difficulty"
+                onChange={(event) => setProblemQuery(event.target.value)}
+              />
+            </label>
+            <div className="problem-bank__grid" aria-live="polite">
+              {visibleProblems.map((problem) => {
+                const attempts = attemptsByProblem.get(problem.id) ?? [];
+                const openAttempt = attempts.find(
+                  (attempt) => attempt.state === "planned" || attempt.state === "in_progress",
+                );
+                const reviewedAttempt = [...attempts]
+                  .reverse()
+                  .find(
+                    (attempt) => attempt.state === "completed" && Boolean(attempt.notes?.trim()),
+                  );
+                const reSolved = attempts.some((attempt) => Boolean(attempt.corrected_at));
+                const assignment = ASSIGNMENT_BY_PROBLEM.get(problem.id);
+                return (
+                  <article
+                    key={problem.id}
+                    className="problem-bank__card"
+                    aria-label={`Problem: ${problem.title}`}
+                  >
+                    <div className="problem-bank__card-head">
+                      <h3>{problem.title}</h3>
+                      <Badge tone={problem.difficulty === "medium" ? "accent" : "neutral"}>
+                        {problem.difficulty}
+                      </Badge>
+                    </div>
+                    <div className="ui-chip-row">
+                      <Badge>{problem.pattern}</Badge>
+                      {assignment && <Badge tone="success">Scheduled · {assignment}</Badge>}
+                      {!assignment && FLEX_TARGET_IDS.has(problem.id) && (
+                        <Badge tone="warning">Core flex target</Badge>
+                      )}
+                      {!assignment &&
+                        !FLEX_TARGET_IDS.has(problem.id) &&
+                        CORE_TARGET_IDS.has(problem.id) && <Badge>Core target</Badge>}
+                      {reviewedAttempt && <Badge tone="success">Reviewed</Badge>}
+                      {reSolved && <Badge tone="success">Re-solved</Badge>}
+                    </div>
+                    {reviewedAttempt && (
+                      <p className="problem-bank__result">
+                        {reviewedAttempt.result} · {reviewedAttempt.elapsed_minutes} min
+                        {reviewedAttempt.mistake_category
+                          ? ` · ${reviewedAttempt.mistake_category}`
+                          : ""}
+                      </p>
+                    )}
+                    <div className="task-actions">
+                      <a href={problem.url} target="_blank" rel="noopener noreferrer">
+                        Open problem
+                      </a>
+                      <Button
+                        small
+                        disabled={Boolean(openAttempt) || create.isPending}
+                        onClick={() =>
+                          create.mutate({
+                            session_type: "coding",
+                            date: today,
+                            topic: codingPracticeTopic(problem),
+                            allotted_minutes: 40,
+                            notes: null,
+                            evidence_url: null,
+                          })
+                        }
+                      >
+                        {openAttempt
+                          ? "Attempt planned"
+                          : reviewedAttempt
+                            ? "Plan another attempt"
+                            : "Plan attempt"}
+                      </Button>
+                      {reviewedAttempt && !reSolved && (
+                        <Button
+                          small
+                          onClick={() =>
+                            update.mutate({
+                              id: reviewedAttempt.id,
+                              fields: { corrected_at: today },
+                            })
+                          }
+                        >
+                          Mark re-solved
+                        </Button>
+                      )}
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          </section>
 
           <section className="practice-panel__section" aria-labelledby="coding-sessions">
             <div className="practice-panel__heading">
@@ -432,6 +594,9 @@ function SessionCard({
     const elapsed = Number((form.elements.namedItem("elapsed") as HTMLInputElement).value);
     const result = (form.elements.namedItem("result") as HTMLInputElement).value.trim();
     const mistake = (form.elements.namedItem("mistake") as HTMLSelectElement).value;
+    const reviewNotes = isMock
+      ? ""
+      : (form.elements.namedItem("review-notes") as HTMLTextAreaElement).value.trim();
     const correctionDue = (form.elements.namedItem("correction-due") as HTMLInputElement).value;
     if (!Number.isInteger(elapsed) || elapsed <= 0) {
       setCompletionError("Elapsed minutes must be a positive whole number.");
@@ -441,6 +606,12 @@ function SessionCard({
       setCompletionError("A result is required.");
       return;
     }
+    if (!isMock && reviewNotes.length < 10) {
+      setCompletionError(
+        "Review notes must record the approach, a miss or edge case, and the next action.",
+      );
+      return;
+    }
     setCompletionError(null);
     onUpdate({
       state: "completed",
@@ -448,6 +619,7 @@ function SessionCard({
       elapsed_minutes: elapsed,
       result,
       mistake_category: (mistake || null) as PracticeSessionRow["mistake_category"],
+      ...(!isMock ? { notes: reviewNotes } : {}),
       correction_due_date: correctionDue || null,
     });
   }
@@ -466,6 +638,12 @@ function SessionCard({
         <span className="chip">{session.state}</span>
         {session.mistake_category && (
           <span className="chip chip-overdue">{session.mistake_category}</span>
+        )}
+        {session.session_type === "coding" &&
+          session.state === "completed" &&
+          session.notes?.trim() && <span className="chip">reviewed</span>}
+        {session.session_type === "coding" && session.corrected_at && (
+          <span className="chip">re-solved</span>
         )}
       </p>
       {session.result && <p className="task-acceptance">Result: {session.result}</p>}
@@ -498,6 +676,17 @@ function SessionCard({
               </option>
             ))}
           </select>
+          {!isMock && (
+            <>
+              <label htmlFor={`review-notes-${session.id}`}>Review notes</label>
+              <textarea
+                id={`review-notes-${session.id}`}
+                name="review-notes"
+                rows={3}
+                placeholder="Approach, complexity, edge cases, mistakes, and next action"
+              />
+            </>
+          )}
           <label htmlFor={`correction-due-${session.id}`}>Correction due date (optional)</label>
           <input id={`correction-due-${session.id}`} name="correction-due" type="date" />
           <div className="task-actions">

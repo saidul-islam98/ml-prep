@@ -193,12 +193,15 @@ export function TaskCard({
       )}
 
       {task.acceptance_note && <p className="task-acceptance">{task.acceptance_note}</p>}
-      {task.evidence_url && (
+      {(task.evidence_url || task.evidence_note) && (
         <p className="task-evidence">
-          <a href={task.evidence_url} target="_blank" rel="noopener noreferrer">
-            {task.evidence_url}
-          </a>
-          {task.evidence_note ? ` (${task.evidence_note})` : ""}
+          {task.evidence_url && (
+            <a href={task.evidence_url} target="_blank" rel="noopener noreferrer">
+              {task.evidence_url}
+            </a>
+          )}
+          {task.evidence_url && task.evidence_note ? " — " : ""}
+          {task.evidence_note}
         </p>
       )}
 
@@ -250,6 +253,7 @@ export function TaskCard({
       {dialog === "evidence" && (
         <EvidenceDialog
           task={task}
+          evidenceRequired={curriculumTask?.evidenceRequired === true}
           offline={offline}
           onSubmit={(payload) => void run("edit", payload)}
           onCancel={() => setDialog(null)}
@@ -601,11 +605,13 @@ function RescheduleDialog({
 
 function EvidenceDialog({
   task,
+  evidenceRequired,
   offline,
   onSubmit,
   onCancel,
 }: {
   task: TaskRow;
+  evidenceRequired: boolean;
   offline: boolean;
   onSubmit: (payload: TransitionPayload) => void;
   onCancel: () => void;
@@ -618,6 +624,12 @@ function EvidenceDialog({
     event.preventDefault();
     if (!isValidHttpsUrl(url)) {
       setValidationError("Evidence links must use HTTPS.");
+      return;
+    }
+    if (task.state === "completed" && evidenceRequired && !url.trim() && !note.trim()) {
+      setValidationError(
+        "Completed tasks with required evidence cannot have all evidence removed. Reopen the task first to create an audited state change.",
+      );
       return;
     }
     setValidationError(null);

@@ -9,6 +9,8 @@
 import { describe, expect, it } from "vitest";
 import {
   codingGateSummary,
+  codingPracticeTopic,
+  codingProblemIdFromTopic,
   latestTenQualifyingCodingSessions,
   type PracticeSessionLike,
 } from "../../src/lib/practice";
@@ -20,6 +22,7 @@ function session(overrides: Partial<PracticeSessionLike> = {}): PracticeSessionL
     state: "completed",
     result: "solved",
     completed_at: "2026-09-01T10:00:00Z",
+    notes: "Reviewed approach, complexity, and edge cases.",
     ...overrides,
   };
 }
@@ -66,6 +69,15 @@ describe("latestTenQualifyingCodingSessions", () => {
     expect(latest.map((s) => s.id)).toEqual(["ok"]);
   });
 
+  it("excludes completed attempts that have not been reviewed", () => {
+    const sessions = [
+      session({ id: "no-notes", notes: null }),
+      session({ id: "blank-notes", notes: "   " }),
+      session({ id: "reviewed" }),
+    ];
+    expect(latestTenQualifyingCodingSessions(sessions).map((s) => s.id)).toEqual(["reviewed"]);
+  });
+
   it("orders by completion timestamp, not creation or date field", () => {
     const sessions = [
       session({ id: "early", completed_at: "2026-09-01T08:00:00Z" }),
@@ -96,5 +108,14 @@ describe("codingGateSummary", () => {
       session({ id: "case", result: " SOLVED " }),
     ];
     expect(codingGateSummary(latest)).toEqual({ solved: 8, total: 10, meetsGate: true });
+  });
+});
+
+describe("bookmarked coding problem identity", () => {
+  it("round-trips a stable problem id through a persisted practice-session topic", () => {
+    const topic = codingPracticeTopic({ id: "lc-3sum", title: "3Sum" });
+    expect(topic).toBe("3Sum [lc-3sum]");
+    expect(codingProblemIdFromTopic(topic)).toBe("lc-3sum");
+    expect(codingProblemIdFromTopic("Custom graph exercise")).toBeNull();
   });
 });
