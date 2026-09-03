@@ -1,6 +1,7 @@
 import type { CurriculumWeek, TaskResource } from "./schemas";
 import { TEMPLATE_V1 } from "../template/templateV1";
 import { CURRICULUM_RESOURCES } from "./resources";
+import { WEEK_DELIVERABLES } from "./tasks/deliverables";
 
 const RESOURCE_BY_WEEK: Record<number, TaskResource[]> = {
   1: [
@@ -50,10 +51,6 @@ function sentences(value: string): string[] {
 /** Derived from TEMPLATE_V1, the executable preparation plan. */
 export const CURRICULUM_WEEKS: CurriculumWeek[] = TEMPLATE_V1.weeks.map((week) => {
   const tasks = TEMPLATE_V1.tasks.filter((task) => task.week === week.week);
-  const artifacts = tasks
-    .filter((task) => task.category === "application" || task.category === "deep_work")
-    .slice(0, 4)
-    .map((task) => `Evidence for ${task.title}`);
 
   return {
     week: week.week,
@@ -65,10 +62,7 @@ export const CURRICULUM_WEEKS: CurriculumWeek[] = TEMPLATE_V1.weeks.map((week) =
       ...sentences(week.exitCheck),
     ],
     exitCheck: sentences(week.exitCheck),
-    deliverables:
-      artifacts.length > 0
-        ? artifacts
-        : [`Week ${week.week} scorecard with evidence links and the next weakness to repair`],
+    deliverables: WEEK_DELIVERABLES[week.week] ?? [],
     coreResources: RESOURCE_BY_WEEK[week.week] ?? [],
     taskKeys: tasks.map((task) => task.key),
   };

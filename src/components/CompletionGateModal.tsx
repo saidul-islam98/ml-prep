@@ -68,6 +68,9 @@ export function CompletionGateModal({
   const allRequiredChecked = required.every((criterion) =>
     progress.completed_criterion_ids.includes(criterion.id),
   );
+  const evidenceRequired = task.evidenceRequired === true;
+  const requiredDeliverables = task.deliverables.filter((deliverable) => deliverable.required);
+  const hasEvidence = Boolean((evidenceUrl && isValidHttpsUrl(evidenceUrl)) || evidenceNote.trim());
 
   function confirm() {
     const minutes = Number(actualMinutes);
@@ -77,6 +80,12 @@ export function CompletionGateModal({
     }
     if (!isValidHttpsUrl(evidenceUrl)) {
       setValidationError("Evidence links must use HTTPS.");
+      return;
+    }
+    if (evidenceRequired && !hasEvidence) {
+      setValidationError(
+        "This task requires evidence. Add an HTTPS link or a note describing where each required deliverable lives.",
+      );
       return;
     }
     if (!allRequiredChecked && !overrideReason.trim()) {
@@ -157,6 +166,22 @@ export function CompletionGateModal({
             })}
           </div>
 
+          {evidenceRequired && requiredDeliverables.length > 0 && (
+            <div className="deepml-task-block">
+              <h4 className="deepml-block-heading">Required deliverables</h4>
+              <ul className="deepml-deliverable-list">
+                {requiredDeliverables.map((deliverable) => (
+                  <li key={deliverable.id}>
+                    <strong>{deliverable.name}</strong>
+                    <div className="deepml-resource-instruction">
+                      <strong>Verify:</strong> {deliverable.verify}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
           <div className="deepml-task-block">
             <label className="deepml-label">
               Actual minutes
@@ -168,7 +193,7 @@ export function CompletionGateModal({
               />
             </label>
             <label className="deepml-label">
-              Evidence URL (HTTPS, optional)
+              {evidenceRequired ? "Evidence URL (HTTPS)" : "Evidence URL (HTTPS, optional)"}
               <input
                 className="deepml-input"
                 type="url"
@@ -177,7 +202,7 @@ export function CompletionGateModal({
               />
             </label>
             <label className="deepml-label">
-              Evidence note (optional)
+              {evidenceRequired ? "Evidence note" : "Evidence note (optional)"}
               <textarea
                 className="deepml-textarea"
                 rows={2}
@@ -185,6 +210,11 @@ export function CompletionGateModal({
                 onChange={(event) => setEvidenceNote(event.target.value)}
               />
             </label>
+            {evidenceRequired && (
+              <p className="deepml-section-sub">
+                Completing this task requires evidence: an HTTPS link, a note, or both.
+              </p>
+            )}
           </div>
 
           {!allRequiredChecked && (

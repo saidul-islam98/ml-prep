@@ -28,7 +28,7 @@ export const WEEK_01_TASKS: CurriculumTask[] = [
       },
       {
         id: "w01_t1_p1",
-        text: "Problem 1: Pick one medium arrays/hashing/sliding-window problem. State expected time and space complexity. Solve without external help, run test cases, record hints if used.",
+        text: "Problem 1 (assigned): Longest Substring Without Repeating Characters, medium sliding window. State expected time and space complexity. Solve without external help, run test cases, record hints if used.",
         estimatedMinutes: 35,
         required: true,
         output: "Problem 1 code solution and time taken",
@@ -41,7 +41,7 @@ export const WEEK_01_TASKS: CurriculumTask[] = [
       },
       {
         id: "w01_t1_p2",
-        text: "Problem 2: Pick one medium tree/graph problem. State complexity upfront. Solve without help, run edge test cases, record hints.",
+        text: "Problem 2 (assigned): Max Area of Island, medium grid DFS. State complexity upfront. Solve without help, run edge test cases, record hints.",
         estimatedMinutes: 35,
         required: true,
         output: "Problem 2 code solution and time taken",
@@ -74,7 +74,26 @@ export const WEEK_01_TASKS: CurriculumTask[] = [
         estimatedMinutes: 70,
       },
     ],
-    deliverables: ["practice/coding-baseline-YYYY-MM-DD.md"],
+    deliverables: [
+      {
+        id: "w01-mon-d1",
+        name: "Timed solutions for Longest Substring Without Repeating Characters and Max Area of Island",
+        artifact: "Practice solutions for both assigned problems with timings",
+        evidenceType: "code",
+        verify:
+          "Both mediums attempted under 40 minutes each; time and space complexity recorded for both",
+        required: true,
+      },
+      {
+        id: "w01-mon-d2",
+        name: "Categorized mistake log with top weaknesses",
+        artifact: "practice/coding-baseline-YYYY-MM-DD.md",
+        evidenceType: "note",
+        verify:
+          "Mistakes classified by root cause; at least one solution rewritten cleanly; top 2-3 weaknesses identified",
+        required: true,
+      },
+    ],
     completionCriteria: [
       { id: "cc1", text: "2 timed medium problems attempted under 40 min each", required: true },
       { id: "cc2", text: "Time and space complexity recorded for both solutions", required: true },
@@ -162,7 +181,17 @@ export const WEEK_01_TASKS: CurriculumTask[] = [
       CURRICULUM_RESOURCES.inspect_ai,
       CURRICULUM_RESOURCES.webarena,
     ],
-    deliverables: ["docs/agent-eval-design-baseline.md"],
+    deliverables: [
+      {
+        id: "w01-tue-d1",
+        name: "Agent-eval design baseline document",
+        artifact: "docs/agent-eval-design-baseline.md",
+        evidenceType: "report",
+        verify:
+          "Core concepts defined in your own words; one end-to-end task specified; at least 5 failure modes documented; explains why final-answer grading alone fails",
+        required: true,
+      },
+    ],
     completionCriteria: [
       { id: "cc1", text: "Core evaluation concepts defined in your own words", required: true },
       {
@@ -272,7 +301,17 @@ export const WEEK_01_TASKS: CurriculumTask[] = [
       },
     ],
     resources: [CURRICULUM_RESOURCES.cohere_data_eval_jd, CURRICULUM_RESOURCES.cohere_agent_env_jd],
-    deliverables: ["career/cohere-requirement-evidence-gap.md"],
+    deliverables: [
+      {
+        id: "w01-wed-d1",
+        name: "Requirement/evidence/gap matrix",
+        artifact: "career/cohere-requirement-evidence-gap.md",
+        evidenceType: "report",
+        verify:
+          "Every meaningful JD requirement mapped to a scored evidence row; 0-1 items linked to future milestones; unsupported claims flagged; top-5 gaps ranked",
+        required: true,
+      },
+    ],
     completionCriteria: [
       {
         id: "cc1",
@@ -345,7 +384,17 @@ export const WEEK_01_TASKS: CurriculumTask[] = [
       CURRICULUM_RESOURCES.inspect_ai,
       CURRICULUM_RESOURCES.dpo_paper,
     ],
-    deliverables: ["projects/portfolio-project-spec.md"],
+    deliverables: [
+      {
+        id: "w01-thu-d1",
+        name: "Portfolio project specification",
+        artifact: "projects/portfolio-project-spec.md",
+        evidenceType: "report",
+        verify:
+          "Both projects have measurable objectives and explicit non-goals; architecture diagram documented; 3+ experiments defined with upfront metrics",
+        required: true,
+      },
+    ],
     completionCriteria: [
       {
         id: "cc1",
@@ -406,7 +455,17 @@ export const WEEK_01_TASKS: CurriculumTask[] = [
       },
     ],
     resources: [CURRICULUM_RESOURCES.cohere_data_eval_jd],
-    deliverables: ["career/resume-draft-w01.md"],
+    deliverables: [
+      {
+        id: "w01-fri-d1",
+        name: "Data/Evaluation resume draft",
+        artifact: "career/resume-draft-w01.md",
+        evidenceType: "resume-diff",
+        verify:
+          "All bullets follow Context-Action-Metric; zero unsupported technical terms or exaggerated claims",
+        required: true,
+      },
+    ],
     completionCriteria: [
       {
         id: "cc1",
@@ -449,7 +508,24 @@ export const WEEK_01_TASKS: CurriculumTask[] = [
       },
     ],
     resources: [CURRICULUM_RESOURCES.cohere_data_eval_jd, CURRICULUM_RESOURCES.cohere_agent_env_jd],
-    deliverables: ["career/recovered-metrics-w01.md"],
+    deliverables: [
+      {
+        id: "w01-sat-d1",
+        name: "Six recovered CV metrics with sources",
+        artifact: "career/recovered-metrics-w01.md",
+        evidenceType: "note",
+        verify: "Six quantitative project metrics verified against repos, logs, papers, or reports",
+        required: true,
+      },
+      {
+        id: "w01-sat-d2",
+        name: "Recorded 90-second introduction and two deep dives",
+        artifact: "Recording archive",
+        evidenceType: "recording",
+        verify: "Intro and technical deep dives recorded and reviewed at least once",
+        required: true,
+      },
+    ],
     completionCriteria: [
       { id: "cc1", text: "6 quantitative project metrics verified with evidence", required: true },
       { id: "cc2", text: "Intro and technical deep dives recorded and reviewed", required: true },
@@ -488,7 +564,16 @@ export const WEEK_01_TASKS: CurriculumTask[] = [
       },
     ],
     resources: [CURRICULUM_RESOURCES.cohere_data_eval_jd],
-    deliverables: ["career/application-submission-log.md"],
+    deliverables: [
+      {
+        id: "w01-sun-d1",
+        name: "Submitted Data Analysis and Evaluation application",
+        artifact: "Application confirmation plus archived resume and answer copies",
+        evidenceType: "application",
+        verify: "Application submitted and confirmation logged with timestamp",
+        required: true,
+      },
+    ],
     completionCriteria: [
       { id: "cc1", text: "Application submitted and confirmation logged", required: true },
     ],
@@ -523,7 +608,17 @@ export const WEEK_01_TASKS: CurriculumTask[] = [
         required: true,
       },
     ],
-    deliverables: ["reviews/week-01-scorecard.md"],
+    deliverables: [
+      {
+        id: "w01-sun-review-d1",
+        name: "Week 1 scorecard",
+        artifact: "reviews/week-01-scorecard.md",
+        evidenceType: "note",
+        verify:
+          "All Week 1 exit check items verified with proof; weekly review written and archived",
+        required: true,
+      },
+    ],
     completionCriteria: [
       { id: "cc1", text: "All Week 1 exit check items verified with proof", required: true },
       { id: "cc2", text: "Weekly review written and archived", required: true },

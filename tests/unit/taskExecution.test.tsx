@@ -34,8 +34,11 @@ describe("Task Execution and Progressive Disclosure UI", () => {
     // Check tabs
     const resourceTab = screen.getByRole("tab", { name: /Targeted Resources/i });
     fireEvent.click(resourceTab);
-    expect(screen.getByText(/NeetCode \/ LeetCode Structured Coding/)).toBeInTheDocument();
-    expect(screen.getByText(/Pick two medium problems only/)).toBeInTheDocument();
+    expect(
+      screen.getByText(/Longest Substring Without Repeating Characters \(LeetCode medium/),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/Max Area of Island \(LeetCode medium/)).toBeInTheDocument();
+    expect(screen.getAllByText(/Timed attempt \(40 minutes max\)/)).toHaveLength(2);
 
     // Switch to Definition of Done tab
     const criteriaTab = screen.getByRole("tab", { name: /Definition of Done/i });

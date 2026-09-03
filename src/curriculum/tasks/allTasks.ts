@@ -1,6 +1,21 @@
-import type { CurriculumTask, Day, Category, RoleKey, ProjectKey, TaskResource } from "../schemas";
+import type {
+  CurriculumTask,
+  Day,
+  Category,
+  RoleKey,
+  ProjectKey,
+  TaskDeliverable,
+  TaskResource,
+} from "../schemas";
 import { CURRICULUM_RESOURCES } from "../resources";
 import { WEEK_01_TASKS } from "./week01";
+import { EVIDENCE_REQUIRED_TASK_KEYS, TASK_DELIVERABLES } from "./deliverables";
+import {
+  CODING_PROBLEM_ASSIGNMENTS,
+  codingProblemResource,
+  getCodingProblem,
+  type CodingProblem,
+} from "../codingProblems";
 
 interface TemplateTaskShape {
   key: string;
@@ -23,7 +38,16 @@ const DAY: Record<TemplateTaskShape["day"], Day> = {
   sun: 7,
 };
 
+/** Assigned timed problems replace the generic practice fallback entirely. */
 function resourcesFor(task: TemplateTaskShape): TaskResource[] {
+  const assignedIds = CODING_PROBLEM_ASSIGNMENTS[task.key];
+  if (assignedIds?.length) {
+    return assignedIds
+      .map((id) => getCodingProblem(id))
+      .filter((item): item is CodingProblem => Boolean(item))
+      .map(codingProblemResource);
+  }
+
   const title = task.title.toLowerCase();
   const selected: TaskResource[] = [];
   const add = (...resources: TaskResource[]) => {
@@ -168,12 +192,36 @@ function actionSteps(task: TemplateTaskShape) {
 export function buildCurriculumTasks(templateTasks: TemplateTaskShape[]): CurriculumTask[] {
   return templateTasks.map((task) => {
     const handcrafted = WEEK_01_TASKS.find((item) => item.key === task.key);
-    if (handcrafted) return handcrafted;
+    if (handcrafted) {
+      const assignedIds = CODING_PROBLEM_ASSIGNMENTS[task.key];
+      return {
+        ...handcrafted,
+        ...(assignedIds?.length
+          ? {
+              resources: assignedIds
+                .map((id) => getCodingProblem(id))
+                .filter((item): item is CodingProblem => Boolean(item))
+                .map(codingProblemResource),
+            }
+          : {}),
+        evidenceRequired: EVIDENCE_REQUIRED_TASK_KEYS.has(task.key),
+      };
+    }
 
     const todos = actionSteps(task);
-    const deliverable =
-      todos.find((todo) => todo.output)?.output ??
-      `evidence/week-${String(task.week).padStart(2, "0")}/${task.key}.md`;
+    const deliverables: TaskDeliverable[] = TASK_DELIVERABLES[task.key] ?? [
+      {
+        id: `${task.key}-d1`,
+        name: "Session artifact",
+        artifact:
+          todos.find((todo) => todo.output)?.output ??
+          `evidence/week-${String(task.week).padStart(2, "0")}/${task.key}.md`,
+        evidenceType: "file",
+        verify:
+          "The artifact exists, is testable or reviewable, and is linked or described in the evidence",
+        required: true,
+      } satisfies TaskDeliverable,
+    ];
 
     return {
       key: task.key,
@@ -191,7 +239,8 @@ export function buildCurriculumTasks(templateTasks: TemplateTaskShape[]): Curric
       ],
       todos,
       resources: resourcesFor(task),
-      deliverables: [deliverable],
+      deliverables,
+      evidenceRequired: EVIDENCE_REQUIRED_TASK_KEYS.has(task.key),
       completionCriteria: [
         {
           id: `${task.key}-criteria-actions`,
@@ -200,7 +249,7 @@ export function buildCurriculumTasks(templateTasks: TemplateTaskShape[]): Curric
         },
         {
           id: `${task.key}-criteria-evidence`,
-          text: `The expected evidence exists at ${deliverable} and is linked or described`,
+          text: "Every required deliverable exists and its verify check passes",
           required: true,
         },
         {

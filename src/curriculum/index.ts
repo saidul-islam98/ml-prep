@@ -11,6 +11,7 @@ import { TEMPLATE_V1, type TemplateTask } from "../template/templateV1";
 import type { CurriculumTask } from "./schemas";
 
 export * from "./schemas";
+export * from "./codingProblems";
 export { CURRICULUM_WEEKS, getCurriculumWeek, CURRICULUM_RESOURCES, getResource, WEEK_01_TASKS };
 
 // Map all canonical template tasks into rich curriculum tasks

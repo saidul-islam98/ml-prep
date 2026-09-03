@@ -43,9 +43,12 @@ export const WeekSummaryBanner: React.FC<WeekSummaryBannerProps> = ({ week }) =>
             <div className="deepml-week-summary-col">
               <h4 className="deepml-block-heading">📦 Expected Deliverables</h4>
               <ul className="deepml-deliverable-list">
-                {week.deliverables.map((deliv, idx) => (
-                  <li key={idx}>
-                    <code>{deliv}</code>
+                {week.deliverables.map((deliverable) => (
+                  <li key={deliverable.id}>
+                    <strong>{deliverable.name}</strong>
+                    <div className="deepml-resource-instruction">
+                      <strong>Verify:</strong> {deliverable.verify}
+                    </div>
                   </li>
                 ))}
               </ul>

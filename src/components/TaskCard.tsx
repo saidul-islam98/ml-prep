@@ -188,6 +188,7 @@ export function TaskCard({
           {curriculumTask.deliverables && curriculumTask.deliverables.length > 0 && (
             <Badge tone="neutral">📦 {curriculumTask.deliverables.length} artifact</Badge>
           )}
+          {curriculumTask.evidenceRequired && <Badge tone="warning">🔗 evidence required</Badge>}
         </div>
       )}
 

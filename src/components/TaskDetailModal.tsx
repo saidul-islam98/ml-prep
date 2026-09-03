@@ -205,9 +205,16 @@ export function TaskDetailModal({
                 <div className="deepml-task-block">
                   <h4 className="deepml-block-heading">Expected Deliverables</h4>
                   <ul className="deepml-deliverable-list">
-                    {task.deliverables.map((item) => (
-                      <li key={item}>
-                        <code>{item}</code>
+                    {task.deliverables.map((deliverable) => (
+                      <li key={deliverable.id}>
+                        <strong>{deliverable.name}</strong>
+                        {deliverable.required && <Badge tone="warning">Required</Badge>}
+                        <div className="deepml-step-output">
+                          Artifact: <code>{deliverable.artifact}</code>
+                        </div>
+                        <div className="deepml-resource-instruction">
+                          <strong>Verify:</strong> {deliverable.verify}
+                        </div>
                       </li>
                     ))}
                   </ul>
