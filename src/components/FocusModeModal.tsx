@@ -1,9 +1,25 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import type { CurriculumTask } from "../curriculum/schemas";
-import type { TaskExecutionProgressInput } from "../lib/api";
+import { CommandError, type TaskExecutionProgressInput } from "../lib/api";
+
 import { elapsedSeconds, emptyTaskExecution, pauseExecution } from "../hooks/useTaskExecution";
 import { useModalFocus } from "../hooks/useModalFocus";
 import { Badge, Button } from "./ui";
+
+interface SaveErrorInfo {
+  message: string;
+  code?: string;
+}
+
+function isMissingTableError(error: SaveErrorInfo): boolean {
+  if (error.code === "PGRST205" || error.code === "42P01") return true;
+  const lower = error.message.toLowerCase();
+  return (
+    lower.includes("schema cache") ||
+    (lower.includes("task_execution_progress") &&
+      (lower.includes("not found") || lower.includes("does not exist")))
+  );
+}
 
 interface FocusModeModalProps {
   task: CurriculumTask;
@@ -59,6 +75,7 @@ export function FocusModeModal({
   );
   const [now, setNow] = useState(Date.now());
   const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
+  const [saveError, setSaveError] = useState<SaveErrorInfo | null>(null);
 
   // Track mounted status to avoid state updates after unmount.
   const mountedRef = useRef(true);
@@ -91,18 +108,39 @@ export function FocusModeModal({
   // --------------------------------------------------------------------------
   const persistNow = useCallback((next: TaskExecutionProgressInput): Promise<void> => {
     if (!onProgressChangeRef.current) return Promise.resolve();
-    if (mountedRef.current) setSaveStatus("saving");
+    if (mountedRef.current) {
+      setSaveStatus("saving");
+      setSaveError(null);
+    }
     return queue.current.enqueue(async () => {
       try {
         await onProgressChangeRef.current!(next);
         if (mountedRef.current) {
           setSaveStatus("saved");
+          setSaveError(null);
           setTimeout(() => {
             if (mountedRef.current) setSaveStatus((s) => (s === "saved" ? "idle" : s));
           }, 2000);
         }
-      } catch {
-        if (mountedRef.current) setSaveStatus("error");
+      } catch (err: unknown) {
+        console.error("Focus mode save error:", err);
+        if (mountedRef.current) {
+          setSaveStatus("error");
+          let message = "Unknown error";
+          let code: string | undefined;
+          if (err instanceof CommandError) {
+            message = err.message;
+            code = err.code;
+          } else if (err instanceof Error) {
+            message = err.message;
+            if ("code" in err && typeof (err as { code?: unknown }).code === "string") {
+              code = (err as { code: string }).code;
+            }
+          } else if (typeof err === "string") {
+            message = err;
+          }
+          setSaveError({ message, code });
+        }
         // Do NOT discard the local draft — it is still in localProgress.
       }
     });
@@ -367,13 +405,41 @@ export function FocusModeModal({
               <div className="deepml-focus-notes-area">
                 <label htmlFor={`step-notes-${task.key}`} className="deepml-label">
                   Execution Notes / Output Log:
-                  {saveLabel[saveStatus] && (
+                  {saveStatus === "error" ? (
+                    <span
+                      className="deepml-focus-save-status deepml-focus-save-error"
+                      aria-live="polite"
+                      role="alert"
+                      title={saveError?.message}
+                    >
+                      {" "}
+                      Save failed
+                      {saveError?.code ? ` (${saveError.code})` : ""}
+                    </span>
+                  ) : saveLabel[saveStatus] ? (
                     <span className="deepml-focus-save-status" aria-live="polite">
                       {" "}
                       {saveLabel[saveStatus]}
                     </span>
-                  )}
+                  ) : null}
                 </label>
+                {saveStatus === "error" && saveError && (
+                  <div className="deepml-focus-error-banner" role="alert">
+                    <p className="deepml-focus-error-title">
+                      <strong>Save failed{saveError.code ? ` (${saveError.code})` : ""}:</strong>{" "}
+                      {saveError.message}
+                    </p>
+                    {isMissingTableError(saveError) && (
+                      <p className="deepml-focus-error-hint">
+                        The <code>task_execution_progress</code> database table has not been created
+                        in your Supabase project. Run <code>npx supabase db push</code> or execute
+                        migration{" "}
+                        <code>supabase/migrations/20260830000000_task_execution_progress.sql</code>{" "}
+                        in the Supabase SQL Editor.
+                      </p>
+                    )}
+                  </div>
+                )}
                 <textarea
                   id={`step-notes-${task.key}`}
                   className="deepml-textarea"

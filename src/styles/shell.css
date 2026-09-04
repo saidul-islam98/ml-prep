@@ -1512,6 +1512,43 @@ a:hover {
   font-family: var(--font-mono);
 }
 
+.deepml-focus-save-error {
+  color: var(--danger);
+  font-weight: 600;
+}
+
+.deepml-focus-error-banner {
+  background: var(--danger-soft);
+  border: 1px solid var(--danger);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  margin-top: var(--space-2);
+  margin-bottom: var(--space-2);
+  color: var(--text-strong);
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+.deepml-focus-error-title {
+  margin: 0;
+  color: var(--danger);
+}
+
+.deepml-focus-error-hint {
+  margin-top: var(--space-2);
+  margin-bottom: 0;
+  color: var(--text);
+  font-size: 0.8rem;
+}
+
+.deepml-focus-error-hint code {
+  font-family: var(--font-mono);
+  background: var(--surface-2);
+  padding: 0.1em 0.35em;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+}
+
 .deepml-focus-body {
   padding: var(--space-6);
   overflow-y: auto;

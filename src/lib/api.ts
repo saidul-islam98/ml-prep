@@ -141,10 +141,17 @@ export type TransitionOutcome =
 
 export class CommandError extends Error {
   readonly kind: string;
-  constructor(serverMessage: string) {
+  readonly code?: string;
+  readonly details?: string;
+  readonly hint?: string;
+
+  constructor(serverMessage: string, options?: { code?: string; details?: string; hint?: string }) {
     super(serverMessage);
     this.name = "CommandError";
     this.kind = serverMessage.split(":")[0] ?? "error";
+    this.code = options?.code;
+    this.details = options?.details;
+    this.hint = options?.hint;
   }
 }
 
@@ -361,7 +368,13 @@ export function createPrepApi(client: SupabaseClient): PrepApi {
         .select("*")
         .eq("task_id", taskId)
         .limit(1);
-      if (error) throw new CommandError(error.message);
+      if (error) {
+        throw new CommandError(error.message, {
+          code: error.code,
+          details: error.details,
+          hint: error.hint,
+        });
+      }
       return (data?.[0] as TaskExecutionProgressRow | undefined) ?? null;
     },
 
@@ -377,7 +390,13 @@ export function createPrepApi(client: SupabaseClient): PrepApi {
         )
         .select("*")
         .single();
-      if (error) throw new CommandError(error.message);
+      if (error) {
+        throw new CommandError(error.message, {
+          code: error.code,
+          details: error.details,
+          hint: error.hint,
+        });
+      }
       return data as TaskExecutionProgressRow;
     },
 

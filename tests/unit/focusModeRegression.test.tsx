@@ -15,7 +15,7 @@ import userEvent from "@testing-library/user-event";
 import { FocusModeModal } from "../../src/components/FocusModeModal";
 import { getCurriculumTask } from "../../src/curriculum";
 import { emptyTaskExecution } from "../../src/hooks/useTaskExecution";
-import type { TaskExecutionProgressInput } from "../../src/lib/api";
+import { CommandError, type TaskExecutionProgressInput } from "../../src/lib/api";
 
 const task = getCurriculumTask("w01-mon")!;
 
@@ -309,5 +309,45 @@ describe("FocusModeModal regression suite", () => {
 
     await user.click(screen.getByRole("button", { name: "Finish & Mark Complete" }));
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  });
+
+  // ── Error surfacing: shows exact error and migration hint when table missing ──
+  it("surfaces exact error and migration hint when save fails due to missing table", async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+    const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    const onSave = vi.fn().mockRejectedValue(
+      new CommandError("Could not find the table 'task_execution_progress' in the schema cache", {
+        code: "PGRST205",
+      }),
+    );
+
+    render(<Harness onSave={onSave} />);
+    await openFocus(user);
+
+    const textarea = screen.getByRole("textbox");
+    await user.click(textarea);
+    await user.type(textarea, "draft notes");
+
+    // Flush debounce
+    await act(async () => {
+      vi.advanceTimersByTime(600);
+      await Promise.resolve();
+    });
+
+    // Verify error label and error banner
+    const errorElements = await screen.findAllByText(/Save failed/);
+    expect(errorElements.length).toBeGreaterThanOrEqual(1);
+    expect(
+      screen.getByText(/Could not find the table 'task_execution_progress' in the schema cache/),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/npx supabase db push/)).toBeInTheDocument();
+
+    // Verify draft notes in textarea are preserved
+    expect((textarea as HTMLTextAreaElement).value).toBe("draft notes");
+
+    // Verify console.error was called
+    expect(consoleSpy).toHaveBeenCalled();
+    consoleSpy.mockRestore();
   });
 });

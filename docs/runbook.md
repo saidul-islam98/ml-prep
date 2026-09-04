@@ -76,6 +76,23 @@ Dependabot may be enabled normally. After updates run: `npm run typecheck`,
 `npm run supabase:start`), `npm run build`, `npm run verify:subpath`,
 `node scripts/scan-dist.mjs`.
 
+## Database schema migrations (hosted Supabase)
+
+CI/CD runs all migrations against an ephemeral local Supabase stack during automated tests (`npm run test:integration`), but the GitHub Actions deployment workflow deploys only the static application to GitHub Pages. It does not automatically run migrations against hosted production Supabase databases.
+
+When adding or updating schema migrations (such as `supabase/migrations/20260830000000_task_execution_progress.sql`):
+
+1. **Via Supabase CLI**:
+   Link the local repository to your remote Supabase project and push unapplied migrations:
+   ```sh
+   npx supabase link --project-ref <your-project-ref>
+   npx supabase db push
+   ```
+2. **Via Supabase Dashboard**:
+   Open the **SQL Editor** in the Supabase Dashboard, paste the contents of `supabase/migrations/20260830000000_task_execution_progress.sql`, and execute it.
+3. **Troubleshooting missing table errors**:
+   If Focus Mode indicates `Save failed (PGRST205)` or reports `Could not find the table 'task_execution_progress' in the schema cache`, the database table is missing from your hosted Supabase project. Applying the migration as described above resolves the issue.
+
 ## Secrets policy
 
 - The frontend holds only the Supabase URL and publishable key - public
