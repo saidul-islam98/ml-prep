@@ -1,3 +1,4 @@
+import { useRef } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { TaskExecutionProgressInput, TaskExecutionProgressRow } from "../lib/api";
 import { OfflineError } from "../lib/api";
@@ -27,6 +28,11 @@ export function useTaskExecution(taskId: string) {
     queryFn: () => api.fetchTaskExecution?.(taskId) ?? Promise.resolve(null),
   });
 
+  // Monotonic revision counter stored in a ref so it survives re-renders.
+  // Optimistic cache writes cause re-renders; a local `let` would reset to 0
+  // on every render, defeating the stale-response protection.
+  const latestRevision = useRef(0);
+
   const save = useMutation({
     mutationFn: async (progress: TaskExecutionProgressInput) => {
       if (typeof navigator !== "undefined" && navigator.onLine === false) {
@@ -45,18 +51,28 @@ export function useTaskExecution(taskId: string) {
     onMutate: async (progress) => {
       await queryClient.cancelQueries({ queryKey });
       const previous = queryClient.getQueryData<TaskExecutionProgressRow | null>(queryKey);
+      const revision = ++latestRevision.current;
       queryClient.setQueryData<TaskExecutionProgressRow>(queryKey, {
         task_id: taskId,
         user_id: previous?.user_id ?? "pending",
         updated_at: new Date().toISOString(),
         ...progress,
       });
-      return { previous };
+      return { previous, revision };
     },
     onError: (_error, _progress, context) => {
-      queryClient.setQueryData(queryKey, context?.previous ?? null);
+      // Only roll back if no newer mutation has since been dispatched.
+      // Rolling back when a newer write exists would restore stale state.
+      if (context && context.revision === latestRevision.current) {
+        queryClient.setQueryData(queryKey, context.previous ?? null);
+      }
     },
-    onSuccess: (saved) => queryClient.setQueryData(queryKey, saved),
+    onSuccess: (saved, _progress, context) => {
+      // Only apply the server response when no newer mutation has since fired.
+      if (context && context.revision === latestRevision.current) {
+        queryClient.setQueryData(queryKey, saved);
+      }
+    },
   });
 
   const progress: TaskExecutionProgressInput = query.data

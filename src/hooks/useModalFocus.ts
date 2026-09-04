@@ -5,23 +5,42 @@ const FOCUSABLE =
 
 export function useModalFocus<T extends HTMLElement>(
   isOpen: boolean,
+  /** Called when the user dismisses via Escape or external trigger. */
   onClose: () => void,
 ): RefObject<T | null> {
   const dialogRef = useRef<T>(null);
   const returnFocusRef = useRef<HTMLElement | null>(null);
+  // Keep latest onClose in a ref so callback identity changes never retrigger
+  // the effect, and so Escape always calls the most-recent version (which may
+  // be a wrapped pauseAndClose rather than the raw prop).
+  const onCloseRef = useRef(onClose);
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  });
 
   useEffect(() => {
     if (!isOpen) return;
+
+    // Capture the element that had focus before the modal opened.
     returnFocusRef.current =
       document.activeElement instanceof HTMLElement ? document.activeElement : null;
+
     const dialog = dialogRef.current;
-    const focusable = dialog?.querySelectorAll<HTMLElement>(FOCUSABLE);
-    (focusable?.[0] ?? dialog)?.focus();
+
+    // Move focus only on open; never steal it from an active input inside.
+    const active = document.activeElement;
+    const insideDialog = dialog && active instanceof HTMLElement && dialog.contains(active);
+    if (!insideDialog) {
+      const focusable = dialog?.querySelectorAll<HTMLElement>(FOCUSABLE);
+      (focusable?.[0] ?? dialog)?.focus();
+    }
 
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") {
         event.preventDefault();
-        onClose();
+        // Always calls the latest version — FocusModeModal passes pauseAndClose
+        // so Escape pauses the timer and flushes notes before closing.
+        onCloseRef.current();
         return;
       }
       if (event.key !== "Tab" || !dialog) return;
@@ -45,9 +64,10 @@ export function useModalFocus<T extends HTMLElement>(
     document.addEventListener("keydown", handleKeyDown);
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
+      // Restore focus only when the modal genuinely closes.
       returnFocusRef.current?.focus();
     };
-  }, [isOpen, onClose]);
+  }, [isOpen]);
 
   return dialogRef;
 }

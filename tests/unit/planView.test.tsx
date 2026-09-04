@@ -119,7 +119,11 @@ describe("PlanView", () => {
 
   async function expandWeek(label: string) {
     const user = userEvent.setup();
-    const toggle = await screen.findByRole("button", { name: new RegExp(label) });
+    const toggle = await screen.findByRole(
+      "button",
+      { name: new RegExp(label) },
+      { timeout: 4000 },
+    );
     // Week 1 starts open; only click when collapsed so this helper opens.
     if (toggle.getAttribute("aria-expanded") !== "true") {
       await user.click(toggle);

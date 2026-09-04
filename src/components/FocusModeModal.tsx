@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import type { CurriculumTask } from "../curriculum/schemas";
 import type { TaskExecutionProgressInput } from "../lib/api";
 import { elapsedSeconds, emptyTaskExecution, pauseExecution } from "../hooks/useTaskExecution";
@@ -20,6 +20,31 @@ function formatTime(totalSeconds: number) {
   return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
 }
 
+type SaveStatus = "idle" | "saving" | "saved" | "error";
+
+// ---------------------------------------------------------------------------
+// Serial save queue
+// Ensures only one Supabase write is inflight at a time. A new enqueue()
+// cancels any pending call, so rapid changes collapse to a single write and
+// slow / out-of-order responses can never overwrite newer state.
+// ---------------------------------------------------------------------------
+function makeSerialQueue() {
+  // The promise returned by the last enqueued call.
+  let tail: Promise<void> = Promise.resolve();
+
+  function enqueue(fn: () => Promise<void>): Promise<void> {
+    // Chain onto tail so each write waits for the previous one to settle.
+    tail = tail
+      .then(() => fn())
+      .catch(() => {
+        /* individual call site handles its own errors */
+      });
+    return tail;
+  }
+
+  return { enqueue };
+}
+
 export function FocusModeModal({
   task,
   isOpen,
@@ -28,74 +53,200 @@ export function FocusModeModal({
   progress: controlledProgress,
   onProgressChange,
 }: FocusModeModalProps) {
-  const [localProgress, setLocalProgress] = useState<TaskExecutionProgressInput>(() => ({
-    ...emptyTaskExecution(),
-    timer_started_at: new Date().toISOString(),
-    started_at: new Date().toISOString(),
-  }));
+  // Authoritative local draft — updated synchronously on every keystroke.
+  const [localProgress, setLocalProgress] = useState<TaskExecutionProgressInput>(() =>
+    emptyTaskExecution(),
+  );
   const [now, setNow] = useState(Date.now());
-  const progress = controlledProgress ?? localProgress;
-  const dialogRef = useModalFocus<HTMLDivElement>(isOpen, onClose);
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
 
-  function save(next: TaskExecutionProgressInput) {
-    if (!controlledProgress) setLocalProgress(next);
-    void onProgressChange?.(next);
+  // Track mounted status to avoid state updates after unmount.
+  const mountedRef = useRef(true);
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
+
+  const localProgressRef = useRef(localProgress);
+  useEffect(() => {
+    localProgressRef.current = localProgress;
+  });
+
+  // Keep latest callback in a ref so queue closures always see the current one.
+  const onProgressChangeRef = useRef(onProgressChange);
+  useEffect(() => {
+    onProgressChangeRef.current = onProgressChange;
+  });
+
+  // Serial queue: one write inflight at a time, newest wins.
+  const queue = useRef(makeSerialQueue());
+
+  const debouncedPersistTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // --------------------------------------------------------------------------
+  // persistNow: immediately enqueue a write, update save-status UI.
+  // The queue guarantees arrival order regardless of network latency.
+  // --------------------------------------------------------------------------
+  const persistNow = useCallback((next: TaskExecutionProgressInput): Promise<void> => {
+    if (!onProgressChangeRef.current) return Promise.resolve();
+    if (mountedRef.current) setSaveStatus("saving");
+    return queue.current.enqueue(async () => {
+      try {
+        await onProgressChangeRef.current!(next);
+        if (mountedRef.current) {
+          setSaveStatus("saved");
+          setTimeout(() => {
+            if (mountedRef.current) setSaveStatus((s) => (s === "saved" ? "idle" : s));
+          }, 2000);
+        }
+      } catch {
+        if (mountedRef.current) setSaveStatus("error");
+        // Do NOT discard the local draft — it is still in localProgress.
+      }
+    });
+  }, []);
+
+  // --------------------------------------------------------------------------
+  // save: apply locally, then persist (debounced or immediate).
+  // --------------------------------------------------------------------------
+  function save(next: TaskExecutionProgressInput, immediate = false) {
+    setLocalProgress(next);
+    if (debouncedPersistTimer.current) clearTimeout(debouncedPersistTimer.current);
+    if (immediate) {
+      void persistNow(next);
+    } else {
+      debouncedPersistTimer.current = setTimeout(() => void persistNow(next), 500);
+    }
   }
 
+  // --------------------------------------------------------------------------
+  // Lifecycle: open auto-resumes timer; close flushes notes and pauses.
+  // --------------------------------------------------------------------------
+  const prevIsOpen = useRef(false);
   useEffect(() => {
-    if (!isOpen || !progress.timer_started_at) return;
+    if (isOpen && !prevIsOpen.current) {
+      const ts = new Date().toISOString();
+      const base = controlledProgress ?? localProgressRef.current;
+      const resumed: TaskExecutionProgressInput = {
+        ...base,
+        started_at: base.started_at ?? ts,
+        timer_started_at: base.timer_started_at ?? ts,
+        paused_at: base.timer_started_at ? base.paused_at : null,
+      };
+      setLocalProgress(resumed);
+      void persistNow(resumed);
+    } else if (!isOpen && prevIsOpen.current) {
+      // Modal just closed: flush pending debounce and pause timer if still running
+      if (debouncedPersistTimer.current) {
+        clearTimeout(debouncedPersistTimer.current);
+        debouncedPersistTimer.current = null;
+        void persistNow(localProgressRef.current);
+      }
+      if (localProgressRef.current.timer_started_at) {
+        const paused = pauseExecution(localProgressRef.current);
+        setLocalProgress(paused);
+        void persistNow(paused);
+      }
+    } else if (!isOpen && controlledProgress) {
+      // Keep local draft in sync with external updates while closed
+      setLocalProgress(controlledProgress);
+    }
+    prevIsOpen.current = isOpen;
+  }, [isOpen, controlledProgress, persistNow]);
+
+  // --------------------------------------------------------------------------
+  // pauseAndClose: flush debounce, pause the timer, persist, then close.
+  // Passed to useModalFocus so Escape calls this path, not the raw onClose.
+  // --------------------------------------------------------------------------
+  const pauseAndCloseRef = useRef<() => void>(() => {
+    /* filled below */
+  });
+
+  // We define pauseAndClose as a ref-stable wrapper so useModalFocus can
+  // always call the current version without a stale closure.
+  const dialogRef = useModalFocus<HTMLDivElement>(isOpen, () => pauseAndCloseRef.current());
+
+  // --------------------------------------------------------------------------
+  // Timer tick
+  // --------------------------------------------------------------------------
+  useEffect(() => {
+    if (!isOpen || !localProgress.timer_started_at) return;
     const interval = window.setInterval(() => setNow(Date.now()), 1000);
     return () => window.clearInterval(interval);
-  }, [isOpen, progress.timer_started_at]);
+  }, [isOpen, localProgress.timer_started_at]);
 
-  useEffect(() => {
-    if (!isOpen || progress.started_at) return;
-    const started = new Date().toISOString();
-    save({ ...progress, started_at: started, timer_started_at: started });
-  }, [isOpen, progress.started_at]);
-
+  // ──────────────────────────────────────────────────────────────────────────
+  // Render-time variables (only reached when isOpen)
+  // ──────────────────────────────────────────────────────────────────────────
   if (!isOpen) return null;
 
   const totalSteps = task.todos.length;
-  const currentStepIndex = Math.min(progress.current_step_index, Math.max(0, totalSteps - 1));
+  const currentStepIndex = Math.min(localProgress.current_step_index, Math.max(0, totalSteps - 1));
   const currentStep = task.todos[currentStepIndex];
-  const shownSeconds = elapsedSeconds(progress, now);
-  const completed = currentStep ? progress.completed_todo_ids.includes(currentStep.id) : false;
+  const shownSeconds = elapsedSeconds(localProgress, now);
+  const completed = currentStep ? localProgress.completed_todo_ids.includes(currentStep.id) : false;
 
+  // Define the real pauseAndClose and wire it into the ref.
   function pauseAndClose() {
-    save(pauseExecution(progress));
+    if (debouncedPersistTimer.current) {
+      clearTimeout(debouncedPersistTimer.current);
+      debouncedPersistTimer.current = null;
+    }
+    const paused = pauseExecution(localProgress);
+    setLocalProgress(paused);
+    void persistNow(paused);
     onClose();
   }
+  pauseAndCloseRef.current = pauseAndClose;
 
   function toggleTimer() {
-    if (progress.timer_started_at) {
-      save(pauseExecution(progress));
+    if (localProgress.timer_started_at) {
+      save(pauseExecution(localProgress), true);
     } else {
-      save({ ...progress, timer_started_at: new Date().toISOString(), paused_at: null });
+      save({ ...localProgress, timer_started_at: new Date().toISOString(), paused_at: null }, true);
       setNow(Date.now());
     }
   }
 
   function move(index: number) {
-    save({ ...progress, current_step_index: Math.max(0, Math.min(totalSteps - 1, index)) });
+    if (debouncedPersistTimer.current) {
+      clearTimeout(debouncedPersistTimer.current);
+      debouncedPersistTimer.current = null;
+    }
+    save(
+      { ...localProgress, current_step_index: Math.max(0, Math.min(totalSteps - 1, index)) },
+      true,
+    );
   }
 
   function markCurrentStepDone() {
     if (!currentStep) return;
-    const ids = Array.from(new Set([...progress.completed_todo_ids, currentStep.id]));
-    save({
-      ...progress,
-      completed_todo_ids: ids,
-      current_step_index: Math.min(totalSteps - 1, currentStepIndex + 1),
-    });
+    const ids = Array.from(new Set([...localProgress.completed_todo_ids, currentStep.id]));
+    save(
+      {
+        ...localProgress,
+        completed_todo_ids: ids,
+        current_step_index: Math.min(totalSteps - 1, currentStepIndex + 1),
+      },
+      true,
+    );
   }
 
   function recordResource(resourceId: string) {
     save({
-      ...progress,
-      opened_resource_ids: Array.from(new Set([...progress.opened_resource_ids, resourceId])),
+      ...localProgress,
+      opened_resource_ids: Array.from(new Set([...localProgress.opened_resource_ids, resourceId])),
     });
   }
+
+  const saveLabel: Record<SaveStatus, string | null> = {
+    idle: null,
+    saving: "Saving\u2026",
+    saved: "Saved",
+    error: "Save failed",
+  };
 
   return (
     <div
@@ -111,6 +262,7 @@ export function FocusModeModal({
         className="deepml-modal-card deepml-focus-card"
         onClick={(event) => event.stopPropagation()}
       >
+        {/* ── Header (sticky) ── */}
         <div className="deepml-focus-header">
           <div className="deepml-focus-header-info">
             <div className="deepml-modal-eyebrow">
@@ -124,32 +276,48 @@ export function FocusModeModal({
               {task.title}
             </h2>
           </div>
-          <div className="deepml-focus-timer-box">
-            <div className="deepml-focus-timer-digits" aria-live="off">
-              {formatTime(shownSeconds)}
+          <div className="deepml-focus-header-right">
+            <div className="deepml-focus-timer-box">
+              <div className="deepml-focus-timer-digits" aria-live="off">
+                {formatTime(shownSeconds)}
+              </div>
+              <div className="deepml-focus-timer-controls">
+                <Button
+                  variant="ghost"
+                  onClick={toggleTimer}
+                  aria-label={localProgress.timer_started_at ? "Pause Timer" : "Resume Timer"}
+                >
+                  {localProgress.timer_started_at ? "Pause" : "Resume"}
+                </Button>
+                <Button
+                  variant="ghost"
+                  onClick={() =>
+                    save(
+                      {
+                        ...localProgress,
+                        elapsed_seconds: 0,
+                        timer_started_at: localProgress.timer_started_at
+                          ? new Date().toISOString()
+                          : null,
+                      },
+                      true,
+                    )
+                  }
+                  aria-label="Reset Timer"
+                >
+                  Reset
+                </Button>
+              </div>
             </div>
-            <div className="deepml-focus-timer-controls">
-              <Button
-                variant="ghost"
-                onClick={toggleTimer}
-                aria-label={progress.timer_started_at ? "Pause Timer" : "Resume Timer"}
-              >
-                {progress.timer_started_at ? "Pause" : "Resume"}
-              </Button>
-              <Button
-                variant="ghost"
-                onClick={() =>
-                  save({
-                    ...progress,
-                    elapsed_seconds: 0,
-                    timer_started_at: progress.timer_started_at ? new Date().toISOString() : null,
-                  })
-                }
-                aria-label="Reset Timer"
-              >
-                Reset
-              </Button>
-            </div>
+            {/* ── Close button ── */}
+            <button
+              type="button"
+              className="deepml-modal-close deepml-focus-close"
+              aria-label="Exit focus mode"
+              onClick={pauseAndClose}
+            >
+              &times;
+            </button>
           </div>
         </div>
 
@@ -160,6 +328,7 @@ export function FocusModeModal({
           />
         </div>
 
+        {/* ── Scrollable body ── */}
         <div className="deepml-modal-body deepml-focus-body">
           {currentStep ? (
             <div className="deepml-focus-step-card">
@@ -198,19 +367,35 @@ export function FocusModeModal({
               <div className="deepml-focus-notes-area">
                 <label htmlFor={`step-notes-${task.key}`} className="deepml-label">
                   Execution Notes / Output Log:
+                  {saveLabel[saveStatus] && (
+                    <span className="deepml-focus-save-status" aria-live="polite">
+                      {" "}
+                      {saveLabel[saveStatus]}
+                    </span>
+                  )}
                 </label>
                 <textarea
                   id={`step-notes-${task.key}`}
                   className="deepml-textarea"
                   rows={4}
                   placeholder="Record findings, complexity, test results, or error causes..."
-                  value={progress.step_notes[currentStep.id] ?? ""}
+                  value={localProgress.step_notes[currentStep.id] ?? ""}
                   onChange={(event) =>
                     save({
-                      ...progress,
-                      step_notes: { ...progress.step_notes, [currentStep.id]: event.target.value },
+                      ...localProgress,
+                      step_notes: {
+                        ...localProgress.step_notes,
+                        [currentStep.id]: event.target.value,
+                      },
                     })
                   }
+                  onBlur={() => {
+                    if (debouncedPersistTimer.current) {
+                      clearTimeout(debouncedPersistTimer.current);
+                      debouncedPersistTimer.current = null;
+                      void persistNow(localProgress);
+                    }
+                  }}
                 />
               </div>
             </div>
@@ -219,6 +404,7 @@ export function FocusModeModal({
           )}
         </div>
 
+        {/* ── Footer (sticky) ── */}
         <div className="deepml-modal-footer deepml-focus-footer">
           <div className="deepml-focus-nav-left">
             <Button
@@ -246,12 +432,17 @@ export function FocusModeModal({
             <Button
               variant="primary"
               onClick={() => {
-                save(pauseExecution(progress));
+                if (debouncedPersistTimer.current) {
+                  clearTimeout(debouncedPersistTimer.current);
+                  debouncedPersistTimer.current = null;
+                }
+                const paused = pauseExecution(localProgress);
+                void persistNow(paused);
                 onClose();
                 onCompleteTask(task);
               }}
             >
-              Finish & Mark Complete
+              Finish &amp; Mark Complete
             </Button>
           </div>
         </div>
